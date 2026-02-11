@@ -749,6 +749,7 @@
                             <option value="30">30</option>
                             <option value="40">40</option>
                             <option value="50">50</option>
+                            <option value="all">All</option>
                         </select>
                     </div>
                 </div>
@@ -1382,28 +1383,38 @@
                 : `Verses ${startVerse}-${endVerse} of ${filteredVerses.length}`;
             
             const nextBtn = document.createElement('button');
-            nextBtn.textContent = allMemorized ? 'Next →' : 'Next (Mark all) →';
+            
+            const isLastPage = index + versesPerPage >= filteredVerses.length;
+            
+            if (allMemorized) {
+                nextBtn.textContent = 'Next →';
+                if (isLastPage) {
+                    nextBtn.disabled = true;
+                    nextBtn.style.opacity = '0.5';
+                    nextBtn.style.cursor = 'not-allowed';
+                }
+            } else {
+                nextBtn.textContent = isLastPage ? 'Mark All as Memorized' : 'Next (Mark all) →';
+            }
+            
             nextBtn.onclick = () => {
                 if (!allMemorized) {
-                    // Mark all verses on this page as memorized
                     versesToDisplay.forEach(v => {
                         memorizedVerses.add(`${v.surah}:${v.ayah}`);
                     });
                     saveUserData();
                     updateAccountStats();
+                    
+                    if (isLastPage) {
+                        displayVerseWithNavigation(index);
+                        return;
+                    }
                 }
-                // Move to next page
                 const nextIndex = index + versesPerPage;
                 if (nextIndex < filteredVerses.length) {
                     displayVerseWithNavigation(nextIndex);
                 }
             };
-            
-            if (index + versesPerPage >= filteredVerses.length) {
-                nextBtn.disabled = true;
-                nextBtn.style.opacity = '0.5';
-                nextBtn.style.cursor = 'not-allowed';
-            }
             
             navHTML.appendChild(prevBtn);
             navHTML.appendChild(pageInfo);
@@ -1470,7 +1481,12 @@
         }
 
         function updateVersesPerPage() {
-            versesPerPage = parseInt(document.getElementById('versesPerPage').value);
+            const selected = document.getElementById('versesPerPage').value;
+            if (selected === 'all') {
+                versesPerPage = filteredVerses.length;
+            } else {
+                versesPerPage = parseInt(selected);
+            }
             // Reset to beginning of current verse's page
             const newIndex = Math.floor(currentVerseIndex / versesPerPage) * versesPerPage;
             displayVerseWithNavigation(newIndex);
