@@ -1111,13 +1111,13 @@
 
         // Initialize App
         async function initApp() {
-            debugLog('=== INITIALIZING APP ===');
+            console.log('=== INITIALIZING APP ===');
             
             await loadQuranData();
             populateFilters();
             checkSavedUser();
             
-            debugLog('=== APP INITIALIZED ===');
+            console.log('=== APP INITIALIZED ===');
         }
 
         // Load Quran Data from API
