@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Hafiz - Quran Memorization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Crimson+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a4d2e;
+            --secondary: #d4af37;
+            --accent: #8b6f47;
+            --bg-light: #faf8f3;
+            --bg-dark: #0f1a14;
+            --text-primary: #2c3e2f;
+            --text-light: #6b7c6e;
+            --border: #d4c5a9;
+            --success: #2d6a4f;
+            --error: #9d4747;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Pro', serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Decorative Background Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(26, 77, 46, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 1.5rem 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Amiri', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 300;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, #2d6a4f 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-family: 'Crimson Pro', serif;
+            cursor: pointer;
+            border-radius: 0;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--secondary);
+            transition: left 0.3s ease;
+            z-index: 0;
+        }
+
+        .nav-btn:hover::before {
+            left: 0;
+        }
+
+        .nav-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-btn.active {
+            background: var(--secondary);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Page Sections */
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card Styling */
+        .card {
+            background: white;
+            border: 2px solid var(--border);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover::before {
+            opacity: 0.1;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.35rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.65rem;
+            border: 2px solid var(--border);
+            background: var(--bg-light);
+            font-family: 'Crimson Pro', serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        /* Prevent zoom on iOS */
+        @supports (-webkit-touch-callout: none) {
+            input, select {
+                font-size: 16px;
+            }
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: 'Crimson Pro', serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+            touch-action: manipulation;
+            min-height: 44px; /* Apple's recommended minimum touch target */
+        }
+        
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        /* Better mobile button behavior */
+        @media (hover: none) and (pointer: coarse) {
+            button:hover {
+                transform: none;
+            }
+            button:active {
+                background: var(--accent);
+            }
+        }
+
+        /* Progress Meter */
+        .progress-container {
+            margin: 1.25rem 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: var(--bg-light);
+            border: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success) 0%, var(--secondary) 100%);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Verse Display */
+        .verse-card {
+            background: white;
+            border: 2px solid var(--border);
+            padding: 0.65rem 0.85rem;
+            margin: 0.35rem 0;
+            position: relative;
+        }
+
+        .verse-arabic {
+            font-family: 'Amiri', serif;
+            font-size: 1.6rem;
+            line-height: 1.75;
+            color: var(--primary);
+            margin: 0.35rem 0;
+            direction: rtl;
+        }
+
+        .verse-translation {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-style: italic;
+            margin: 0.35rem 0 0.5rem 0;
+        }
+
+        .verse-info {
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+        
+        .verse-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .verse-controls-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Filters */
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        /* Memorized Toggle */
+        .memorized-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 26px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .toggle-switch.active {
+            background: var(--success);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(26px);
+        }
+        
+        /* Audio Player */
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .audio-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        .audio-btn:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+            box-shadow: 0 3px 9px rgba(26, 77, 46, 0.4);
+        }
+        
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Mobile-specific audio button behavior */
+        @media (hover: none) and (pointer: coarse) {
+            .audio-btn:hover {
+                transform: none;
+            }
+            .audio-btn:active {
+                transform: scale(0.9);
+                background: var(--primary);
+            }
+        }
+        
+        .audio-btn.playing {
+            background: var(--success);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 2px 6px rgba(45, 106, 79, 0.3); }
+            50% { box-shadow: 0 3px 12px rgba(45, 106, 79, 0.6); }
+        }
+
+        /* Quiz Styles */
+        .quiz-question {
+            font-family: 'Amiri', serif;
+            font-size: 1.5rem;
+            line-height: 1.8;
+            color: var(--primary);
+            margin: 1.25rem 0;
+            direction: rtl;
+            text-align: center;
+        }
+
+        .quiz-blank {
+            display: inline-block;
+            min-width: 120px;
+            border-bottom: 3px solid var(--secondary);
+            margin: 0 8px;
+            text-align: center;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+            margin: 1.25rem 0;
+        }
+
+        .quiz-option {
+            padding: 1rem;
+            background: white;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-family: 'Amiri', serif;
+            font-size: 1.15rem;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .quiz-option.correct {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .quiz-option.incorrect {
+            background: var(--error);
+            color: white;
+            border-color: var(--error);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            border: 2px solid var(--border);
+            padding: 1.25rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Amiri', serif;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-top: 0.35rem;
+        }
+
+        /* Message Box */
+        .message {
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--success);
+            background: rgba(45, 106, 79, 0.1);
+            font-size: 1.1rem;
+        }
+
+        .message.error {
+            border-left-color: var(--error);
+            background: rgba(157, 71, 71, 0.1);
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .nav-btn { padding: 0.6rem 1.2rem; font-size: 0.95rem; }
+            .verse-arabic { font-size: 1.3rem; }
+            .quiz-question { font-size: 1.2rem; }
+            .filters { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>حافظ</h1>
+            <div class="subtitle">Master the Noble Quran</div>
+        </header>
+
+        <nav>
+            <button class="nav-btn active" onclick="showPage('account')" data-page="account">
+                <span>Account</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('memorize')" data-page="memorize">
+                <span>Memorize</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('quiz')" data-page="quiz">
+                <span>Quiz</span>
+            </button>
+        </nav>
+
+        <!-- Account Page -->
+        <div id="account" class="page active">
+            <div class="card">
+                <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin-bottom: 1.25rem; color: var(--primary);">
+                    Your Account
+                </h2>
+                
+                <div id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input 
+                            type="email"
+                            id="email" 
+                            name="email"
+                            autocomplete="email"
+                            placeholder="your@email.com" 
+                            style="font-size: 16px;">
+                    </div>
+                    <button type="button" id="loginBtn" style="width: 100%; background: var(--secondary); font-size: 1.1rem; padding: 1rem; margin-top: 0.5rem;">
+                        Sign In / Create Account
+                    </button>
+                    <div style="margin-top: 0.75rem; text-align: center;">
+                        <small style="color: var(--text-light);">No password needed - just enter any email to start</small>
+                    </div>
+                </div>
+
+                <div id="accountDashboard" style="display: none;">
+                    <div class="message" id="welcomeMessage"></div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalVerses">0</div>
+                            <div class="stat-label">Total Verses Memorized</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="completionPercent">0%</div>
+                            <div class="stat-label">Quran Completion</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="surahCount">0</div>
+                            <div class="stat-label">Surahs Completed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="reviewedCount">0</div>
+                            <div class="stat-label">Verses Reviewed</div>
+                        </div>
+                    </div>
+
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Memorization Progress</span>
+                            <span id="progressText">0 / 6236 verses</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Review Progress</span>
+                            <span id="reviewProgressText">0 / 0 memorized verses</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="reviewProgressFill" style="width: 0%; background: linear-gradient(90deg, #8b6f47 0%, #d4af37 100%);"></div>
+                        </div>
+                    </div>
+
+                    <button onclick="logout()" style="background: var(--error); margin-top: 2rem;">Sign Out</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Memorize Page -->
+        <div id="memorize" class="page">
+            <div class="card">
+                <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin-bottom: 1.25rem; color: var(--primary);">
+                    Memorization Practice
+                </h2>
+
+                <div class="filters">
+                    <div class="form-group">
+                        <label>View</label>
+                        <select id="viewFilter" onchange="filterVerses()">
+                            <option value="all">All Verses</option>
+                            <option value="memorized">Memorized Only</option>
+                            <option value="not_memorized">Not Memorized</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Juz</label>
+                        <select id="juzFilter" onchange="filterVerses()">
+                            <option value="">All Juz</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Surah</label>
+                        <select id="surahFilter" onchange="filterVerses()">
+                            <option value="">All Surahs</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ayah</label>
+                        <select id="ayahFilter" onchange="filterVerses()">
+                            <option value="">All Ayahs</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Per Page</label>
+                        <select id="versesPerPage" onchange="updateVersesPerPage()">
+                            <option value="1">1</option>
+                            <option value="3">3</option>
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="40">40</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="verseDisplay"></div>
+            </div>
+        </div>
+
+        <!-- Quiz Page -->
+        <div id="quiz" class="page">
+            <div class="card">
+                <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin-bottom: 1.25rem; color: var(--primary);">
+                    Test Your Memory
+                </h2>
+
+                <div id="quizSetup">
+                    <div class="form-group">
+                        <label>Select Memorized Surah to Review</label>
+                        <select id="quizSurahFilter">
+                            <option value="">All Memorized Verses</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="startQuiz()" style="width: 100%; padding: 2rem; font-size: 1.3rem; margin-top: 1rem;">
+                        Start Quiz
+                    </button>
+                </div>
+
+                <div id="quizContainer" style="display: none;"></div>
+
+                <div id="quizResults" style="display: none;">
+                    <div class="message">
+                        <div style="font-size: 1.5rem; margin-bottom: 1rem;">Quiz Complete! 🎉</div>
+                        <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Score: <span id="quizScore"></span></div>
+                        <div style="font-size: 1rem; color: var(--text-light);">
+                            <span id="quizVerseCount"></span> verses reviewed ✓
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button onclick="startQuiz()" style="flex: 1;">Take Another Quiz</button>
+                        <button onclick="resetQuiz()" style="flex: 1; background: var(--accent);">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        let currentUser = null;
+        let quranData = [];
+        let memorizedVerses = new Set();
+        let reviewedVerses = new Set();
+        let currentVerse = null;
+        let quizScore = 0;
+        let quizTotal = 0;
+        let filteredVerses = [];
+        let currentVerseIndex = 0;
+        let versesPerPage = 1;
+        let currentQuizVerses = [];
+        let currentQuizIndex = 0;
+        let audioPlayer = null;
+        let currentlyPlayingButton = null;
+
+        // Simple wrapper for login
+        function handleLogin() {
+            try {
+                const emailInput = document.getElementById('email');
+                
+                if (!emailInput) {
+                    alert('Error: Cannot find email input. Please refresh the page.');
+                    return;
+                }
+                
+                const email = emailInput.value.trim();
+                
+                if (!email) {
+                    alert('Please enter an email address');
+                    return;
+                }
+                
+                if (email.indexOf('@') === -1) {
+                    alert('Please enter a valid email with @');
+                    return;
+                }
+                
+                currentUser = email;
+                
+                const loginForm = document.getElementById('loginForm');
+                const dashboard = document.getElementById('accountDashboard');
+                const welcome = document.getElementById('welcomeMessage');
+                
+                if (!loginForm || !dashboard || !welcome) {
+                    alert('Error: Page elements missing. Please refresh.');
+                    return;
+                }
+                
+                loginForm.style.display = 'none';
+                dashboard.style.display = 'block';
+                welcome.textContent = 'Welcome, ' + email + '!';
+                
+                loadUserData();
+                updateAccountStats();
+                
+                try {
+                    localStorage.setItem('quran_user', email);
+                } catch (e) {
+                    console.log('localStorage not available:', e);
+                }
+                
+            } catch (error) {
+                alert('Login error: ' + error.message);
+                console.error('Login error:', error);
+            }
+        }
+
+        // Initialize App
+        async function initApp() {
+            debugLog('=== INITIALIZING APP ===');
+            
+            await loadQuranData();
+            populateFilters();
+            checkSavedUser();
+            
+            debugLog('=== APP INITIALIZED ===');
+        }
+
+        // Load Quran Data from API
+        async function loadQuranData() {
+            const container = document.getElementById('verseDisplay');
+            container.innerHTML = '<div class="loading">Loading Quran data...</div>';
+            
+            try {
+                // Using Al-Quran Cloud API with Uthmani text (HTTPS for mobile compatibility)
+                const response = await fetch('https://api.alquran.cloud/v1/quran/quran-uthmani');
+                const result = await response.json();
+                
+                if (result.code !== 200 || !result.data) {
+                    throw new Error('Failed to fetch Quran data');
+                }
+                
+                const quranResponse = result.data;
+                
+                // Transform data to match our structure
+                quranData = [];
+                quranResponse.surahs.forEach(surah => {
+                    surah.ayahs.forEach(ayah => {
+                        quranData.push({
+                            surah: surah.number,
+                            ayah: ayah.numberInSurah,
+                            juz: ayah.juz,
+                            arab: ayah.text,
+                            translation: '' // We'll add translation separately
+                        });
+                    });
+                });
+                
+                console.log('Quran data loaded:', quranData.length, 'verses');
+                console.log('Sample verse:', quranData[0]);
+                
+                // Now load English translation
+                const translationResponse = await fetch('https://api.alquran.cloud/v1/quran/en.asad');
+                const translationResult = await translationResponse.json();
+                
+                if (translationResult.code === 200 && translationResult.data) {
+                    let verseIndex = 0;
+                    translationResult.data.surahs.forEach(surah => {
+                        surah.ayahs.forEach(ayah => {
+                            if (quranData[verseIndex]) {
+                                quranData[verseIndex].translation = ayah.text;
+                            }
+                            verseIndex++;
+                        });
+                    });
+                }
+                
+                console.log('Translations loaded');
+                console.log('Sample verse with translation:', quranData[0]);
+                
+                // Auto-load all verses by default
+                filteredVerses = [...quranData];
+                currentVerseIndex = 0;
+                displayVerseWithNavigation(0);
+                
+            } catch (error) {
+                console.error('Error loading Quran data:', error);
+                container.innerHTML = `<div class="loading">Failed to load Quran data. Error: ${error.message}<br>Please check your internet connection and refresh the page.</div>`;
+            }
+        }
+
+        // Populate Filter Dropdowns
+        function populateFilters() {
+            // Populate Juz (1-30)
+            const juzFilter = document.getElementById('juzFilter');
+            for (let i = 1; i <= 30; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Juz ${i}`;
+                juzFilter.appendChild(option);
+            }
+
+            // Populate Surahs (1-114)
+            const surahFilter = document.getElementById('surahFilter');
+            const surahNames = {
+                1: "Al-Fatihah", 2: "Al-Baqarah", 3: "Ali 'Imran", 4: "An-Nisa", 
+                5: "Al-Ma'idah", 6: "Al-An'am", 7: "Al-A'raf", 8: "Al-Anfal",
+                9: "At-Tawbah", 10: "Yunus", 11: "Hud", 12: "Yusuf",
+                13: "Ar-Ra'd", 14: "Ibrahim", 15: "Al-Hijr", 16: "An-Nahl",
+                17: "Al-Isra", 18: "Al-Kahf", 19: "Maryam", 20: "Ta-Ha",
+                21: "Al-Anbya", 22: "Al-Hajj", 23: "Al-Mu'minun", 24: "An-Nur",
+                25: "Al-Furqan", 26: "Ash-Shu'ara", 27: "An-Naml", 28: "Al-Qasas",
+                29: "Al-'Ankabut", 30: "Ar-Rum", 31: "Luqman", 32: "As-Sajdah",
+                33: "Al-Ahzab", 34: "Saba", 35: "Fatir", 36: "Ya-Sin",
+                37: "As-Saffat", 38: "Sad", 39: "Az-Zumar", 40: "Ghafir",
+                41: "Fussilat", 42: "Ash-Shuraa", 43: "Az-Zukhruf", 44: "Ad-Dukhan",
+                45: "Al-Jathiyah", 46: "Al-Ahqaf", 47: "Muhammad", 48: "Al-Fath",
+                49: "Al-Hujurat", 50: "Qaf", 51: "Adh-Dhariyat", 52: "At-Tur",
+                53: "An-Najm", 54: "Al-Qamar", 55: "Ar-Rahman", 56: "Al-Waqi'ah",
+                57: "Al-Hadid", 58: "Al-Mujadila", 59: "Al-Hashr", 60: "Al-Mumtahanah",
+                61: "As-Saf", 62: "Al-Jumu'ah", 63: "Al-Munafiqun", 64: "At-Taghabun",
+                65: "At-Talaq", 66: "At-Tahrim", 67: "Al-Mulk", 68: "Al-Qalam",
+                69: "Al-Haqqah", 70: "Al-Ma'arij", 71: "Nuh", 72: "Al-Jinn",
+                73: "Al-Muzzammil", 74: "Al-Muddaththir", 75: "Al-Qiyamah", 76: "Al-Insan",
+                77: "Al-Mursalat", 78: "An-Naba", 79: "An-Nazi'at", 80: "'Abasa",
+                81: "At-Takwir", 82: "Al-Infitar", 83: "Al-Mutaffifin", 84: "Al-Inshiqaq",
+                85: "Al-Buruj", 86: "At-Tariq", 87: "Al-A'la", 88: "Al-Ghashiyah",
+                89: "Al-Fajr", 90: "Al-Balad", 91: "Ash-Shams", 92: "Al-Layl",
+                93: "Ad-Duhaa", 94: "Ash-Sharh", 95: "At-Tin", 96: "Al-'Alaq",
+                97: "Al-Qadr", 98: "Al-Bayyinah", 99: "Az-Zalzalah", 100: "Al-'Adiyat",
+                101: "Al-Qari'ah", 102: "At-Takathur", 103: "Al-'Asr", 104: "Al-Humazah",
+                105: "Al-Fil", 106: "Quraysh", 107: "Al-Ma'un", 108: "Al-Kawthar",
+                109: "Al-Kafirun", 110: "An-Nasr", 111: "Al-Masad", 112: "Al-Ikhlas",
+                113: "Al-Falaq", 114: "An-Nas"
+            };
+            
+            for (let i = 1; i <= 114; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i}. ${surahNames[i]}`;
+                surahFilter.appendChild(option);
+            }
+        }
+
+        // Filter and Display Verses
+        function filterVerses() {
+            const view = document.getElementById('viewFilter').value;
+            const juz = document.getElementById('juzFilter').value;
+            const surah = document.getElementById('surahFilter').value;
+            const ayah = document.getElementById('ayahFilter').value;
+
+            console.log('Filtering with:', { view, juz, surah, ayah, totalVerses: quranData.length });
+
+            // Update ayah options based on surah
+            if (surah) {
+                const ayahFilter = document.getElementById('ayahFilter');
+                ayahFilter.innerHTML = '<option value="">All Ayahs</option>';
+                const surahVerses = quranData.filter(v => v.surah === parseInt(surah));
+                surahVerses.forEach(v => {
+                    const option = document.createElement('option');
+                    option.value = v.ayah;
+                    option.textContent = `Ayah ${v.ayah}`;
+                    ayahFilter.appendChild(option);
+                });
+            }
+
+            // Filter verses
+            filteredVerses = [...quranData];
+            
+            // Apply view filter (memorized/not memorized)
+            if (view === 'memorized') {
+                filteredVerses = filteredVerses.filter(v => 
+                    memorizedVerses.has(`${v.surah}:${v.ayah}`)
+                );
+            } else if (view === 'not_memorized') {
+                filteredVerses = filteredVerses.filter(v => 
+                    !memorizedVerses.has(`${v.surah}:${v.ayah}`)
+                );
+            }
+            
+            if (juz) {
+                filteredVerses = filteredVerses.filter(v => v.juz === parseInt(juz));
+                console.log('After juz filter:', filteredVerses.length);
+            }
+            if (surah) {
+                filteredVerses = filteredVerses.filter(v => v.surah === parseInt(surah));
+                console.log('After surah filter:', filteredVerses.length);
+            }
+            if (ayah) {
+                filteredVerses = filteredVerses.filter(v => v.ayah === parseInt(ayah));
+                console.log('After ayah filter:', filteredVerses.length);
+            }
+
+            console.log('Final filtered count:', filteredVerses.length);
+            
+            currentVerseIndex = 0;
+            if (filteredVerses.length > 0) {
+                displayVerseWithNavigation(0);
+            } else {
+                const container = document.getElementById('verseDisplay');
+                container.innerHTML = '<div class="loading">No verses found with selected filters. Try different options.</div>';
+            }
+        }
+
+        function displayVerseWithNavigation(index) {
+            if (index < 0 || index >= filteredVerses.length) return;
+            
+            currentVerseIndex = index;
+            
+            // Stop any currently playing audio
+            stopAudio();
+            
+            // Get verses for this page
+            const endIndex = Math.min(index + versesPerPage, filteredVerses.length);
+            const versesToDisplay = filteredVerses.slice(index, endIndex);
+            
+            // Display all verses on this page
+            const container = document.getElementById('verseDisplay');
+            container.innerHTML = '';
+            
+            versesToDisplay.forEach((verse, i) => {
+                const verseKey = `${verse.surah}:${verse.ayah}`;
+                const isMemorized = memorizedVerses.has(verseKey);
+                const actualIndex = index + i;
+                
+                // Calculate the global ayah number for audio (1-6236)
+                const globalAyahNumber = quranData.findIndex(v => v.surah === verse.surah && v.ayah === verse.ayah) + 1;
+                
+                const verseCard = document.createElement('div');
+                verseCard.className = 'verse-card';
+                verseCard.innerHTML = `
+                    <div class="verse-info">Surah ${verse.surah}, Ayah ${verse.ayah} (Juz ${verse.juz})</div>
+                    <div class="verse-arabic">${verse.arab || verse.ar || 'Arabic text not available'}</div>
+                    <div class="verse-translation">${verse.translation || verse.en || verse.tr || 'Translation not available'}</div>
+                    
+                    <div class="verse-controls">
+                        <div class="verse-controls-left">
+                            <div class="audio-controls">
+                                <button class="audio-btn" data-ayah="${globalAyahNumber}" title="Listen to recitation">▶</button>
+                            </div>
+                            <div class="memorized-toggle">
+                                <span style="font-size: 0.9rem; font-weight: 600;">Memorized</span>
+                                <div class="toggle-switch ${isMemorized ? 'active' : ''}" data-verse-key="${verseKey}" data-verse-index="${actualIndex}">
+                                    <div class="toggle-slider"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add click handler to toggle switch
+                const toggleSwitch = verseCard.querySelector('.toggle-switch');
+                toggleSwitch.addEventListener('click', function() {
+                    toggleMemorizedForVerse(this.dataset.verseKey, parseInt(this.dataset.verseIndex));
+                });
+                
+                // Add click handler to audio button
+                const audioBtn = verseCard.querySelector('.audio-btn');
+                audioBtn.addEventListener('click', function() {
+                    playAudio(this.dataset.ayah, this);
+                });
+                
+                container.appendChild(verseCard);
+            });
+            
+            // Check if all verses on this page are memorized
+            const allMemorized = versesToDisplay.every(v => memorizedVerses.has(`${v.surah}:${v.ayah}`));
+            
+            // Add navigation buttons
+            const navHTML = document.createElement('div');
+            navHTML.style.cssText = 'display: flex; justify-content: space-between; margin-top: 1.5rem; gap: 1rem; align-items: center;';
+            
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '← Previous';
+            prevBtn.onclick = () => displayVerseWithNavigation(Math.max(0, index - versesPerPage));
+            if (index === 0) {
+                prevBtn.disabled = true;
+                prevBtn.style.opacity = '0.5';
+                prevBtn.style.cursor = 'not-allowed';
+            }
+            
+            const pageInfo = document.createElement('span');
+            pageInfo.style.cssText = 'font-size: 0.95rem; font-weight: 600;';
+            const startVerse = index + 1;
+            const endVerse = Math.min(index + versesPerPage, filteredVerses.length);
+            pageInfo.textContent = versesPerPage === 1 
+                ? `Verse ${startVerse} of ${filteredVerses.length}`
+                : `Verses ${startVerse}-${endVerse} of ${filteredVerses.length}`;
+            
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = allMemorized ? 'Next →' : 'Next (Mark all) →';
+            nextBtn.onclick = () => {
+                if (!allMemorized) {
+                    // Mark all verses on this page as memorized
+                    versesToDisplay.forEach(v => {
+                        memorizedVerses.add(`${v.surah}:${v.ayah}`);
+                    });
+                    saveUserData();
+                    updateAccountStats();
+                }
+                // Move to next page
+                const nextIndex = index + versesPerPage;
+                if (nextIndex < filteredVerses.length) {
+                    displayVerseWithNavigation(nextIndex);
+                }
+            };
+            
+            if (index + versesPerPage >= filteredVerses.length) {
+                nextBtn.disabled = true;
+                nextBtn.style.opacity = '0.5';
+                nextBtn.style.cursor = 'not-allowed';
+            }
+            
+            navHTML.appendChild(prevBtn);
+            navHTML.appendChild(pageInfo);
+            navHTML.appendChild(nextBtn);
+            
+            container.appendChild(navHTML);
+        }
+        
+        function playAudio(ayahNumber, buttonElement) {
+            // If clicking the same button that's playing, stop it
+            if (currentlyPlayingButton === buttonElement && audioPlayer && !audioPlayer.paused) {
+                stopAudio();
+                return;
+            }
+            
+            // Stop any currently playing audio
+            stopAudio();
+            
+            // Mishary Al-Afasy audio URL from alquran.cloud CDN
+            const audioUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayahNumber}.mp3`;
+            
+            console.log('Playing audio:', audioUrl);
+            
+            // Create new audio player
+            audioPlayer = new Audio(audioUrl);
+            currentlyPlayingButton = buttonElement;
+            
+            // Update button appearance
+            buttonElement.classList.add('playing');
+            buttonElement.textContent = '⏸';
+            
+            // Play the audio
+            audioPlayer.play().catch(error => {
+                console.error('Error playing audio:', error);
+                alert('Failed to play audio. Please check your internet connection.');
+                stopAudio();
+            });
+            
+            // When audio ends, reset button
+            audioPlayer.addEventListener('ended', () => {
+                stopAudio();
+            });
+            
+            // Handle errors
+            audioPlayer.addEventListener('error', (e) => {
+                console.error('Audio error:', e);
+                alert('Failed to load audio. Please try again.');
+                stopAudio();
+            });
+        }
+        
+        function stopAudio() {
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                audioPlayer = null;
+            }
+            
+            if (currentlyPlayingButton) {
+                currentlyPlayingButton.classList.remove('playing');
+                currentlyPlayingButton.textContent = '▶';
+                currentlyPlayingButton = null;
+            }
+        }
+
+        function updateVersesPerPage() {
+            versesPerPage = parseInt(document.getElementById('versesPerPage').value);
+            // Reset to beginning of current verse's page
+            const newIndex = Math.floor(currentVerseIndex / versesPerPage) * versesPerPage;
+            displayVerseWithNavigation(newIndex);
+        }
+
+        function toggleMemorizedForVerse(verseKey, verseIndex) {
+            if (!currentUser) {
+                alert('Please log in to track your progress');
+                return;
+            }
+
+            if (memorizedVerses.has(verseKey)) {
+                memorizedVerses.delete(verseKey);
+            } else {
+                memorizedVerses.add(verseKey);
+            }
+
+            saveUserData();
+            updateAccountStats();
+            
+            // Refresh the current page display
+            displayVerseWithNavigation(currentVerseIndex);
+        }
+
+        // Display Single Verse
+        function displayVerse(verse) {
+            const container = document.getElementById('verseDisplay');
+            
+            if (!verse) {
+                container.innerHTML = '<div class="loading">Please select a filter above to view verses, or the data is still loading...</div>';
+                return;
+            }
+
+            console.log('Displaying verse:', verse);
+            currentVerse = verse;
+            const verseKey = `${verse.surah}:${verse.ayah}`;
+            const isMemorized = memorizedVerses.has(verseKey);
+
+            container.innerHTML = `
+                <div class="verse-card">
+                    <div class="verse-info">Surah ${verse.surah}, Ayah ${verse.ayah} (Juz ${verse.juz})</div>
+                    <div class="verse-arabic">${verse.arab || verse.ar || 'Arabic text not available'}</div>
+                    <div class="verse-translation">${verse.translation || verse.en || verse.tr || 'Translation not available'}</div>
+                    
+                    <div class="memorized-toggle">
+                        <span style="font-size: 1.2rem; font-weight: 600;">Memorized</span>
+                        <div class="toggle-switch ${isMemorized ? 'active' : ''}" onclick="toggleMemorized()">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Account Management
+        function login() {
+            try {
+                console.log('=== LOGIN FUNCTION CALLED ===');
+                
+                // Get the email input element
+                const emailInput = document.getElementById('email');
+                console.log('Email input element found:', !!emailInput);
+                
+                if (!emailInput) {
+                    console.error('CRITICAL: Email input not found in DOM');
+                    alert('Error: Cannot find email input. Please refresh the page.');
+                    return false;
+                }
+                
+                // Get the email value
+                const email = emailInput.value ? emailInput.value.trim() : '';
+                console.log('Email value:', email);
+                console.log('Email length:', email.length);
+                
+                // Validation
+                if (!email || email.length === 0) {
+                    console.warn('Empty email');
+                    alert('Please enter an email address');
+                    if (emailInput) emailInput.focus();
+                    return false;
+                }
+                
+                if (email.indexOf('@') === -1 || email.indexOf('.') === -1) {
+                    console.warn('Invalid email format');
+                    alert('Please enter a valid email (e.g., user@example.com)');
+                    if (emailInput) emailInput.focus();
+                    return false;
+                }
+                
+                console.log('Email validation passed');
+                
+                // Set current user
+                currentUser = email;
+                console.log('Current user set to:', currentUser);
+                
+                // Load user data
+                console.log('Loading user data...');
+                loadUserData();
+                console.log('User data loaded');
+                
+                // Get DOM elements
+                const loginForm = document.getElementById('loginForm');
+                const accountDashboard = document.getElementById('accountDashboard');
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                
+                console.log('DOM elements:', {
+                    loginForm: !!loginForm,
+                    accountDashboard: !!accountDashboard,
+                    welcomeMessage: !!welcomeMessage
+                });
+                
+                // Update UI
+                if (loginForm) {
+                    loginForm.style.display = 'none';
+                    console.log('Login form hidden');
+                }
+                
+                if (accountDashboard) {
+                    accountDashboard.style.display = 'block';
+                    console.log('Account dashboard shown');
+                }
+                
+                if (welcomeMessage) {
+                    welcomeMessage.textContent = 'Welcome, ' + email + '!';
+                    console.log('Welcome message set');
+                }
+                
+                // Update stats
+                console.log('Updating account stats...');
+                updateAccountStats();
+                console.log('Account stats updated');
+                
+                // Save to localStorage
+                try {
+                    localStorage.setItem('quran_user', email);
+                    console.log('User saved to localStorage successfully');
+                } catch (storageError) {
+                    console.error('localStorage error:', storageError);
+                    console.log('Continuing without localStorage...');
+                }
+                
+                console.log('=== LOGIN SUCCESSFUL ===');
+                return true;
+                
+            } catch (error) {
+                console.error('=== LOGIN ERROR ===');
+                console.error('Error details:', error);
+                console.error('Error stack:', error.stack);
+                alert('Login failed: ' + error.message + '. Please try again or refresh the page.');
+                return false;
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            memorizedVerses.clear();
+            reviewedVerses.clear();
+            
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('accountDashboard').style.display = 'none';
+            document.getElementById('email').value = '';
+            
+            localStorage.removeItem('quran_user');
+        }
+
+        function checkSavedUser() {
+            const savedUser = localStorage.getItem('quran_user');
+            if (savedUser) {
+                document.getElementById('email').value = savedUser;
+                login();
+            }
+        }
+
+        function saveUserData() {
+            if (!currentUser) return;
+            
+            const data = {
+                email: currentUser,
+                memorized: Array.from(memorizedVerses),
+                reviewed: Array.from(reviewedVerses)
+            };
+            
+            localStorage.setItem(`quran_data_${currentUser}`, JSON.stringify(data));
+        }
+
+        function loadUserData() {
+            if (!currentUser) return;
+            
+            const saved = localStorage.getItem(`quran_data_${currentUser}`);
+            if (saved) {
+                const data = JSON.parse(saved);
+                memorizedVerses = new Set(data.memorized || []);
+                reviewedVerses = new Set(data.reviewed || []);
+            }
+        }
+
+        function updateAccountStats() {
+            const total = memorizedVerses.size;
+            const totalQuran = 6236;
+            const percentage = ((total / totalQuran) * 100).toFixed(1);
+
+            // Count completed surahs
+            let completedSurahs = 0;
+            for (let i = 1; i <= 114; i++) {
+                const surahVerses = quranData.filter(v => v.surah === i);
+                const memorizedInSurah = surahVerses.filter(v => 
+                    memorizedVerses.has(`${v.surah}:${v.ayah}`)
+                ).length;
+                
+                if (memorizedInSurah === surahVerses.length && surahVerses.length > 0) {
+                    completedSurahs++;
+                }
+            }
+
+            // Review progress
+            const reviewedCount = reviewedVerses.size;
+            const reviewPercentage = total > 0 ? ((reviewedCount / total) * 100).toFixed(1) : 0;
+
+            document.getElementById('totalVerses').textContent = total;
+            document.getElementById('completionPercent').textContent = percentage + '%';
+            document.getElementById('surahCount').textContent = completedSurahs;
+            document.getElementById('reviewedCount').textContent = reviewedCount;
+            document.getElementById('progressText').textContent = `${total} / ${totalQuran} verses`;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('reviewProgressText').textContent = `${reviewedCount} / ${total} memorized verses`;
+            document.getElementById('reviewProgressFill').style.width = reviewPercentage + '%';
+            
+            // Update quiz surah filter
+            updateQuizSurahFilter();
+        }
+        
+        function updateQuizSurahFilter() {
+            const select = document.getElementById('quizSurahFilter');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">All Memorized Verses</option>';
+            
+            // Get all surahs that have at least one memorized verse
+            const memorizedSurahs = new Set();
+            memorizedVerses.forEach(verseKey => {
+                const surah = parseInt(verseKey.split(':')[0]);
+                memorizedSurahs.add(surah);
+            });
+            
+            // Add options for each memorized surah
+            const surahNames = {
+                1: "Al-Fatihah", 2: "Al-Baqarah", 3: "Ali 'Imran", 4: "An-Nisa", 
+                5: "Al-Ma'idah", 6: "Al-An'am", 7: "Al-A'raf", 8: "Al-Anfal",
+                9: "At-Tawbah", 10: "Yunus", 11: "Hud", 12: "Yusuf",
+                13: "Ar-Ra'd", 14: "Ibrahim", 15: "Al-Hijr", 16: "An-Nahl",
+                17: "Al-Isra", 18: "Al-Kahf", 19: "Maryam", 20: "Ta-Ha",
+                21: "Al-Anbya", 22: "Al-Hajj", 23: "Al-Mu'minun", 24: "An-Nur",
+                25: "Al-Furqan", 26: "Ash-Shu'ara", 27: "An-Naml", 28: "Al-Qasas",
+                29: "Al-'Ankabut", 30: "Ar-Rum", 31: "Luqman", 32: "As-Sajdah",
+                33: "Al-Ahzab", 34: "Saba", 35: "Fatir", 36: "Ya-Sin",
+                37: "As-Saffat", 38: "Sad", 39: "Az-Zumar", 40: "Ghafir",
+                41: "Fussilat", 42: "Ash-Shuraa", 43: "Az-Zukhruf", 44: "Ad-Dukhan",
+                45: "Al-Jathiyah", 46: "Al-Ahqaf", 47: "Muhammad", 48: "Al-Fath",
+                49: "Al-Hujurat", 50: "Qaf", 51: "Adh-Dhariyat", 52: "At-Tur",
+                53: "An-Najm", 54: "Al-Qamar", 55: "Ar-Rahman", 56: "Al-Waqi'ah",
+                57: "Al-Hadid", 58: "Al-Mujadila", 59: "Al-Hashr", 60: "Al-Mumtahanah",
+                61: "As-Saf", 62: "Al-Jumu'ah", 63: "Al-Munafiqun", 64: "At-Taghabun",
+                65: "At-Talaq", 66: "At-Tahrim", 67: "Al-Mulk", 68: "Al-Qalam",
+                69: "Al-Haqqah", 70: "Al-Ma'arij", 71: "Nuh", 72: "Al-Jinn",
+                73: "Al-Muzzammil", 74: "Al-Muddaththir", 75: "Al-Qiyamah", 76: "Al-Insan",
+                77: "Al-Mursalat", 78: "An-Naba", 79: "An-Nazi'at", 80: "'Abasa",
+                81: "At-Takwir", 82: "Al-Infitar", 83: "Al-Mutaffifin", 84: "Al-Inshiqaq",
+                85: "Al-Buruj", 86: "At-Tariq", 87: "Al-A'la", 88: "Al-Ghashiyah",
+                89: "Al-Fajr", 90: "Al-Balad", 91: "Ash-Shams", 92: "Al-Layl",
+                93: "Ad-Duhaa", 94: "Ash-Sharh", 95: "At-Tin", 96: "Al-'Alaq",
+                97: "Al-Qadr", 98: "Al-Bayyinah", 99: "Az-Zalzalah", 100: "Al-'Adiyat",
+                101: "Al-Qari'ah", 102: "At-Takathur", 103: "Al-'Asr", 104: "Al-Humazah",
+                105: "Al-Fil", 106: "Quraysh", 107: "Al-Ma'un", 108: "Al-Kawthar",
+                109: "Al-Kafirun", 110: "An-Nasr", 111: "Al-Masad", 112: "Al-Ikhlas",
+                113: "Al-Falaq", 114: "An-Nas"
+            };
+            
+            Array.from(memorizedSurahs).sort((a, b) => a - b).forEach(surah => {
+                const option = document.createElement('option');
+                option.value = surah;
+                const memorizedCount = Array.from(memorizedVerses).filter(v => 
+                    parseInt(v.split(':')[0]) === surah
+                ).length;
+                option.textContent = `${surah}. ${surahNames[surah]} (${memorizedCount} verses)`;
+                select.appendChild(option);
+            });
+        }
+
+        // Quiz Functions
+        function startQuiz() {
+            if (!currentUser) {
+                alert('Please log in to take the quiz');
+                showPage('account');
+                return;
+            }
+
+            if (memorizedVerses.size < 1) {
+                alert('Please memorize at least 1 verse before taking the quiz');
+                showPage('memorize');
+                return;
+            }
+
+            const selectedSurah = document.getElementById('quizSurahFilter').value;
+            
+            // Get memorized verses, filtered by surah if selected
+            let quizPool = Array.from(memorizedVerses);
+            if (selectedSurah) {
+                quizPool = quizPool.filter(verseKey => {
+                    const surah = parseInt(verseKey.split(':')[0]);
+                    return surah === parseInt(selectedSurah);
+                });
+            }
+            
+            if (quizPool.length < 1) {
+                alert('Not enough memorized verses in this surah. Please select a different surah or memorize more verses.');
+                return;
+            }
+            
+            // Sort verses in chronological order (by surah then ayah)
+            quizPool.sort((a, b) => {
+                const [surahA, ayahA] = a.split(':').map(Number);
+                const [surahB, ayahB] = b.split(':').map(Number);
+                if (surahA !== surahB) return surahA - surahB;
+                return ayahA - ayahB;
+            });
+            
+            console.log('Quiz pool (chronological order):', quizPool);
+            
+            // Use ALL verses from the pool (no limit to 10)
+            currentQuizVerses = quizPool;
+            currentQuizIndex = 0;
+            quizScore = 0;
+            quizTotal = 0;
+            
+            document.getElementById('quizSetup').style.display = 'none';
+            document.getElementById('quizResults').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'block';
+            
+            generateQuizQuestion();
+        }
+
+        function generateQuizQuestion() {
+            console.log(`=== Generating question ${currentQuizIndex + 1} of ${currentQuizVerses.length} ===`);
+            
+            if (currentQuizIndex >= currentQuizVerses.length) {
+                console.log('Quiz complete - showing results');
+                showQuizResults();
+                return;
+            }
+            
+            const verseKey = currentQuizVerses[currentQuizIndex];
+            console.log('Current verse key:', verseKey);
+            
+            const [surah, ayah] = verseKey.split(':').map(Number);
+            const verse = quranData.find(v => v.surah === surah && v.ayah === ayah);
+
+            if (!verse || !verse.arab) {
+                console.error('ERROR: Verse not found or has no Arabic text:', verseKey);
+                alert(`Error: Verse ${verseKey} not found. Skipping to next question.`);
+                // Mark as reviewed even if error
+                reviewedVerses.add(verseKey);
+                quizTotal++; // Count as attempted
+                currentQuizIndex++;
+                generateQuizQuestion();
+                return;
+            }
+
+            console.log('Verse found:', verse.arab);
+
+            // Split verse into words - accept ANY length words
+            const allWords = verse.arab.split(/\s+/).filter(w => w.trim().length > 0);
+            console.log('Total words in verse:', allWords.length);
+            console.log('Words:', allWords);
+            
+            // For very short verses (1-2 words), we'll still create a question
+            // by asking to complete the entire verse
+            if (allWords.length === 0) {
+                console.error('ERROR: Verse has no words');
+                alert(`Error: Verse ${verseKey} has no content. Skipping.`);
+                reviewedVerses.add(verseKey);
+                quizTotal++;
+                currentQuizIndex++;
+                generateQuizQuestion();
+                return;
+            }
+            
+            let blankIndex;
+            let correctAnswer;
+            let questionWords;
+            
+            if (allWords.length === 1) {
+                // Single word verse - blank the whole thing
+                blankIndex = 0;
+                correctAnswer = allWords[0];
+                questionWords = ['<span class="quiz-blank">____</span>'];
+            } else if (allWords.length === 2) {
+                // Two word verse - randomly pick one
+                blankIndex = Math.floor(Math.random() * 2);
+                correctAnswer = allWords[blankIndex];
+                questionWords = [...allWords];
+                questionWords[blankIndex] = '<span class="quiz-blank">____</span>';
+            } else {
+                // 3+ words - prefer blanking longer words
+                const wordInfo = allWords.map((w, i) => ({word: w, index: i, length: w.length}));
+                
+                // Sort by length and pick from top half
+                wordInfo.sort((a, b) => b.length - a.length);
+                const topHalf = wordInfo.slice(0, Math.ceil(wordInfo.length / 2));
+                const chosen = topHalf[Math.floor(Math.random() * topHalf.length)];
+                
+                blankIndex = chosen.index;
+                correctAnswer = chosen.word;
+                questionWords = [...allWords];
+                questionWords[blankIndex] = '<span class="quiz-blank">____</span>';
+            }
+            
+            console.log('Blanking word at index:', blankIndex, 'Word:', correctAnswer);
+
+            // Create wrong answers
+            const wrongAnswers = [];
+            
+            // Strategy 1: Same surah
+            const sameSurahVerses = quranData.filter(v => v.surah === surah && v.arab);
+            
+            // Strategy 2: Nearby surahs
+            const nearbyVerses = quranData.filter(v => 
+                Math.abs(v.surah - surah) <= 5 && v.arab
+            );
+            
+            // Strategy 3: All verses
+            const allVerses = quranData.filter(v => v.arab);
+            
+            let attempts = 0;
+            const maxAttempts = 500;
+            
+            while (wrongAnswers.length < 3 && attempts < maxAttempts) {
+                attempts++;
+                
+                // Choose source based on attempts
+                let sourceVerses = sameSurahVerses;
+                if (attempts > 100) sourceVerses = nearbyVerses;
+                if (attempts > 200) sourceVerses = allVerses;
+                
+                if (sourceVerses.length === 0) {
+                    console.warn('No source verses available at attempt', attempts);
+                    continue;
+                }
+                
+                const randomVerse = sourceVerses[Math.floor(Math.random() * sourceVerses.length)];
+                if (!randomVerse || !randomVerse.arab) continue;
+                
+                const candidateWords = randomVerse.arab.split(/\s+/).filter(w => w.trim().length > 0);
+                if (candidateWords.length === 0) continue;
+                
+                const randomWord = candidateWords[Math.floor(Math.random() * candidateWords.length)];
+                
+                // Must be different from correct answer and not already added
+                if (randomWord !== correctAnswer && 
+                    !wrongAnswers.includes(randomWord) &&
+                    randomWord.trim() !== correctAnswer.trim()) {
+                    wrongAnswers.push(randomWord);
+                    console.log(`Found wrong answer ${wrongAnswers.length}:`, randomWord);
+                }
+            }
+            
+            console.log('Total wrong answers collected:', wrongAnswers.length);
+            
+            // Fallback: if still not enough wrong answers, create placeholders
+            while (wrongAnswers.length < 3) {
+                const placeholder = `[Option ${wrongAnswers.length + 1}]`;
+                wrongAnswers.push(placeholder);
+                console.warn('Using placeholder wrong answer:', placeholder);
+            }
+
+            // Shuffle all answers
+            const allAnswers = [correctAnswer, ...wrongAnswers].sort(() => Math.random() - 0.5);
+            console.log('All answers (shuffled):', allAnswers);
+
+            // Build the question display
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.95rem; color: var(--text-light);">
+                        Question ${currentQuizIndex + 1} of ${currentQuizVerses.length}
+                    </div>
+                    <button onclick="finishQuizEarly()" style="background: var(--error); padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        Finish Quiz
+                    </button>
+                </div>
+                <div class="verse-info">Surah ${verse.surah}, Ayah ${verse.ayah}</div>
+                <div class="quiz-question">${questionWords.join(' ')}</div>
+                <div class="quiz-options" id="quizOptionsContainer">
+                    ${allAnswers.map((answer, idx) => `
+                        <div class="quiz-option" data-answer="${answer.replace(/"/g, '&quot;')}" data-correct="${correctAnswer.replace(/"/g, '&quot;')}" data-index="${idx}">
+                            ${answer}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Add click handlers to options
+            document.querySelectorAll('.quiz-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const selected = this.dataset.answer;
+                    const correct = this.dataset.correct;
+                    checkAnswer(this, selected, correct);
+                });
+            });
+            
+            console.log('=== Question displayed successfully ===');
+        }
+        
+        function finishQuizEarly() {
+            if (confirm('Are you sure you want to finish the quiz early? Your progress will be saved.')) {
+                // Mark remaining verses as reviewed
+                for (let i = currentQuizIndex; i < currentQuizVerses.length; i++) {
+                    reviewedVerses.add(currentQuizVerses[i]);
+                }
+                showQuizResults();
+            }
+        }
+
+        function checkAnswer(element, selected, correct) {
+            quizTotal++;
+            
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(opt => {
+                opt.style.pointerEvents = 'none';
+                if (opt.textContent.trim() === correct) {
+                    opt.classList.add('correct');
+                }
+            });
+
+            if (selected === correct) {
+                quizScore++;
+                element.classList.add('correct');
+            } else {
+                element.classList.add('incorrect');
+            }
+            
+            // Mark this verse as reviewed
+            const verseKey = currentQuizVerses[currentQuizIndex];
+            reviewedVerses.add(verseKey);
+
+            // Next question after delay
+            setTimeout(() => {
+                currentQuizIndex++;
+                generateQuizQuestion();
+            }, 1500);
+        }
+
+        function showQuizResults() {
+            // Save reviewed verses
+            saveUserData();
+            updateAccountStats();
+            
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('quizResults').style.display = 'block';
+            document.getElementById('quizScore').textContent = `${quizScore} / ${quizTotal}`;
+            document.getElementById('quizVerseCount').textContent = `${currentQuizVerses.length}`;
+        }
+        
+        function resetQuiz() {
+            document.getElementById('quizSetup').style.display = 'block';
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('quizResults').style.display = 'none';
+            currentQuizVerses = [];
+            currentQuizIndex = 0;
+        }
+
+        // Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(pageId).classList.add('active');
+            document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+        }
+
+        // Initialize on load
+        initApp();
+        
+        // Add event listeners after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleLogin();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
