@@ -7,6 +7,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Hafiz - Quran Memorization</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Crimson+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            emailjs.init("w144cnBn4A_7htHkG");
+        })();
+    </script>
     <style>
         :root {
             --primary: #1a4d2e;
@@ -600,21 +608,60 @@
                 </h2>
                 
                 <div id="loginForm">
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input 
-                            type="email"
-                            id="email" 
-                            name="email"
-                            autocomplete="email"
-                            placeholder="your@email.com" 
-                            style="font-size: 16px;">
+                    <!-- Email Input Step -->
+                    <div id="emailStep">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input 
+                                type="email"
+                                id="email" 
+                                name="email"
+                                autocomplete="email"
+                                placeholder="your@email.com" 
+                                style="font-size: 16px;">
+                        </div>
+                        <button type="button" id="sendOtpBtn" style="width: 100%; background: var(--secondary); font-size: 1.1rem; padding: 1rem; margin-top: 0.5rem;">
+                            Send Verification Code
+                        </button>
+                        <div style="margin-top: 0.75rem; text-align: center;">
+                            <small style="color: var(--text-light);">We'll send a 6-digit code to your email</small>
+                        </div>
                     </div>
-                    <button type="button" id="loginBtn" style="width: 100%; background: var(--secondary); font-size: 1.1rem; padding: 1rem; margin-top: 0.5rem;">
-                        Sign In / Create Account
-                    </button>
-                    <div style="margin-top: 0.75rem; text-align: center;">
-                        <small style="color: var(--text-light);">No password needed - just enter any email to start</small>
+                    
+                    <!-- OTP Verification Step -->
+                    <div id="otpStep" style="display: none;">
+                        <div class="message" style="background: var(--bg-light); margin-bottom: 1rem; padding: 1rem;">
+                            <div style="font-size: 0.95rem; color: var(--text-primary);">
+                                📧 Verification code sent to: <strong id="otpEmailDisplay"></strong>
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;">
+                                Code expires in <span id="otpTimer">5:00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="otpInput">Enter 6-Digit Code</label>
+                            <input 
+                                type="text"
+                                id="otpInput" 
+                                maxlength="6"
+                                pattern="[0-9]*"
+                                inputmode="numeric"
+                                placeholder="000000" 
+                                style="font-size: 1.5rem; text-align: center; letter-spacing: 0.5rem; font-weight: 600;">
+                        </div>
+                        
+                        <button type="button" id="verifyOtpBtn" style="width: 100%; background: var(--success); font-size: 1.1rem; padding: 1rem; margin-top: 0.5rem;">
+                            Verify & Sign In
+                        </button>
+                        
+                        <button type="button" id="resendOtpBtn" style="width: 100%; background: var(--text-light); font-size: 0.95rem; padding: 0.75rem; margin-top: 0.5rem;">
+                            Resend Code
+                        </button>
+                        
+                        <button type="button" id="changeEmailBtn" style="width: 100%; background: transparent; color: var(--primary); border: 2px solid var(--primary); font-size: 0.95rem; padding: 0.75rem; margin-top: 0.5rem;">
+                            Change Email
+                        </button>
                     </div>
                 </div>
 
@@ -773,6 +820,238 @@
         let currentQuizIndex = 0;
         let audioPlayer = null;
         let currentlyPlayingButton = null;
+        
+        // OTP verification state
+        let pendingEmail = null;
+        let generatedOTP = null;
+        let otpExpiry = null;
+
+        // OTP Functions
+        function generateOTP() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+        
+        async function sendOTP() {
+            const emailInput = document.getElementById('email');
+            const email = emailInput.value.trim();
+            const sendBtn = document.getElementById('sendOtpBtn');
+            
+            if (!email) {
+                alert('Please enter an email address');
+                return;
+            }
+            
+            if (email.indexOf('@') === -1 || email.indexOf('.') === -1) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            // Disable button and show loading
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            
+            try {
+                // Generate OTP
+                generatedOTP = generateOTP();
+                pendingEmail = email;
+                otpExpiry = Date.now() + (5 * 60 * 1000); // 5 minutes
+                
+                console.log('Sending OTP to:', email);
+                console.log('OTP Code:', generatedOTP);
+                
+                // Send email via EmailJS
+                const templateParams = {
+                    to_email: email,
+                    otp_code: generatedOTP
+                };
+                
+                await emailjs.send(
+                    'service_yz407ge',      // Service ID
+                    'template_nn4j49w',     // Template ID
+                    templateParams
+                );
+                
+                console.log('Email sent successfully!');
+                
+                // Switch to OTP input view
+                document.getElementById('emailStep').style.display = 'none';
+                document.getElementById('otpStep').style.display = 'block';
+                document.getElementById('otpEmailDisplay').textContent = email;
+                
+                // Start countdown timer
+                startOTPTimer();
+                
+                // Focus on OTP input
+                setTimeout(() => {
+                    document.getElementById('otpInput').focus();
+                }, 100);
+                
+            } catch (error) {
+                console.error('Failed to send email:', error);
+                alert('Failed to send verification code. Please try again.\n\nError: ' + error.text || error.message);
+                
+                // Reset state
+                generatedOTP = null;
+                pendingEmail = null;
+                otpExpiry = null;
+            } finally {
+                // Re-enable button
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send Verification Code';
+            }
+        }
+        
+        function startOTPTimer() {
+            const timerDisplay = document.getElementById('otpTimer');
+            
+            const updateTimer = () => {
+                const remaining = otpExpiry - Date.now();
+                
+                if (remaining <= 0) {
+                    timerDisplay.textContent = '0:00';
+                    timerDisplay.style.color = 'var(--error)';
+                    return;
+                }
+                
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.floor((remaining % 60000) / 1000);
+                timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                setTimeout(updateTimer, 1000);
+            };
+            
+            updateTimer();
+        }
+        
+        function verifyOTP() {
+            const otpInput = document.getElementById('otpInput');
+            const enteredOTP = otpInput.value.trim();
+            
+            if (!enteredOTP) {
+                alert('Please enter the verification code');
+                return;
+            }
+            
+            if (enteredOTP.length !== 6) {
+                alert('Please enter the complete 6-digit code');
+                return;
+            }
+            
+            // Check if OTP expired
+            if (Date.now() > otpExpiry) {
+                alert('Verification code has expired. Please request a new one.');
+                return;
+            }
+            
+            // Verify OTP
+            if (enteredOTP !== generatedOTP) {
+                alert('Invalid verification code. Please try again.');
+                otpInput.value = '';
+                otpInput.focus();
+                return;
+            }
+            
+            // OTP verified successfully - proceed with login
+            console.log('OTP verified successfully for:', pendingEmail);
+            completeLogin(pendingEmail);
+        }
+        
+        async function resendOTP() {
+            if (!pendingEmail) {
+                alert('Error: No email found. Please start over.');
+                resetToEmailStep();
+                return;
+            }
+            
+            const resendBtn = document.getElementById('resendOtpBtn');
+            resendBtn.disabled = true;
+            resendBtn.textContent = 'Sending...';
+            
+            try {
+                // Generate new OTP
+                generatedOTP = generateOTP();
+                otpExpiry = Date.now() + (5 * 60 * 1000);
+                
+                console.log('Resending OTP to:', pendingEmail);
+                console.log('New OTP Code:', generatedOTP);
+                
+                // Send email via EmailJS
+                const templateParams = {
+                    to_email: pendingEmail,
+                    otp_code: generatedOTP
+                };
+                
+                await emailjs.send(
+                    'service_yz407ge',
+                    'template_nn4j49w',
+                    templateParams
+                );
+                
+                console.log('Email resent successfully!');
+                alert('New verification code sent to your email!');
+                
+                // Clear input and restart timer
+                document.getElementById('otpInput').value = '';
+                startOTPTimer();
+                
+            } catch (error) {
+                console.error('Failed to resend email:', error);
+                alert('Failed to resend code. Please try again.\n\nError: ' + error.text || error.message);
+            } finally {
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Resend Code';
+            }
+        }
+        
+        function resetToEmailStep() {
+            document.getElementById('emailStep').style.display = 'block';
+            document.getElementById('otpStep').style.display = 'none';
+            document.getElementById('otpInput').value = '';
+            pendingEmail = null;
+            generatedOTP = null;
+            otpExpiry = null;
+        }
+        
+        function completeLogin(email) {
+            try {
+                currentUser = email;
+                
+                const loginForm = document.getElementById('loginForm');
+                const dashboard = document.getElementById('accountDashboard');
+                const welcome = document.getElementById('welcomeMessage');
+                
+                if (!loginForm || !dashboard || !welcome) {
+                    alert('Error: Page elements missing. Please refresh.');
+                    return;
+                }
+                
+                loginForm.style.display = 'none';
+                dashboard.style.display = 'block';
+                welcome.textContent = 'Welcome, ' + email + '!';
+                
+                loadUserData();
+                updateAccountStats();
+                
+                try {
+                    localStorage.setItem('quran_user', email);
+                } catch (e) {
+                    console.log('localStorage not available:', e);
+                }
+                
+                // Reset OTP state
+                pendingEmail = null;
+                generatedOTP = null;
+                otpExpiry = null;
+                
+                // Reset form for next time
+                resetToEmailStep();
+                document.getElementById('email').value = '';
+                
+            } catch (error) {
+                alert('Login error: ' + error.message);
+                console.error('Login error:', error);
+            }
+        }
 
         // Simple wrapper for login
         function handleLogin() {
@@ -1776,11 +2055,73 @@
         
         // Add event listeners after DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            const loginBtn = document.getElementById('loginBtn');
-            if (loginBtn) {
-                loginBtn.addEventListener('click', function(e) {
+            // Send OTP button
+            const sendOtpBtn = document.getElementById('sendOtpBtn');
+            if (sendOtpBtn) {
+                sendOtpBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    handleLogin();
+                    sendOTP();
+                });
+            }
+            
+            // Verify OTP button
+            const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+            if (verifyOtpBtn) {
+                verifyOtpBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    verifyOTP();
+                });
+            }
+            
+            // Resend OTP button
+            const resendOtpBtn = document.getElementById('resendOtpBtn');
+            if (resendOtpBtn) {
+                resendOtpBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    resendOTP();
+                });
+            }
+            
+            // Change email button
+            const changeEmailBtn = document.getElementById('changeEmailBtn');
+            if (changeEmailBtn) {
+                changeEmailBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    resetToEmailStep();
+                });
+            }
+            
+            // Allow Enter key on email input
+            const emailInput = document.getElementById('email');
+            if (emailInput) {
+                emailInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        sendOTP();
+                    }
+                });
+            }
+            
+            // Allow Enter key on OTP input
+            const otpInput = document.getElementById('otpInput');
+            if (otpInput) {
+                otpInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        verifyOTP();
+                    }
+                });
+                
+                // Auto-verify when 6 digits entered
+                otpInput.addEventListener('input', function(e) {
+                    const value = e.target.value;
+                    // Only allow numbers
+                    e.target.value = value.replace(/[^0-9]/g, '');
+                    
+                    // Auto-verify when complete
+                    if (e.target.value.length === 6) {
+                        setTimeout(() => verifyOTP(), 300);
+                    }
                 });
             }
         });
