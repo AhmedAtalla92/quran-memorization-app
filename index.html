@@ -749,6 +749,7 @@
                             <option value="30">30</option>
                             <option value="40">40</option>
                             <option value="50">50</option>
+                            <option value="all">All</option>
                         </select>
                     </div>
                 </div>
@@ -1382,7 +1383,24 @@
                 : `Verses ${startVerse}-${endVerse} of ${filteredVerses.length}`;
             
             const nextBtn = document.createElement('button');
-            nextBtn.textContent = allMemorized ? 'Next →' : 'Next (Mark all) →';
+            
+            // Check if we're at the last page or showing all verses
+            const isLastPage = index + versesPerPage >= filteredVerses.length;
+            
+            // If all verses on page are memorized, show "Next", otherwise show "Mark all"
+            if (allMemorized) {
+                nextBtn.textContent = 'Next →';
+                // Only show next button if there are more pages
+                if (isLastPage) {
+                    nextBtn.disabled = true;
+                    nextBtn.style.opacity = '0.5';
+                    nextBtn.style.cursor = 'not-allowed';
+                }
+            } else {
+                nextBtn.textContent = isLastPage ? 'Mark All as Memorized' : 'Next (Mark all) →';
+                // Always enable if there are unmemorized verses
+            }
+            
             nextBtn.onclick = () => {
                 if (!allMemorized) {
                     // Mark all verses on this page as memorized
@@ -1391,19 +1409,19 @@
                     });
                     saveUserData();
                     updateAccountStats();
+                    
+                    // If we're on the last page, just refresh the display
+                    if (isLastPage) {
+                        displayVerseWithNavigation(index);
+                        return;
+                    }
                 }
-                // Move to next page
+                // Move to next page if not at the end
                 const nextIndex = index + versesPerPage;
                 if (nextIndex < filteredVerses.length) {
                     displayVerseWithNavigation(nextIndex);
                 }
             };
-            
-            if (index + versesPerPage >= filteredVerses.length) {
-                nextBtn.disabled = true;
-                nextBtn.style.opacity = '0.5';
-                nextBtn.style.cursor = 'not-allowed';
-            }
             
             navHTML.appendChild(prevBtn);
             navHTML.appendChild(pageInfo);
@@ -1470,7 +1488,12 @@
         }
 
         function updateVersesPerPage() {
-            versesPerPage = parseInt(document.getElementById('versesPerPage').value);
+            const selected = document.getElementById('versesPerPage').value;
+            if (selected === 'all') {
+                versesPerPage = filteredVerses.length; // Show all verses
+            } else {
+                versesPerPage = parseInt(selected);
+            }
             // Reset to beginning of current verse's page
             const newIndex = Math.floor(currentVerseIndex / versesPerPage) * versesPerPage;
             displayVerseWithNavigation(newIndex);
