@@ -1699,6 +1699,9 @@
                     reviewedVerses = new Set(result.reviewed || []);
                     console.log('Loaded from database:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed');
                     
+                    // Update stats after loading
+                    updateAccountStats();
+                    
                     // Refresh display if we're on memorize page
                     if (filteredVerses.length > 0) {
                         displayVerseWithNavigation(currentVerseIndex);
@@ -1716,6 +1719,9 @@
                 memorizedVerses = new Set(data.memorized || []);
                 reviewedVerses = new Set(data.reviewed || []);
                 console.log('Loaded from localStorage:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed');
+                
+                // Update stats after loading
+                updateAccountStats();
                 
                 // Refresh display if we're on memorize page
                 if (filteredVerses.length > 0) {
