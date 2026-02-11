@@ -1,12 +1,50 @@
 const express = require('express');
 const cors = require('cors');
 const sgMail = require('@sendgrid/mail');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // SendGrid API Key
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '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');
+
+// PostgreSQL Connection
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL || 'postgresql://quran_user:YLsW9gDDK6cgFYoBQt4SiUV65hsGSBhN@dpg-d66c0tsr85hc73dcuolg-a/quran_db_5ckp',
+    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
+
+// Initialize Database
+async function initDB() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS user_progress (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                verse_key VARCHAR(50) NOT NULL,
+                is_memorized BOOLEAN DEFAULT false,
+                is_reviewed BOOLEAN DEFAULT false,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, verse_key)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_user_progress_user_id ON user_progress(user_id);
+        `);
+        console.log('Database initialized successfully');
+    } catch (error) {
+        console.error('Database initialization error:', error);
+    }
+}
+
+initDB();
 
 // Middleware
 app.use(cors({
@@ -119,4 +157,91 @@ app.post('/send-otp', async (req, res) => {
 // Start server
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+});
+
+// Save user progress
+app.post('/save-progress', async (req, res) => {
+    try {
+        const { email, memorized, reviewed } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ success: false, error: 'Email required' });
+        }
+
+        // Get or create user
+        let userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+        let userId;
+
+        if (userResult.rows.length === 0) {
+            const insertResult = await pool.query(
+                'INSERT INTO users (email) VALUES ($1) RETURNING id',
+                [email]
+            );
+            userId = insertResult.rows[0].id;
+        } else {
+            userId = userResult.rows[0].id;
+        }
+
+        // Clear old progress
+        await pool.query('DELETE FROM user_progress WHERE user_id = $1', [userId]);
+
+        // Insert new progress
+        const memorizedArray = memorized || [];
+        const reviewedArray = reviewed || [];
+        
+        for (const verseKey of memorizedArray) {
+            await pool.query(
+                'INSERT INTO user_progress (user_id, verse_key, is_memorized, is_reviewed) VALUES ($1, $2, true, $3) ON CONFLICT (user_id, verse_key) DO UPDATE SET is_memorized = true, updated_at = CURRENT_TIMESTAMP',
+                [userId, verseKey, reviewedArray.includes(verseKey)]
+            );
+        }
+
+        for (const verseKey of reviewedArray) {
+            if (!memorizedArray.includes(verseKey)) {
+                await pool.query(
+                    'INSERT INTO user_progress (user_id, verse_key, is_memorized, is_reviewed) VALUES ($1, $2, false, true) ON CONFLICT (user_id, verse_key) DO UPDATE SET is_reviewed = true, updated_at = CURRENT_TIMESTAMP',
+                    [userId, verseKey]
+                );
+            }
+        }
+
+        await pool.query('UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = $1', [userId]);
+
+        res.json({ success: true, message: 'Progress saved' });
+    } catch (error) {
+        console.error('Save progress error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Load user progress
+app.get('/load-progress/:email', async (req, res) => {
+    try {
+        const { email } = req.params;
+
+        const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+        
+        if (userResult.rows.length === 0) {
+            return res.json({ success: true, memorized: [], reviewed: [] });
+        }
+
+        const userId = userResult.rows[0].id;
+        const progressResult = await pool.query(
+            'SELECT verse_key, is_memorized, is_reviewed FROM user_progress WHERE user_id = $1',
+            [userId]
+        );
+
+        const memorized = [];
+        const reviewed = [];
+
+        progressResult.rows.forEach(row => {
+            if (row.is_memorized) memorized.push(row.verse_key);
+            if (row.is_reviewed) reviewed.push(row.verse_key);
+        });
+
+        res.json({ success: true, memorized, reviewed });
+    } catch (error) {
+        console.error('Load progress error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
