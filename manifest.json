@@ -1,0 +1,24 @@
+{
+  "name": "Hafez Quraan - Quran Memorization",
+  "short_name": "Hafez Quraan",
+  "description": "Master the Noble Quran with audio recitation, progress tracking, and quiz features",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf8f3",
+  "theme_color": "#1a4d2e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/AhmedAtalla92/quran-memorization-app/main/Hafez%20Quraan%20Logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/AhmedAtalla92/quran-memorization-app/main/Hafez%20Quraan%20Logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
