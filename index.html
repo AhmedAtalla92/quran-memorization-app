@@ -600,19 +600,29 @@
             h1 { font-size: 2rem; }
             .nav-btn { padding: 0.6rem 1.2rem; font-size: 0.95rem; }
             
-            /* Smaller Arabic font for page view on mobile */
-            .verse-arabic { font-size: 1.3rem; line-height: 2.2; }
+            /* Much smaller Arabic font for page view on mobile */
+            .verse-arabic { font-size: 1.1rem; line-height: 2; }
             
-            /* Page view specific */
-            .verse-card[style*="padding: 2.5rem"] .verse-arabic {
-                font-size: 1.5rem !important;
-                line-height: 2.5 !important;
+            /* Page view specific - smaller for mobile */
+            .verse-card[style*="padding: 2.5rem"] {
                 padding: 1rem !important;
+            }
+            
+            .verse-card[style*="padding: 2.5rem"] .verse-arabic {
+                font-size: 1.2rem !important;
+                line-height: 2 !important;
+                padding: 0.75rem !important;
+                margin: 1rem 0 !important;
+            }
+            
+            /* Page header smaller */
+            .verse-card div[style*="font-size: 1.2rem"] {
+                font-size: 1rem !important;
             }
             
             /* Smaller card padding on mobile */
             .verse-card {
-                padding: 1.25rem !important;
+                padding: 1rem !important;
             }
             
             .quiz-question { font-size: 1.2rem; }
@@ -625,14 +635,14 @@
             
             /* Smaller buttons on mobile */
             button {
-                padding: 0.75rem 1.25rem;
-                font-size: 0.95rem;
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
             }
             
             /* Page view buttons */
             #playPageBtn, #pausePageBtn, #restartPageBtn {
-                padding: 0.6rem 1rem !important;
-                font-size: 0.85rem !important;
+                padding: 0.5rem 0.75rem !important;
+                font-size: 0.8rem !important;
             }
             
             /* Stats grid - single column on mobile */
@@ -642,12 +652,18 @@
             
             /* Verse info smaller */
             .verse-info {
-                font-size: 0.8rem;
+                font-size: 0.75rem;
             }
             
             /* Translation text */
             .verse-translation {
-                font-size: 0.95rem;
+                font-size: 0.9rem;
+            }
+            
+            /* Page controls container */
+            div[style*="justify-content: space-between"] {
+                flex-direction: column !important;
+                gap: 1rem !important;
             }
         }
     </style>
