@@ -1659,6 +1659,177 @@
             }
         }
 
+        function displayPageView(versesToDisplay, index) {
+            const container = document.getElementById('verseDisplay');
+            const pageNumber = versesToDisplay[0].page;
+            
+            // Check if all verses on page are memorized
+            const allMemorized = versesToDisplay.every(v => 
+                memorizedVerses.has(`${v.surah}:${v.ayah}`)
+            );
+            
+            // Create page card
+            const pageCard = document.createElement('div');
+            pageCard.className = 'verse-card';
+            pageCard.style.padding = '2.5rem';
+            
+            // Page header
+            const pageHeader = document.createElement('div');
+            pageHeader.style.cssText = 'text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);';
+            pageHeader.innerHTML = `
+                <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary);">
+                    Page ${pageNumber} | صفحة ${pageNumber}
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
+                    ${versesToDisplay.length} verses | ${versesToDisplay.length} آية
+                </div>
+            `;
+            pageCard.appendChild(pageHeader);
+            
+            // Continuous Arabic text (like actual Quran page)
+            const arabicContainer = document.createElement('div');
+            arabicContainer.style.cssText = 'font-family: "Amiri", serif; font-size: 2rem; line-height: 2.8; text-align: right; direction: rtl; margin: 2rem 0; padding: 1.5rem; background: var(--bg-light); border-radius: 12px;';
+            
+            let arabicText = '';
+            versesToDisplay.forEach((verse, i) => {
+                // Add verse marker with number
+                arabicText += verse.arab + ' ۝' + verse.ayah + ' ';
+            });
+            arabicContainer.textContent = arabicText;
+            pageCard.appendChild(arabicContainer);
+            
+            // Page controls
+            const controlsContainer = document.createElement('div');
+            controlsContainer.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border);';
+            
+            // Play entire page button
+            const playPageBtn = document.createElement('button');
+            playPageBtn.className = 'audio-btn';
+            playPageBtn.style.cssText = 'width: auto; padding: 0.75rem 2rem; border-radius: 10px; font-size: 1rem;';
+            playPageBtn.innerHTML = '▶ Play Full Page';
+            playPageBtn.onclick = () => playFullPage(versesToDisplay);
+            
+            // Mark page as memorized toggle
+            const memorizedToggle = document.createElement('div');
+            memorizedToggle.style.cssText = 'display: flex; align-items: center; gap: 1rem;';
+            memorizedToggle.innerHTML = `
+                <span style="font-size: 0.95rem; font-weight: 600;">Page Memorized</span>
+                <div class="toggle-switch ${allMemorized ? 'active' : ''}" id="pageToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            `;
+            
+            memorizedToggle.querySelector('.toggle-switch').onclick = () => {
+                togglePageMemorized(versesToDisplay);
+            };
+            
+            controlsContainer.appendChild(playPageBtn);
+            controlsContainer.appendChild(memorizedToggle);
+            pageCard.appendChild(controlsContainer);
+            
+            container.appendChild(pageCard);
+            
+            // Navigation
+            addPageNavigation(container, index);
+        }
+        
+        function playFullPage(verses) {
+            // Play all verses in sequence
+            let currentIndex = 0;
+            
+            function playNext() {
+                if (currentIndex >= verses.length) {
+                    console.log('Page playback complete');
+                    return;
+                }
+                
+                const verse = verses[currentIndex];
+                const globalAyahNumber = quranData.findIndex(v => 
+                    v.surah === verse.surah && v.ayah === verse.ayah
+                ) + 1;
+                
+                const audioUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalAyahNumber}.mp3`;
+                
+                if (audioPlayer) {
+                    audioPlayer.pause();
+                }
+                
+                audioPlayer = new Audio(audioUrl);
+                audioPlayer.play();
+                
+                audioPlayer.onended = () => {
+                    currentIndex++;
+                    playNext();
+                };
+                
+                audioPlayer.onerror = () => {
+                    console.error('Audio error, skipping to next verse');
+                    currentIndex++;
+                    playNext();
+                };
+            }
+            
+            playNext();
+        }
+        
+        function togglePageMemorized(verses) {
+            const allMemorized = verses.every(v => 
+                memorizedVerses.has(`${v.surah}:${v.ayah}`)
+            );
+            
+            verses.forEach(v => {
+                const key = `${v.surah}:${v.ayah}`;
+                if (allMemorized) {
+                    memorizedVerses.delete(key);
+                } else {
+                    memorizedVerses.add(key);
+                }
+            });
+            
+            saveUserData();
+            updateAccountStats();
+            displayVerseWithNavigation(currentVerseIndex);
+        }
+        
+        function addPageNavigation(container, index) {
+            const navHTML = document.createElement('div');
+            navHTML.style.cssText = 'display: flex; justify-content: space-between; margin-top: 1.5rem; gap: 1rem;';
+            
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '← Previous Page';
+            prevBtn.onclick = () => {
+                const currentPage = filteredVerses[index].page;
+                const prevPageVerses = quranData.filter(v => v.page === currentPage - 1);
+                if (prevPageVerses.length > 0) {
+                    document.getElementById('pageFilter').value = currentPage - 1;
+                    filterByPage();
+                }
+            };
+            if (index === 0) {
+                prevBtn.disabled = true;
+                prevBtn.style.opacity = '0.5';
+            }
+            
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next Page →';
+            nextBtn.onclick = () => {
+                const currentPage = filteredVerses[index].page;
+                const nextPageVerses = quranData.filter(v => v.page === currentPage + 1);
+                if (nextPageVerses.length > 0) {
+                    document.getElementById('pageFilter').value = currentPage + 1;
+                    filterByPage();
+                }
+            };
+            if (filteredVerses[index].page >= 604) {
+                nextBtn.disabled = true;
+                nextBtn.style.opacity = '0.5';
+            }
+            
+            navHTML.appendChild(prevBtn);
+            navHTML.appendChild(nextBtn);
+            container.appendChild(navHTML);
+        }
+
         function displayVerseWithNavigation(index) {
             if (index < 0 || index >= filteredVerses.length) return;
             
@@ -1674,6 +1845,12 @@
             // Display all verses on this page
             const container = document.getElementById('verseDisplay');
             container.innerHTML = '';
+            
+            // Special layout for Page Mode
+            if (viewMode === 'page' && versesToDisplay.length > 0) {
+                displayPageView(versesToDisplay, index);
+                return;
+            }
             
             versesToDisplay.forEach((verse, i) => {
                 const verseKey = `${verse.surah}:${verse.ayah}`;
