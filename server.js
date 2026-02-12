@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // SendGrid API Key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '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');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || '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');
 
 // PostgreSQL Connection
 const pool = new Pool({
