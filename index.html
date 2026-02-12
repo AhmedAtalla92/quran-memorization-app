@@ -659,6 +659,14 @@
 
                 <div id="accountDashboard" style="display: none;">
                     <div class="message" id="welcomeMessage"></div>
+                    
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label>Language / اللغة</label>
+                        <select id="languageSelector" onchange="changeLanguage()" style="font-size: 1rem;">
+                            <option value="en">English</option>
+                            <option value="ar">العربية (Arabic)</option>
+                        </select>
+                    </div>
 
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -713,33 +721,46 @@
 
                 <div class="filters">
                     <div class="form-group">
-                        <label>View</label>
+                        <label id="labelViewMode">View Mode</label>
+                        <select id="viewModeFilter" onchange="switchViewMode()">
+                            <option value="surah" id="optionBySurah">By Surah</option>
+                            <option value="page" id="optionByPage">By Page (Mushaf)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="labelView">View</label>
                         <select id="viewFilter" onchange="filterVerses()">
-                            <option value="all">All Verses</option>
-                            <option value="memorized">Memorized Only</option>
-                            <option value="not_memorized">Not Memorized</option>
+                            <option value="all" id="optionAllVerses">All Verses</option>
+                            <option value="memorized" id="optionMemorizedOnly">Memorized Only</option>
+                            <option value="not_memorized" id="optionNotMemorized">Not Memorized</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Juz</label>
+                    <div class="form-group" id="juzFilterGroup">
+                        <label id="labelJuz">Juz</label>
                         <select id="juzFilter" onchange="filterVerses()">
-                            <option value="">All Juz</option>
+                            <option value="" id="optionAllJuz">All Juz</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Surah</label>
+                    <div class="form-group" id="surahFilterGroup">
+                        <label id="labelSurah">Surah</label>
                         <select id="surahFilter" onchange="filterVerses()">
-                            <option value="">All Surahs</option>
+                            <option value="" id="optionAllSurahs">All Surahs</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Ayah</label>
+                    <div class="form-group" id="ayahFilterGroup">
+                        <label id="labelAyah">Ayah</label>
                         <select id="ayahFilter" onchange="filterVerses()">
-                            <option value="">All Ayahs</option>
+                            <option value="" id="optionAllAyahs">All Ayahs</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="pageFilterGroup" style="display:none;">
+                        <label id="labelPage">Page</label>
+                        <select id="pageFilter" onchange="filterByPage()">
+                            <option value="" id="optionSelectPage">Select Page</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Per Page</label>
+                        <label id="labelPerPage">Per Page</label>
                         <select id="versesPerPage" onchange="updateVersesPerPage()">
                             <option value="1">1</option>
                             <option value="3">3</option>
@@ -749,7 +770,7 @@
                             <option value="30">30</option>
                             <option value="40">40</option>
                             <option value="50">50</option>
-                            <option value="all">All</option>
+                            <option value="all" id="optionAll">All</option>
                         </select>
                     </div>
                 </div>
@@ -767,13 +788,29 @@
 
                 <div id="quizSetup">
                     <div class="form-group">
-                        <label>Select Memorized Surah to Review</label>
-                        <select id="quizSurahFilter">
-                            <option value="">All Memorized Verses</option>
+                        <label id="labelSelectSurah">Select Memorized Surah to Review</label>
+                        <select id="quizSurahFilter" onchange="updateQuizAyahRange()">
+                            <option value="" id="optionAllMemorized">All Memorized Verses</option>
                         </select>
                     </div>
                     
-                    <button onclick="startQuiz()" style="width: 100%; padding: 2rem; font-size: 1.3rem; margin-top: 1rem;">
+                    <div class="form-group">
+                        <label id="labelAyahRange">Ayah Range</label>
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center;">
+                            <select id="quizAyahFrom">
+                                <option value="" id="optionFrom">From</option>
+                            </select>
+                            <span style="color: var(--text-light);" id="spanTo">to</span>
+                            <select id="quizAyahTo">
+                                <option value="" id="optionTo">To</option>
+                            </select>
+                        </div>
+                        <small style="color: var(--text-light); display: block; margin-top: 0.5rem;" id="ayahRangeHint">
+                            Leave blank to test all ayahs in the surah
+                        </small>
+                    </div>
+                    
+                    <button onclick="startQuiz()" id="btnStartQuiz" style="width: 100%; padding: 2rem; font-size: 1.3rem; margin-top: 1rem;">
                         Start Quiz
                     </button>
                 </div>
@@ -813,6 +850,253 @@
         let currentQuizIndex = 0;
         let audioPlayer = null;
         let currentlyPlayingButton = null;
+        let viewMode = 'surah'; // 'surah' or 'page'
+        let language = 'en'; // 'en' or 'ar'
+        
+        // Translations
+        const translations = {
+            en: {
+                // Navigation
+                account: 'Account',
+                memorize: 'Memorize',
+                quiz: 'Quiz',
+                // Account page
+                yourAccount: 'Your Account',
+                welcome: 'Welcome',
+                language: 'Language',
+                totalMemorized: 'Total Verses Memorized',
+                quranCompletion: 'Quran Completion',
+                surahsCompleted: 'Surahs Completed',
+                versesReviewed: 'Verses Reviewed',
+                memorizationProgress: 'Memorization Progress',
+                reviewProgress: 'Review Progress',
+                signOut: 'Sign Out',
+                // Memorize page
+                memorizationPractice: 'Memorization Practice',
+                viewMode: 'View Mode',
+                bySurah: 'By Surah',
+                byPage: 'By Page (Mushaf)',
+                view: 'View',
+                allVerses: 'All Verses',
+                memorizedOnly: 'Memorized Only',
+                notMemorized: 'Not Memorized',
+                juz: 'Juz',
+                allJuz: 'All Juz',
+                surah: 'Surah',
+                allSurahs: 'All Surahs',
+                ayah: 'Ayah',
+                allAyahs: 'All Ayahs',
+                page: 'Page',
+                selectPage: 'Select Page',
+                perPage: 'Per Page',
+                memorized: 'Memorized',
+                next: 'Next',
+                previous: 'Previous',
+                markAll: 'Mark All as Memorized',
+                verse: 'Verse',
+                of: 'of',
+                // Quiz page
+                testMemory: 'Test Your Memory',
+                selectSurah: 'Select Memorized Surah to Review',
+                allMemorizedVerses: 'All Memorized Verses',
+                ayahRange: 'Ayah Range',
+                from: 'From',
+                to: 'To',
+                startQuiz: 'Start Quiz',
+                quizComplete: 'Quiz Complete!',
+                score: 'Score',
+                reviewed: 'reviewed',
+                takeAnother: 'Take Another Quiz',
+                close: 'Close'
+            },
+            ar: {
+                // Navigation
+                account: 'الحساب',
+                memorize: 'الحفظ',
+                quiz: 'الاختبار',
+                // Account page
+                yourAccount: 'حسابك',
+                welcome: 'مرحباً',
+                language: 'اللغة',
+                totalMemorized: 'مجموع الآيات المحفوظة',
+                quranCompletion: 'إتمام القرآن',
+                surahsCompleted: 'السور المكتملة',
+                versesReviewed: 'الآيات المراجعة',
+                memorizationProgress: 'تقدم الحفظ',
+                reviewProgress: 'تقدم المراجعة',
+                signOut: 'تسجيل الخروج',
+                // Memorize page
+                memorizationPractice: 'ممارسة الحفظ',
+                viewMode: 'وضع العرض',
+                bySurah: 'حسب السورة',
+                byPage: 'حسب الصفحة (المصحف)',
+                view: 'العرض',
+                allVerses: 'كل الآيات',
+                memorizedOnly: 'المحفوظة فقط',
+                notMemorized: 'غير محفوظة',
+                juz: 'الجزء',
+                allJuz: 'كل الأجزاء',
+                surah: 'السورة',
+                allSurahs: 'كل السور',
+                ayah: 'الآية',
+                allAyahs: 'كل الآيات',
+                page: 'الصفحة',
+                selectPage: 'اختر الصفحة',
+                perPage: 'لكل صفحة',
+                memorized: 'محفوظة',
+                next: 'التالي',
+                previous: 'السابق',
+                markAll: 'تعليم الكل كمحفوظ',
+                verse: 'آية',
+                of: 'من',
+                // Quiz page
+                testMemory: 'اختبر حفظك',
+                selectSurah: 'اختر سورة محفوظة للمراجعة',
+                allMemorizedVerses: 'كل الآيات المحفوظة',
+                ayahRange: 'نطاق الآيات',
+                from: 'من',
+                to: 'إلى',
+                startQuiz: 'ابدأ الاختبار',
+                quizComplete: 'اكتمل الاختبار!',
+                score: 'النتيجة',
+                reviewed: 'مراجعة',
+                takeAnother: 'اختبار آخر',
+                close: 'إغلاق'
+            }
+        };
+        
+        function changeLanguage() {
+            language = document.getElementById('languageSelector').value;
+            localStorage.setItem('quran_language', language);
+            
+            // Update page direction
+            document.body.dir = language === 'ar' ? 'rtl' : 'ltr';
+            
+            // Update all UI text
+            updateUILanguage();
+        }
+        
+        function updateUILanguage() {
+            const t = translations[language];
+            
+            // Navigation buttons
+            document.querySelector('[data-page="account"]').textContent = t.account;
+            document.querySelector('[data-page="memorize"]').textContent = t.memorize;
+            document.querySelector('[data-page="quiz"]').textContent = t.quiz;
+            
+            // Account page
+            const accountH2 = document.querySelector('#account h2');
+            if (accountH2) accountH2.textContent = t.yourAccount;
+            
+            // Stats labels
+            const statLabels = document.querySelectorAll('.stat-label');
+            if (statLabels[0]) statLabels[0].textContent = t.totalMemorized;
+            if (statLabels[1]) statLabels[1].textContent = t.quranCompletion;
+            if (statLabels[2]) statLabels[2].textContent = t.surahsCompleted;
+            if (statLabels[3]) statLabels[3].textContent = t.versesReviewed;
+            
+            // Progress labels
+            const progressLabels = document.querySelectorAll('.progress-label span:first-child');
+            if (progressLabels[0]) progressLabels[0].textContent = t.memorizationProgress;
+            if (progressLabels[1]) progressLabels[1].textContent = t.reviewProgress;
+            
+            // Sign out button
+            const signOutBtn = document.querySelector('#accountDashboard button');
+            if (signOutBtn) signOutBtn.textContent = t.signOut;
+            
+            // Memorize page
+            const memorizeH2 = document.querySelector('#memorize h2');
+            if (memorizeH2) memorizeH2.textContent = t.memorizationPractice;
+            
+            // Memorize filters
+            const labelViewMode = document.getElementById('labelViewMode');
+            if (labelViewMode) labelViewMode.textContent = t.viewMode;
+            
+            const optionBySurah = document.getElementById('optionBySurah');
+            if (optionBySurah) optionBySurah.textContent = t.bySurah;
+            
+            const optionByPage = document.getElementById('optionByPage');
+            if (optionByPage) optionByPage.textContent = t.byPage;
+            
+            const labelView = document.getElementById('labelView');
+            if (labelView) labelView.textContent = t.view;
+            
+            const optionAllVerses = document.getElementById('optionAllVerses');
+            if (optionAllVerses) optionAllVerses.textContent = t.allVerses;
+            
+            const optionMemorizedOnly = document.getElementById('optionMemorizedOnly');
+            if (optionMemorizedOnly) optionMemorizedOnly.textContent = t.memorizedOnly;
+            
+            const optionNotMemorized = document.getElementById('optionNotMemorized');
+            if (optionNotMemorized) optionNotMemorized.textContent = t.notMemorized;
+            
+            const labelJuz = document.getElementById('labelJuz');
+            if (labelJuz) labelJuz.textContent = t.juz;
+            
+            const optionAllJuz = document.getElementById('optionAllJuz');
+            if (optionAllJuz) optionAllJuz.textContent = t.allJuz;
+            
+            const labelSurah = document.getElementById('labelSurah');
+            if (labelSurah) labelSurah.textContent = t.surah;
+            
+            const optionAllSurahs = document.getElementById('optionAllSurahs');
+            if (optionAllSurahs) optionAllSurahs.textContent = t.allSurahs;
+            
+            const labelAyah = document.getElementById('labelAyah');
+            if (labelAyah) labelAyah.textContent = t.ayah;
+            
+            const optionAllAyahs = document.getElementById('optionAllAyahs');
+            if (optionAllAyahs) optionAllAyahs.textContent = t.allAyahs;
+            
+            const labelPage = document.getElementById('labelPage');
+            if (labelPage) labelPage.textContent = t.page;
+            
+            const optionSelectPage = document.getElementById('optionSelectPage');
+            if (optionSelectPage) optionSelectPage.textContent = t.selectPage;
+            
+            const labelPerPage = document.getElementById('labelPerPage');
+            if (labelPerPage) labelPerPage.textContent = t.perPage;
+            
+            const optionAll = document.getElementById('optionAll');
+            if (optionAll) optionAll.textContent = t.allVerses;
+            
+            // Quiz page
+            const quizH2 = document.querySelector('#quiz h2');
+            if (quizH2) quizH2.textContent = t.testMemory;
+            
+            const labelSelectSurah = document.getElementById('labelSelectSurah');
+            if (labelSelectSurah) labelSelectSurah.textContent = t.selectSurah;
+            
+            const optionAllMemorized = document.getElementById('optionAllMemorized');
+            if (optionAllMemorized) optionAllMemorized.textContent = t.allMemorizedVerses;
+            
+            const labelAyahRange = document.getElementById('labelAyahRange');
+            if (labelAyahRange) labelAyahRange.textContent = t.ayahRange;
+            
+            const optionFrom = document.getElementById('optionFrom');
+            if (optionFrom) optionFrom.textContent = t.from;
+            
+            const spanTo = document.getElementById('spanTo');
+            if (spanTo) spanTo.textContent = t.to;
+            
+            const optionTo = document.getElementById('optionTo');
+            if (optionTo) optionTo.textContent = t.to;
+            
+            const btnStartQuiz = document.getElementById('btnStartQuiz');
+            if (btnStartQuiz) btnStartQuiz.textContent = t.startQuiz;
+            
+            const ayahRangeHint = document.getElementById('ayahRangeHint');
+            if (ayahRangeHint && language === 'ar') {
+                ayahRangeHint.textContent = 'اترك فارغاً لاختبار جميع الآيات في السورة';
+            } else if (ayahRangeHint) {
+                ayahRangeHint.textContent = 'Leave blank to test all ayahs in the surah';
+            }
+            
+            // Refresh current display
+            if (filteredVerses.length > 0) {
+                displayVerseWithNavigation(currentVerseIndex);
+            }
+        }
         
         // OTP verification state
         let pendingEmail = null;
@@ -1114,9 +1398,18 @@
         async function initApp() {
             console.log('=== INITIALIZING APP ===');
             
+            // Load saved language
+            const savedLang = localStorage.getItem('quran_language');
+            if (savedLang) {
+                language = savedLang;
+                document.getElementById('languageSelector').value = savedLang;
+                document.body.dir = language === 'ar' ? 'rtl' : 'ltr';
+            }
+            
             await loadQuranData();
             populateFilters();
             checkSavedUser();
+            updateUILanguage();
             
             console.log('=== APP INITIALIZED ===');
         }
@@ -1145,6 +1438,7 @@
                             surah: surah.number,
                             ayah: ayah.numberInSurah,
                             juz: ayah.juz,
+                            page: ayah.page || 1,
                             arab: ayah.text,
                             translation: '' // We'll add translation separately
                         });
@@ -1234,6 +1528,66 @@
                 option.value = i;
                 option.textContent = `${i}. ${surahNames[i]}`;
                 surahFilter.appendChild(option);
+            }
+            
+            // Populate Pages (1-604)
+            const pageFilter = document.getElementById('pageFilter');
+            for (let i = 1; i <= 604; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Page ${i}`;
+                pageFilter.appendChild(option);
+            }
+        }
+
+        function switchViewMode() {
+            viewMode = document.getElementById('viewModeFilter').value;
+            
+            if (viewMode === 'page') {
+                // Hide surah/juz/ayah filters, show page filter
+                document.getElementById('juzFilterGroup').style.display = 'none';
+                document.getElementById('surahFilterGroup').style.display = 'none';
+                document.getElementById('ayahFilterGroup').style.display = 'none';
+                document.getElementById('pageFilterGroup').style.display = 'block';
+            } else {
+                // Show surah/juz/ayah filters, hide page filter
+                document.getElementById('juzFilterGroup').style.display = 'block';
+                document.getElementById('surahFilterGroup').style.display = 'block';
+                document.getElementById('ayahFilterGroup').style.display = 'block';
+                document.getElementById('pageFilterGroup').style.display = 'none';
+            }
+            
+            // Reset filters and reload
+            filterVerses();
+        }
+
+        function filterByPage() {
+            const page = parseInt(document.getElementById('pageFilter').value);
+            const view = document.getElementById('viewFilter').value;
+            
+            if (!page) {
+                filteredVerses = [...quranData];
+            } else {
+                // Filter by page number
+                filteredVerses = quranData.filter(v => v.page === page);
+            }
+            
+            // Apply memorization filter
+            if (view === 'memorized') {
+                filteredVerses = filteredVerses.filter(v => 
+                    memorizedVerses.has(`${v.surah}:${v.ayah}`)
+                );
+            } else if (view === 'not_memorized') {
+                filteredVerses = filteredVerses.filter(v => 
+                    !memorizedVerses.has(`${v.surah}:${v.ayah}`)
+                );
+            }
+            
+            currentVerseIndex = 0;
+            if (filteredVerses.length > 0) {
+                displayVerseWithNavigation(0);
+            } else {
+                document.getElementById('verseDisplay').innerHTML = '<div class="loading">No verses on this page.</div>';
             }
         }
 
@@ -1823,6 +2177,38 @@
         }
 
         // Quiz Functions
+        function updateQuizAyahRange() {
+            const surahId = parseInt(document.getElementById('quizSurahFilter').value);
+            const ayahFrom = document.getElementById('quizAyahFrom');
+            const ayahTo = document.getElementById('quizAyahTo');
+            
+            // Clear previous options
+            ayahFrom.innerHTML = '<option value="">From (All)</option>';
+            ayahTo.innerHTML = '<option value="">To (All)</option>';
+            
+            if (!surahId) return;
+            
+            // Get ayahs in this surah
+            const surahVerses = quranData.filter(v => v.surah === surahId);
+            const maxAyah = Math.max(...surahVerses.map(v => v.ayah));
+            
+            // Populate From dropdown
+            for (let i = 1; i <= maxAyah; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Ayah ${i}`;
+                ayahFrom.appendChild(option);
+            }
+            
+            // Populate To dropdown
+            for (let i = 1; i <= maxAyah; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Ayah ${i}`;
+                ayahTo.appendChild(option);
+            }
+        }
+
         function startQuiz() {
             if (!currentUser) {
                 alert('Please log in to take the quiz');
@@ -1837,13 +2223,21 @@
             }
 
             const selectedSurah = document.getElementById('quizSurahFilter').value;
+            const ayahFrom = document.getElementById('quizAyahFrom').value;
+            const ayahTo = document.getElementById('quizAyahTo').value;
             
             // Get memorized verses, filtered by surah if selected
             let quizPool = Array.from(memorizedVerses);
             if (selectedSurah) {
                 quizPool = quizPool.filter(verseKey => {
-                    const surah = parseInt(verseKey.split(':')[0]);
-                    return surah === parseInt(selectedSurah);
+                    const [surah, ayah] = verseKey.split(':').map(Number);
+                    if (surah !== parseInt(selectedSurah)) return false;
+                    
+                    // Apply ayah range filter
+                    if (ayahFrom && ayah < parseInt(ayahFrom)) return false;
+                    if (ayahTo && ayah > parseInt(ayahTo)) return false;
+                    
+                    return true;
                 });
             }
             
