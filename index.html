@@ -1652,9 +1652,15 @@
                 document.getElementById('ayahFilterGroup').style.display = 'none';
                 document.getElementById('pageFilterGroup').style.display = 'block';
                 
+                // Auto-select page 1
+                document.getElementById('pageFilter').value = '1';
+                
                 // Auto-set to show all verses on the page
                 document.getElementById('versesPerPage').value = 'all';
                 updateVersesPerPage();
+                
+                // Load page 1
+                filterByPage();
             } else {
                 // Show surah/juz/ayah filters, hide page filter
                 document.getElementById('juzFilterGroup').style.display = 'block';
@@ -1665,10 +1671,10 @@
                 // Reset to default
                 document.getElementById('versesPerPage').value = '1';
                 updateVersesPerPage();
+                
+                // Reset filters and reload
+                filterVerses();
             }
-            
-            // Reset filters and reload
-            filterVerses();
         }
 
         function filterByPage() {
