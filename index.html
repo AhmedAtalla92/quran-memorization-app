@@ -604,10 +604,13 @@
             /* Compact navigation */
             .nav-btn { padding: 0.5rem 1rem; font-size: 0.85rem; }
             
-            /* Even smaller Arabic font for page view on mobile */
-            .verse-arabic { font-size: 0.85rem; line-height: 1.6; }
+            /* DEFAULT (Surah view) - BIGGER font for mobile */
+            .verse-arabic { 
+                font-size: 1.4rem !important; 
+                line-height: 2.2 !important; 
+            }
             
-            /* Page view specific - very compact */
+            /* Page view ONLY - SMALLER font */
             .verse-card[style*="padding: 2.5rem"] {
                 padding: 0.75rem !important;
             }
@@ -919,17 +922,24 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label id="labelPerPage">Per Page</label>
+                        <label id="labelPerPage">Verses Per Page</label>
                         <select id="versesPerPage" onchange="updateVersesPerPage()">
-                            <option value="1">1</option>
-                            <option value="3">3</option>
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="30">30</option>
-                            <option value="40">40</option>
-                            <option value="50">50</option>
-                            <option value="all" id="optionAll">All</option>
+                            <option value="1">1 verse</option>
+                            <option value="3">3 verses</option>
+                            <option value="5">5 verses</option>
+                            <option value="10">10 verses</option>
+                            <option value="20">20 verses</option>
+                            <option value="30">30 verses</option>
+                            <option value="40">40 verses</option>
+                            <option value="50">50 verses</option>
+                            <option value="all" id="optionAll">All verses</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="translationToggleGroup">
+                        <label id="labelShowTranslation">Translation</label>
+                        <select id="showTranslation" onchange="toggleTranslationDisplay()">
+                            <option value="show">Show</option>
+                            <option value="hide">Hide</option>
                         </select>
                     </div>
                 </div>
@@ -1011,6 +1021,7 @@
         let currentlyPlayingButton = null;
         let viewMode = 'surah'; // 'surah' or 'page'
         let language = 'en'; // 'en' or 'ar'
+        let showTranslation = true; // show/hide translation
         
         // Translations
         const translations = {
@@ -1722,6 +1733,16 @@
             }
         }
 
+        function toggleTranslationDisplay() {
+            const value = document.getElementById('showTranslation').value;
+            showTranslation = (value === 'show');
+            
+            // Refresh display
+            if (filteredVerses.length > 0) {
+                displayVerseWithNavigation(currentVerseIndex);
+            }
+        }
+
         function switchViewMode() {
             viewMode = document.getElementById('viewModeFilter').value;
             
@@ -1731,6 +1752,7 @@
                 document.getElementById('surahFilterGroup').style.display = 'none';
                 document.getElementById('ayahFilterGroup').style.display = 'none';
                 document.getElementById('pageFilterGroup').style.display = 'block';
+                document.getElementById('translationToggleGroup').style.display = 'none';
                 
                 // Auto-select page 1
                 document.getElementById('pageFilter').value = '1';
@@ -1747,6 +1769,7 @@
                 document.getElementById('surahFilterGroup').style.display = 'block';
                 document.getElementById('ayahFilterGroup').style.display = 'block';
                 document.getElementById('pageFilterGroup').style.display = 'none';
+                document.getElementById('translationToggleGroup').style.display = 'block';
                 
                 // Reset to default
                 document.getElementById('versesPerPage').value = '1';
@@ -2149,7 +2172,7 @@
                 verseCard.innerHTML = `
                     <div class="verse-info">Surah ${verse.surah}, Ayah ${verse.ayah} (Juz ${verse.juz})</div>
                     <div class="verse-arabic">${verse.arab || verse.ar || 'Arabic text not available'}</div>
-                    <div class="verse-translation">${verse.translation || verse.en || verse.tr || 'Translation not available'}</div>
+                    ${showTranslation ? `<div class="verse-translation">${verse.translation || verse.en || verse.tr || 'Translation not available'}</div>` : ''}
                     
                     <div class="verse-controls">
                         <div class="verse-controls-left">
