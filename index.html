@@ -1705,9 +1705,10 @@
             // Play entire page button
             const playPageBtn = document.createElement('button');
             playPageBtn.className = 'audio-btn';
+            playPageBtn.id = 'playPageBtn';
             playPageBtn.style.cssText = 'width: auto; padding: 0.75rem 2rem; border-radius: 10px; font-size: 1rem;';
             playPageBtn.innerHTML = '▶ Play Full Page';
-            playPageBtn.onclick = () => playFullPage(versesToDisplay);
+            playPageBtn.onclick = () => togglePagePlayback(versesToDisplay, playPageBtn);
             
             // Mark page as memorized toggle
             const memorizedToggle = document.createElement('div');
@@ -1733,12 +1734,39 @@
             addPageNavigation(container, index);
         }
         
-        function playFullPage(verses) {
-            // Play all verses in sequence
+        let isPagePlaying = false;
+        let currentPageVerses = [];
+        
+        function togglePagePlayback(verses, button) {
+            if (isPagePlaying) {
+                // Pause
+                if (audioPlayer) {
+                    audioPlayer.pause();
+                }
+                isPagePlaying = false;
+                button.innerHTML = '▶ Play Full Page';
+                button.classList.remove('playing');
+            } else {
+                // Start from beginning
+                currentPageVerses = verses;
+                isPagePlaying = true;
+                button.innerHTML = '⏸ Pause';
+                button.classList.add('playing');
+                playFullPage(verses, button);
+            }
+        }
+        
+        function playFullPage(verses, button) {
             let currentIndex = 0;
             
             function playNext() {
-                if (currentIndex >= verses.length) {
+                if (!isPagePlaying || currentIndex >= verses.length) {
+                    // Playback complete or stopped
+                    isPagePlaying = false;
+                    if (button) {
+                        button.innerHTML = '▶ Play Full Page';
+                        button.classList.remove('playing');
+                    }
                     console.log('Page playback complete');
                     return;
                 }
