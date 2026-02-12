@@ -576,6 +576,24 @@
             padding: 3rem;
             font-size: 1.2rem;
             color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .loading::before {
+            content: '';
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
@@ -1478,11 +1496,18 @@
         // Load Quran Data from API
         async function loadQuranData() {
             const container = document.getElementById('verseDisplay');
-            container.innerHTML = '<div class="loading">Loading Quran data...</div>';
+            container.innerHTML = '<div class="loading">Loading Quran data... (Step 1/2: Arabic text)</div>';
             
             try {
                 // Using quran-uthmani which includes page numbers
-                const response = await fetch('https://api.alquran.cloud/v1/quran/quran-uthmani');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                
+                const response = await fetch('https://api.alquran.cloud/v1/quran/quran-uthmani', {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
                 const result = await response.json();
                 
                 if (result.code !== 200 || !result.data) {
@@ -1510,8 +1535,18 @@
                 console.log('Sample verse with page:', quranData[0]);
                 console.log('Page numbers range:', Math.min(...quranData.map(v => v.page)), '-', Math.max(...quranData.map(v => v.page)));
                 
+                // Update loading message
+                container.innerHTML = '<div class="loading">Loading translations... (Step 2/2)</div>';
+                
                 // Now load English translation
-                const translationResponse = await fetch('https://api.alquran.cloud/v1/quran/en.asad');
+                const transController = new AbortController();
+                const transTimeoutId = setTimeout(() => transController.abort(), 30000);
+                
+                const translationResponse = await fetch('https://api.alquran.cloud/v1/quran/en.asad', {
+                    signal: transController.signal
+                });
+                clearTimeout(transTimeoutId);
+                
                 const translationResult = await translationResponse.json();
                 
                 if (translationResult.code === 200 && translationResult.data) {
@@ -1536,7 +1571,12 @@
                 
             } catch (error) {
                 console.error('Error loading Quran data:', error);
-                container.innerHTML = `<div class="loading">Failed to load Quran data. Error: ${error.message}<br>Please check your internet connection and refresh the page.</div>`;
+                
+                if (error.name === 'AbortError') {
+                    container.innerHTML = `<div class="loading" style="color: var(--error);">Loading timeout. Your connection might be slow.<br><br><button onclick="location.reload()" style="background: var(--secondary);">Retry</button></div>`;
+                } else {
+                    container.innerHTML = `<div class="loading" style="color: var(--error);">Failed to load: ${error.message}<br><br><button onclick="location.reload()" style="background: var(--secondary);">Retry</button></div>`;
+                }
             }
         }
 
