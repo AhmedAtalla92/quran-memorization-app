@@ -1420,8 +1420,8 @@
             container.innerHTML = '<div class="loading">Loading Quran data...</div>';
             
             try {
-                // Using Al-Quran Cloud API - Edition with page info
-                const response = await fetch('https://api.alquran.cloud/v1/quran/quran-uthmani');
+                // Using quran-json edition with page numbers
+                const response = await fetch('https://api.alquran.cloud/v1/quran/quran-simple-enhanced');
                 const result = await response.json();
                 
                 if (result.code !== 200 || !result.data) {
@@ -1432,18 +1432,13 @@
                 
                 // Transform data to match our structure
                 quranData = [];
-                let globalAyahNumber = 0;
                 quranResponse.surahs.forEach(surah => {
                     surah.ayahs.forEach(ayah => {
-                        globalAyahNumber++;
-                        // Calculate page number (each page has ~15 lines, estimate)
-                        const estimatedPage = Math.ceil(globalAyahNumber / 10.3);
-                        
                         quranData.push({
                             surah: surah.number,
                             ayah: ayah.numberInSurah,
                             juz: ayah.juz,
-                            page: ayah.page || estimatedPage,
+                            page: ayah.page,
                             arab: ayah.text,
                             translation: '' // We'll add translation separately
                         });
@@ -1451,7 +1446,7 @@
                 });
                 
                 console.log('Quran data loaded:', quranData.length, 'verses');
-                console.log('Sample verse:', quranData[0]);
+                console.log('Sample verse with page:', quranData[0]);
                 
                 // Now load English translation
                 const translationResponse = await fetch('https://api.alquran.cloud/v1/quran/en.asad');
