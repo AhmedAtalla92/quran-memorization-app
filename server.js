@@ -6,13 +6,22 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// SendGrid API Key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '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');
+// SendGrid API Key - MUST be set in environment variables
+if (!process.env.SENDGRID_API_KEY) {
+    console.error('ERROR: SENDGRID_API_KEY environment variable is not set!');
+    process.exit(1);
+}
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// PostgreSQL Connection
+// PostgreSQL Connection - MUST be set in environment variables
+if (!process.env.DATABASE_URL) {
+    console.error('ERROR: DATABASE_URL environment variable is not set!');
+    process.exit(1);
+}
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://quran_user:YLsW9gDDK6cgFYoBQt4SiUV65hsGSBhN@dpg-d66c0tsr85hc73dcuolg-a/quran_db_5ckp',
-    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
 });
 
 // Initialize Database
