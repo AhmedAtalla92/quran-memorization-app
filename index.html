@@ -1708,7 +1708,27 @@
             playPageBtn.id = 'playPageBtn';
             playPageBtn.style.cssText = 'width: auto; padding: 0.75rem 2rem; border-radius: 10px; font-size: 1rem;';
             playPageBtn.innerHTML = '▶ Play Full Page';
-            playPageBtn.onclick = () => togglePagePlayback(versesToDisplay, playPageBtn);
+            playPageBtn.onclick = () => startPagePlayback(versesToDisplay, playPageBtn);
+            
+            // Pause/Resume button (hidden initially)
+            const pauseBtn = document.createElement('button');
+            pauseBtn.id = 'pausePageBtn';
+            pauseBtn.style.cssText = 'width: auto; padding: 0.75rem 2rem; border-radius: 10px; font-size: 1rem; display: none;';
+            pauseBtn.innerHTML = '⏸ Pause';
+            pauseBtn.onclick = () => togglePause(pauseBtn);
+            
+            // Restart button (hidden initially)
+            const restartBtn = document.createElement('button');
+            restartBtn.id = 'restartPageBtn';
+            restartBtn.style.cssText = 'width: auto; padding: 0.75rem 1.5rem; border-radius: 10px; font-size: 0.9rem; background: var(--accent); display: none;';
+            restartBtn.innerHTML = '↻ Restart';
+            restartBtn.onclick = () => restartPagePlayback(versesToDisplay, playPageBtn, pauseBtn, restartBtn);
+            
+            const playButtonsContainer = document.createElement('div');
+            playButtonsContainer.style.cssText = 'display: flex; gap: 0.5rem;';
+            playButtonsContainer.appendChild(playPageBtn);
+            playButtonsContainer.appendChild(pauseBtn);
+            playButtonsContainer.appendChild(restartBtn);
             
             // Mark page as memorized toggle
             const memorizedToggle = document.createElement('div');
@@ -1724,7 +1744,7 @@
                 togglePageMemorized(versesToDisplay);
             };
             
-            controlsContainer.appendChild(playPageBtn);
+            controlsContainer.appendChild(playButtonsContainer);
             controlsContainer.appendChild(memorizedToggle);
             pageCard.appendChild(controlsContainer);
             
@@ -1735,43 +1755,83 @@
         }
         
         let isPagePlaying = false;
+        let isPagePaused = false;
         let currentPageVerses = [];
+        let currentPageIndex = 0;
         
-        function togglePagePlayback(verses, button) {
-            if (isPagePlaying) {
+        function startPagePlayback(verses, playBtn) {
+            // Hide play button, show pause and restart
+            playBtn.style.display = 'none';
+            document.getElementById('pausePageBtn').style.display = 'block';
+            document.getElementById('restartPageBtn').style.display = 'block';
+            
+            currentPageVerses = verses;
+            currentPageIndex = 0;
+            isPagePlaying = true;
+            isPagePaused = false;
+            
+            playFullPage(verses);
+        }
+        
+        function togglePause(pauseBtn) {
+            if (isPagePaused) {
+                // Resume
+                isPagePaused = false;
+                pauseBtn.innerHTML = '⏸ Pause';
+                if (audioPlayer) {
+                    audioPlayer.play();
+                }
+            } else {
                 // Pause
+                isPagePaused = true;
+                pauseBtn.innerHTML = '▶ Resume';
                 if (audioPlayer) {
                     audioPlayer.pause();
                 }
-                isPagePlaying = false;
-                button.innerHTML = '▶ Play Full Page';
-                button.classList.remove('playing');
-            } else {
-                // Start from beginning
-                currentPageVerses = verses;
-                isPagePlaying = true;
-                button.innerHTML = '⏸ Pause';
-                button.classList.add('playing');
-                playFullPage(verses, button);
             }
         }
         
-        function playFullPage(verses, button) {
-            let currentIndex = 0;
+        function restartPagePlayback(verses, playBtn, pauseBtn, restartBtn) {
+            // Stop current playback
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer = null;
+            }
             
+            // Reset buttons
+            playBtn.style.display = 'block';
+            pauseBtn.style.display = 'none';
+            restartBtn.style.display = 'none';
+            pauseBtn.innerHTML = '⏸ Pause';
+            
+            isPagePlaying = false;
+            isPagePaused = false;
+            currentPageIndex = 0;
+        }
+        
+        function playFullPage(verses) {
             function playNext() {
-                if (!isPagePlaying || currentIndex >= verses.length) {
-                    // Playback complete or stopped
-                    isPagePlaying = false;
-                    if (button) {
-                        button.innerHTML = '▶ Play Full Page';
-                        button.classList.remove('playing');
+                if (!isPagePlaying || currentPageIndex >= verses.length) {
+                    // Playback complete
+                    const playBtn = document.getElementById('playPageBtn');
+                    const pauseBtn = document.getElementById('pausePageBtn');
+                    const restartBtn = document.getElementById('restartPageBtn');
+                    
+                    if (playBtn) playBtn.style.display = 'block';
+                    if (pauseBtn) {
+                        pauseBtn.style.display = 'none';
+                        pauseBtn.innerHTML = '⏸ Pause';
                     }
+                    if (restartBtn) restartBtn.style.display = 'none';
+                    
+                    isPagePlaying = false;
+                    isPagePaused = false;
+                    currentPageIndex = 0;
                     console.log('Page playback complete');
                     return;
                 }
                 
-                const verse = verses[currentIndex];
+                const verse = verses[currentPageIndex];
                 const globalAyahNumber = quranData.findIndex(v => 
                     v.surah === verse.surah && v.ayah === verse.ayah
                 ) + 1;
@@ -1786,13 +1846,15 @@
                 audioPlayer.play();
                 
                 audioPlayer.onended = () => {
-                    currentIndex++;
-                    playNext();
+                    if (!isPagePaused) {
+                        currentPageIndex++;
+                        playNext();
+                    }
                 };
                 
                 audioPlayer.onerror = () => {
                     console.error('Audio error, skipping to next verse');
-                    currentIndex++;
+                    currentPageIndex++;
                     playNext();
                 };
             }
