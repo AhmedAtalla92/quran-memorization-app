@@ -1603,8 +1603,13 @@
             checkSavedUser();
             updateUILanguage();
             
-            // Trigger initial load with defaults (Juz 1, Al-Fatihah)
-            filterVerses();
+            // Load only Al-Fatihah by default (filters show "All" but display is Fatihah)
+            filteredVerses = quranData.filter(v => v.surah === 1);
+            versesPerPage = filteredVerses.length;
+            currentVerseIndex = 0;
+            if (filteredVerses.length > 0) {
+                displayVerseWithNavigation(0);
+            }
             
             console.log('=== APP INITIALIZED ===');
         }
@@ -1768,14 +1773,12 @@
                 juzFilter.appendChild(option);
             }
             
-            // Set default to Juz 1
-            juzFilter.value = '1';
+            // Leave juz filter at "All Juz" (no default selection)
 
-            // Populate Surahs based on Juz
-            populateSurahsByJuz(1);
+            // Populate all surahs
+            populateSurahsByJuz(null);
             
-            // Set default to Al-Fatihah
-            document.getElementById('surahFilter').value = '1';
+            // Leave surah filter at "All Surahs" (no default selection)
             
             // Populate Pages (1-604)
             const pageFilter = document.getElementById('pageFilter');
