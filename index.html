@@ -610,28 +610,36 @@
                 line-height: 2.2 !important; 
             }
             
-            /* Page view ONLY - MUCH SMALLER font */
+            /* Page view card - compact padding */
             .verse-card[style*="padding: 2.5rem"] {
                 padding: 0.75rem !important;
             }
             
-            .verse-card[style*="padding: 2.5rem"] .verse-arabic {
-                font-size: 0.75rem !important;
-                line-height: 1.5 !important;
-                padding: 0.5rem !important;
-                margin: 0.5rem 0 !important;
+            /* Page view Arabic text - match surah view style */
+            .verse-card[style*="padding: 2.5rem"] > div[style*="font-size: 2rem"] {
+                font-size: 1.4rem !important;
+                line-height: 2.2 !important;
+                padding: 1rem !important;
+                margin: 1rem 0 !important;
+                background: transparent !important;
             }
             
-            /* Page header much smaller */
+            /* Page header compact */
             .verse-card div[style*="font-size: 1.2rem"] {
-                font-size: 0.9rem !important;
-                margin-bottom: 1rem !important;
+                font-size: 0.85rem !important;
+                margin-bottom: 0.75rem !important;
                 padding-bottom: 0.5rem !important;
             }
             
             .verse-card div[style*="font-size: 0.9rem"] {
-                font-size: 0.75rem !important;
+                font-size: 0.7rem !important;
                 margin-top: 0.25rem !important;
+            }
+            
+            /* Page controls compact */
+            .verse-card div[style*="margin-top: 2rem"][style*="padding-top: 1.5rem"] {
+                margin-top: 1rem !important;
+                padding-top: 1rem !important;
             }
             
             /* Compact card padding */
