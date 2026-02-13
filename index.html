@@ -1580,6 +1580,31 @@
         }
 
         // Initialize App
+        // Keep backend alive (prevent Render free tier from sleeping)
+        function keepBackendAlive() {
+            const BACKEND_URL = 'https://quran-memorization-app-1.onrender.com';
+            const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes in milliseconds
+            
+            async function ping() {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/health`);
+                    if (response.ok) {
+                        console.log('✓ Backend keep-alive ping successful');
+                    }
+                } catch (error) {
+                    console.log('Backend ping failed (might be sleeping):', error.message);
+                }
+            }
+            
+            // Initial ping after 1 minute
+            setTimeout(ping, 60000);
+            
+            // Then ping every 14 minutes
+            setInterval(ping, PING_INTERVAL);
+            
+            console.log('Keep-alive mechanism started (ping every 14 minutes)');
+        }
+
         async function initApp() {
             console.log('=== INITIALIZING APP ===');
             
@@ -1610,6 +1635,9 @@
             if (filteredVerses.length > 0) {
                 displayVerseWithNavigation(0);
             }
+            
+            // Start keep-alive mechanism
+            keepBackendAlive();
             
             console.log('=== APP INITIALIZED ===');
         }
@@ -1889,10 +1917,13 @@
 
             console.log('Filtering with:', { view, juz, surah, ayahFrom, ayahTo, totalVerses: quranData.length });
 
-            // Update surah options based on juz
-            if (juz) {
+            // Update surah options based on juz (only if juz changed and we're not already showing the right surahs)
+            const currentSurahValue = document.getElementById('surahFilter').value;
+            if (juz && currentSurahValue === '') {
+                // User just selected a juz, repopulate surahs
                 populateSurahsByJuz(parseInt(juz));
-            } else {
+            } else if (!juz && currentSurahValue === '') {
+                // User cleared juz, show all surahs
                 populateSurahsByJuz(null);
             }
 
@@ -1901,21 +1932,31 @@
                 const ayahFromSelect = document.getElementById('ayahFrom');
                 const ayahToSelect = document.getElementById('ayahTo');
                 
-                ayahFromSelect.innerHTML = '<option value="">From (All)</option>';
-                ayahToSelect.innerHTML = '<option value="">To (All)</option>';
-                
-                const surahVerses = quranData.filter(v => v.surah === parseInt(surah));
-                surahVerses.forEach(v => {
-                    const optionFrom = document.createElement('option');
-                    optionFrom.value = v.ayah;
-                    optionFrom.textContent = `Ayah ${v.ayah}`;
-                    ayahFromSelect.appendChild(optionFrom);
+                // Only update if we need to (avoid resetting selections)
+                if (ayahFromSelect.options.length <= 1 || ayahFromSelect.dataset.surah !== surah) {
+                    ayahFromSelect.innerHTML = '<option value="">From (All)</option>';
+                    ayahToSelect.innerHTML = '<option value="">To (All)</option>';
                     
-                    const optionTo = document.createElement('option');
-                    optionTo.value = v.ayah;
-                    optionTo.textContent = `Ayah ${v.ayah}`;
-                    ayahToSelect.appendChild(optionTo);
-                });
+                    const surahVerses = quranData.filter(v => v.surah === parseInt(surah));
+                    surahVerses.forEach(v => {
+                        const optionFrom = document.createElement('option');
+                        optionFrom.value = v.ayah;
+                        optionFrom.textContent = `Ayah ${v.ayah}`;
+                        ayahFromSelect.appendChild(optionFrom);
+                        
+                        const optionTo = document.createElement('option');
+                        optionTo.value = v.ayah;
+                        optionTo.textContent = `Ayah ${v.ayah}`;
+                        ayahToSelect.appendChild(optionTo);
+                    });
+                    
+                    ayahFromSelect.dataset.surah = surah;
+                    ayahToSelect.dataset.surah = surah;
+                }
+            } else {
+                // Clear ayah options when no surah selected
+                document.getElementById('ayahFrom').innerHTML = '<option value="">From (All)</option>';
+                document.getElementById('ayahTo').innerHTML = '<option value="">To (All)</option>';
             }
 
             // Filter verses
@@ -1938,18 +1979,20 @@
                 console.log('After juz filter:', filteredVerses.length);
             }
             
-            // Surah filter
+            // Surah filter - MUST APPLY BEFORE AYAH FILTER
             if (surah) {
                 filteredVerses = filteredVerses.filter(v => v.surah === parseInt(surah));
                 console.log('After surah filter:', filteredVerses.length);
             }
             
-            // Ayah range filter
-            if (ayahFrom) {
+            // Ayah range filter - ONLY applies to already filtered surah
+            if (ayahFrom && surah) {
                 filteredVerses = filteredVerses.filter(v => v.ayah >= parseInt(ayahFrom));
+                console.log('After ayahFrom filter:', filteredVerses.length);
             }
-            if (ayahTo) {
+            if (ayahTo && surah) {
                 filteredVerses = filteredVerses.filter(v => v.ayah <= parseInt(ayahTo));
+                console.log('After ayahTo filter:', filteredVerses.length);
             }
 
             console.log('Final filtered count:', filteredVerses.length);

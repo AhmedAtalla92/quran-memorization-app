@@ -6,12 +6,15 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// SendGrid API Key - MUST be set in environment variables
+// SendGrid API Key
 if (!process.env.SENDGRID_API_KEY) {
     console.error('ERROR: SENDGRID_API_KEY environment variable is not set!');
-    process.exit(1);
+    console.error('Please set it in Render dashboard: Environment > SENDGRID_API_KEY');
+    // Don't exit - let the app run so we can see this error in logs
+} else {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    console.log('SendGrid configured successfully');
 }
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // PostgreSQL Connection - MUST be set in environment variables
 if (!process.env.DATABASE_URL) {
@@ -71,7 +74,9 @@ app.get('/', (req, res) => {
 // Send OTP endpoint
 app.post('/send-otp', async (req, res) => {
     try {
+        console.log('=== SEND OTP REQUEST ===');
         const { email, otp } = req.body;
+        console.log('Email:', email, 'OTP:', otp);
 
         if (!email || !otp) {
             return res.status(400).json({ 
@@ -85,6 +90,15 @@ app.post('/send-otp', async (req, res) => {
             return res.status(400).json({ 
                 success: false, 
                 error: 'Invalid email address' 
+            });
+        }
+
+        // Check if SendGrid is configured
+        if (!process.env.SENDGRID_API_KEY) {
+            console.error('SendGrid API key not configured!');
+            return res.status(500).json({ 
+                success: false, 
+                error: 'Email service not configured. Please contact support.' 
             });
         }
 
@@ -149,18 +163,42 @@ app.post('/send-otp', async (req, res) => {
             `
         };
 
+        console.log('Attempting to send email via SendGrid...');
         await sgMail.send(msg);
+        console.log('✓ Email sent successfully to:', email);
 
-        console.log('OTP email sent to:', email);
         res.json({ success: true, message: 'OTP sent successfully' });
 
     } catch (error) {
-        console.error('SendGrid error:', error);
+        console.error('=== SENDGRID ERROR ===');
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        console.error('Full error:', JSON.stringify(error, null, 2));
+        
+        let userMessage = 'Failed to send email. ';
+        
+        if (error.code === 403) {
+            userMessage += 'SendGrid API key is invalid or expired.';
+        } else if (error.code === 401) {
+            userMessage += 'SendGrid authentication failed.';
+        } else {
+            userMessage += error.message;
+        }
+        
         res.status(500).json({ 
             success: false, 
-            error: 'Failed to send email: ' + error.message 
+            error: userMessage
         });
     }
+});
+
+// Health check endpoint to prevent sleeping
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
 });
 
 // Start server
