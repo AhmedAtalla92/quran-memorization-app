@@ -832,11 +832,19 @@
                 <div id="accountDashboard" style="display: none;">
                     <div class="message" id="welcomeMessage"></div>
                     
-                    <div class="form-group" style="margin-bottom: 2rem;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
                         <label>Language / اللغة</label>
                         <select id="languageSelector" onchange="changeLanguage()" style="font-size: 1rem;">
                             <option value="en">English</option>
                             <option value="ar">العربية (Arabic)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label>Show Translation</label>
+                        <select id="showTranslation" onchange="toggleTranslationDisplay()" style="font-size: 1rem;">
+                            <option value="show">Show</option>
+                            <option value="hide">Hide</option>
                         </select>
                     </div>
 
@@ -920,36 +928,21 @@
                         </select>
                     </div>
                     <div class="form-group" id="ayahFilterGroup">
-                        <label id="labelAyah">Ayah</label>
-                        <select id="ayahFilter" onchange="filterVerses()">
-                            <option value="" id="optionAllAyahs">All Ayahs</option>
-                        </select>
+                        <label id="labelAyah">Ayah Range</label>
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center;">
+                            <select id="ayahFrom" onchange="filterVerses()">
+                                <option value="">From (All)</option>
+                            </select>
+                            <span style="color: var(--text-light); font-size: 0.8rem;">to</span>
+                            <select id="ayahTo" onchange="filterVerses()">
+                                <option value="">To (All)</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group" id="pageFilterGroup" style="display:none;">
                         <label id="labelPage">Page</label>
                         <select id="pageFilter" onchange="filterByPage()">
                             <option value="" id="optionSelectPage">Select Page</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="perPageFilterGroup">
-                        <label id="labelPerPage">Verses Per Page</label>
-                        <select id="versesPerPage" onchange="updateVersesPerPage()">
-                            <option value="1">1 verse</option>
-                            <option value="3">3 verses</option>
-                            <option value="5">5 verses</option>
-                            <option value="10">10 verses</option>
-                            <option value="20">20 verses</option>
-                            <option value="30">30 verses</option>
-                            <option value="40">40 verses</option>
-                            <option value="50">50 verses</option>
-                            <option value="all" id="optionAll">All verses</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="translationToggleGroup">
-                        <label id="labelShowTranslation">Translation</label>
-                        <select id="showTranslation" onchange="toggleTranslationDisplay()">
-                            <option value="show">Show</option>
-                            <option value="hide">Hide</option>
                         </select>
                     </div>
                 </div>
@@ -1762,15 +1755,9 @@
                 document.getElementById('surahFilterGroup').style.display = 'none';
                 document.getElementById('ayahFilterGroup').style.display = 'none';
                 document.getElementById('pageFilterGroup').style.display = 'block';
-                document.getElementById('translationToggleGroup').style.display = 'none';
-                document.getElementById('perPageFilterGroup').style.display = 'none';
                 
                 // Auto-select page 1
                 document.getElementById('pageFilter').value = '1';
-                
-                // Auto-set to show all verses on the page
-                document.getElementById('versesPerPage').value = 'all';
-                updateVersesPerPage();
                 
                 // Load page 1
                 filterByPage();
@@ -1780,12 +1767,6 @@
                 document.getElementById('surahFilterGroup').style.display = 'block';
                 document.getElementById('ayahFilterGroup').style.display = 'block';
                 document.getElementById('pageFilterGroup').style.display = 'none';
-                document.getElementById('translationToggleGroup').style.display = 'block';
-                document.getElementById('perPageFilterGroup').style.display = 'block';
-                
-                // Reset to default
-                document.getElementById('versesPerPage').value = '1';
-                updateVersesPerPage();
                 
                 // Reset filters and reload
                 filterVerses();
@@ -1833,20 +1814,30 @@
             const view = document.getElementById('viewFilter').value;
             const juz = document.getElementById('juzFilter').value;
             const surah = document.getElementById('surahFilter').value;
-            const ayah = document.getElementById('ayahFilter').value;
+            const ayahFrom = document.getElementById('ayahFrom') ? document.getElementById('ayahFrom').value : '';
+            const ayahTo = document.getElementById('ayahTo') ? document.getElementById('ayahTo').value : '';
 
-            console.log('Filtering with:', { view, juz, surah, ayah, totalVerses: quranData.length });
+            console.log('Filtering with:', { view, juz, surah, ayahFrom, ayahTo, totalVerses: quranData.length });
 
-            // Update ayah options based on surah
+            // Update ayah From/To options based on surah
             if (surah) {
-                const ayahFilter = document.getElementById('ayahFilter');
-                ayahFilter.innerHTML = '<option value="">All Ayahs</option>';
+                const ayahFromSelect = document.getElementById('ayahFrom');
+                const ayahToSelect = document.getElementById('ayahTo');
+                
+                ayahFromSelect.innerHTML = '<option value="">From (All)</option>';
+                ayahToSelect.innerHTML = '<option value="">To (All)</option>';
+                
                 const surahVerses = quranData.filter(v => v.surah === parseInt(surah));
                 surahVerses.forEach(v => {
-                    const option = document.createElement('option');
-                    option.value = v.ayah;
-                    option.textContent = `Ayah ${v.ayah}`;
-                    ayahFilter.appendChild(option);
+                    const optionFrom = document.createElement('option');
+                    optionFrom.value = v.ayah;
+                    optionFrom.textContent = `Ayah ${v.ayah}`;
+                    ayahFromSelect.appendChild(optionFrom);
+                    
+                    const optionTo = document.createElement('option');
+                    optionTo.value = v.ayah;
+                    optionTo.textContent = `Ayah ${v.ayah}`;
+                    ayahToSelect.appendChild(optionTo);
                 });
             }
 
@@ -1864,20 +1855,30 @@
                 );
             }
             
+            // Juz filter
             if (juz) {
                 filteredVerses = filteredVerses.filter(v => v.juz === parseInt(juz));
                 console.log('After juz filter:', filteredVerses.length);
             }
+            
+            // Surah filter
             if (surah) {
                 filteredVerses = filteredVerses.filter(v => v.surah === parseInt(surah));
                 console.log('After surah filter:', filteredVerses.length);
             }
-            if (ayah) {
-                filteredVerses = filteredVerses.filter(v => v.ayah === parseInt(ayah));
-                console.log('After ayah filter:', filteredVerses.length);
+            
+            // Ayah range filter
+            if (ayahFrom) {
+                filteredVerses = filteredVerses.filter(v => v.ayah >= parseInt(ayahFrom));
+            }
+            if (ayahTo) {
+                filteredVerses = filteredVerses.filter(v => v.ayah <= parseInt(ayahTo));
             }
 
             console.log('Final filtered count:', filteredVerses.length);
+            
+            // Default to showing all filtered verses
+            versesPerPage = filteredVerses.length;
             
             currentVerseIndex = 0;
             if (filteredVerses.length > 0) {
