@@ -2095,11 +2095,11 @@
             document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
         }
 
-        // Initialize on load
-        initApp();
-        
-        // Add event listeners after DOM is ready
+        // Add event listeners and initialize after DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize app first
+            initApp();
+            
             // Send OTP button
             const sendOtpBtn = document.getElementById('sendOtpBtn');
             if (sendOtpBtn) {
