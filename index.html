@@ -363,8 +363,8 @@
             margin: 1rem 0;
         }
 
-        /* memorize/recited Toggle */
-        .memorize/recited-toggle {
+        /* Memorized Toggle */
+        .memorized-toggle {
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -756,8 +756,8 @@
             <button class="nav-btn active" onclick="showPage('account')" data-page="account">
                 <span>Account</span>
             </button>
-            <button class="nav-btn" onclick="showPage('memorize/recite')" data-page="memorize/recite">
-                <span>memorize/recite</span>
+            <button class="nav-btn" onclick="showPage('memorize')" data-page="memorize">
+                <span>Memorize</span>
             </button>
             <button class="nav-btn" onclick="showPage('quiz')" data-page="quiz">
                 <span>Quiz</span>
@@ -847,11 +847,23 @@
                             <option value="hide">Hide</option>
                         </select>
                     </div>
+                    
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label id="labelReciter">Reciter / القارئ</label>
+                        <select id="reciterSelector" onchange="changeReciter()" style="font-size: 1rem;">
+                            <option value="ar.alafasy">Mishary Rashid Alafasy - مشاري راشد العفاسي</option>
+                            <option value="Maher_AlMuaiqly_128kbps">Maher Al Muaiqly - ماهر المعيقلي</option>
+                            <option value="Ahmed_ibn_Ali_al-Ajmy_128kbps">Ahmed Al Ajmi - أحمد بن علي العجمي</option>
+                            <option value="Saud_ash-Shuraym_64kbps">Saud Ash-Shuraim - سعود الشريم</option>
+                            <option value="Abdul_Basit_Murattal_192kbps">Abdul Basit - عبد الباسط عبد الصمد</option>
+                            <option value="Abdurrahmaan_As-Sudais_192kbps">Abdurrahman As-Sudais - عبد الرحمن السديس</option>
+                        </select>
+                    </div>
 
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-value" id="totalVerses">0</div>
-                            <div class="stat-label">Total Verses memorize/recited</div>
+                            <div class="stat-label">Total Verses Memorized</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="completionPercent">0%</div>
@@ -880,7 +892,7 @@
                     <div class="progress-container">
                         <div class="progress-label">
                             <span>Review Progress</span>
-                            <span id="reviewProgressText">0 / 0 memorize/recited verses</span>
+                            <span id="reviewProgressText">0 / 0 memorized/recited verses</span>
                         </div>
                         <div class="progress-bar">
                             <div class="progress-fill" id="reviewProgressFill" style="width: 0%; background: linear-gradient(90deg, #8b6f47 0%, #d4af37 100%);"></div>
@@ -892,8 +904,8 @@
             </div>
         </div>
 
-        <!-- memorize/recite Page -->
-        <div id="memorize/recite" class="page">
+        <!-- Memorize Page -->
+        <div id="memorize" class="page">
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
                     <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin: 0; color: var(--primary);">
@@ -903,11 +915,11 @@
                         <button id="viewAllBtn" onclick="changeView('all')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--secondary);">
                             All
                         </button>
-                        <button id="viewmemorize/recitedBtn" onclick="changeView('memorize/recited')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--text-light);">
-                            memorize/recited
+                        <button id="viewMemorizedBtn" onclick="changeView('memorized')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--text-light);">
+                            Memorized
                         </button>
-                        <button id="viewNotmemorize/recitedBtn" onclick="changeView('not_memorize/recited')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--text-light);">
-                            Not memorize/recited
+                        <button id="viewNotMemorizedBtn" onclick="changeView('not_memorized')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--text-light);">
+                            Not Memorized
                         </button>
                     </div>
                 </div>
@@ -923,8 +935,8 @@
                     <div class="form-group" style="display: none;">
                         <select id="viewFilter">
                             <option value="all" id="optionAllVerses">All Verses</option>
-                            <option value="memorize/recited" id="optionmemorize/recitedOnly">memorize/recited Only</option>
-                            <option value="not_memorize/recited" id="optionNotmemorize/recited">Not memorize/recited</option>
+                            <option value="memorized" id="optionMemorizedOnly">Memorized Only</option>
+                            <option value="not_memorized" id="optionNotMemorized">Not Memorized</option>
                         </select>
                     </div>
                     <div class="form-group" id="juzFilterGroup">
@@ -972,9 +984,9 @@
 
                 <div id="quizSetup">
                     <div class="form-group">
-                        <label id="labelSelectSurah">Select memorize/recited Surah to Review</label>
+                        <label id="labelSelectSurah">Select Memorized Surah to Review</label>
                         <select id="quizSurahFilter" onchange="updateQuizAyahRange()">
-                            <option value="" id="optionAllmemorize/recited">All memorize/recited Verses</option>
+                            <option value="" id="optionAllMemorized">All Memorized Verses</option>
                         </select>
                     </div>
                     
@@ -1034,7 +1046,7 @@
         // App State
         let currentUser = null;
         let quranData = [];
-        let memorize/recitedVerses = new Set();
+        let memorizedVerses = new Set();
         let reviewedVerses = new Set();
         let currentVerse = null;
         let quizScore = 0;
@@ -1049,34 +1061,35 @@
         let viewMode = 'surah'; // 'surah' or 'page'
         let language = 'en'; // 'en' or 'ar'
         let showTranslation = true; // show/hide translation
+        let selectedReciter = 'ar.alafasy'; // default reciter
         
         // Translations
         const translations = {
             en: {
                 // Navigation
                 account: 'Account',
-                memorize/recite: 'memorize/recite',
+                memorize: 'Memorize/Recite',
                 quiz: 'Quiz',
                 // Account page
                 yourAccount: 'Your Account',
                 welcome: 'Welcome',
                 language: 'Language',
-                totalmemorize/recited: 'Total Verses memorize/recited',
+                totalMemorized: 'Total Verses Memorized/Recited',
                 quranCompletion: 'Quran Completion',
                 surahsCompleted: 'Surahs Completed',
                 versesReviewed: 'Verses Reviewed',
                 memorizationProgress: 'Memorization Progress',
                 reviewProgress: 'Review Progress',
                 signOut: 'Sign Out',
-                // memorize/recite page
-                memorizationPractice: 'Memorization Practice',
+                // Memorize page
+                memorizationPractice: 'Memorization/Recitation Practice',
                 viewMode: 'View Mode',
                 bySurah: 'By Surah',
                 byPage: 'By Page (Mushaf)',
                 view: 'View',
                 allVerses: 'All Verses',
-                memorize/recitedOnly: 'memorize/recited Only',
-                notmemorize/recited: 'Not memorize/recited',
+                memorizedOnly: 'Memorized/Recited Only',
+                notMemorized: 'Not Memorized/Recited',
                 juz: 'Juz',
                 allJuz: 'All Juz',
                 surah: 'Surah',
@@ -1086,16 +1099,16 @@
                 page: 'Page',
                 selectPage: 'Select Page',
                 perPage: 'Per Page',
-                memorize/recited: 'memorize/recited',
+                memorized: 'Memorized/Recited',
                 next: 'Next',
                 previous: 'Previous',
-                markAll: 'Mark All as memorize/recited',
+                markAll: 'Mark All as Memorized/Recited',
                 verse: 'Verse',
                 of: 'of',
                 // Quiz page
                 testMemory: 'Test Your Memory',
-                selectSurah: 'Select memorize/recited Surah to Review',
-                allmemorize/recitedVerses: 'All memorize/recited Verses',
+                selectSurah: 'Select Memorized/Recited Surah to Review',
+                allMemorizedVerses: 'All Memorized/Recited Verses',
                 ayahRange: 'Ayah Range',
                 from: 'From',
                 to: 'To',
@@ -1113,28 +1126,28 @@
             ar: {
                 // Navigation
                 account: 'الحساب',
-                memorize/recite: 'الحفظ',
+                memorize: 'الحفظ/التلاوة',
                 quiz: 'الاختبار',
                 // Account page
                 yourAccount: 'حسابك',
                 welcome: 'مرحباً',
                 language: 'اللغة',
-                totalmemorize/recited: 'مجموع الآيات المحفوظة',
+                totalMemorized: 'مجموع الآيات المحفوظة/المتلوة',
                 quranCompletion: 'إتمام القرآن',
                 surahsCompleted: 'السور المكتملة',
                 versesReviewed: 'الآيات المراجعة',
                 memorizationProgress: 'تقدم الحفظ',
                 reviewProgress: 'تقدم المراجعة',
                 signOut: 'تسجيل الخروج',
-                // memorize/recite page
-                memorizationPractice: 'ممارسة الحفظ',
+                // Memorize page
+                memorizationPractice: 'ممارسة الحفظ/التلاوة',
                 viewMode: 'وضع العرض',
                 bySurah: 'حسب السورة',
                 byPage: 'حسب الصفحة (المصحف)',
                 view: 'العرض',
                 allVerses: 'كل الآيات',
-                memorize/recitedOnly: 'المحفوظة فقط',
-                notmemorize/recited: 'غير محفوظة',
+                memorizedOnly: 'المحفوظة/المتلوة فقط',
+                notMemorized: 'غير محفوظة/متلوة',
                 juz: 'الجزء',
                 allJuz: 'كل الأجزاء',
                 surah: 'السورة',
@@ -1144,16 +1157,16 @@
                 page: 'الصفحة',
                 selectPage: 'اختر الصفحة',
                 perPage: 'لكل صفحة',
-                memorize/recited: 'محفوظة',
+                memorized: 'محفوظة/متلوة',
                 next: 'التالي',
                 previous: 'السابق',
-                markAll: 'تعليم الكل كمحفوظ',
+                markAll: 'تعليم الكل كمحفوظ/متلو',
                 verse: 'آية',
                 of: 'من',
                 // Quiz page
                 testMemory: 'اختبر حفظك',
-                selectSurah: 'اختر سورة محفوظة للمراجعة',
-                allmemorize/recitedVerses: 'كل الآيات المحفوظة',
+                selectSurah: 'اختر سورة محفوظة/متلوة للمراجعة',
+                allMemorizedVerses: 'كل الآيات المحفوظة/المتلوة',
                 ayahRange: 'نطاق الآيات',
                 from: 'من',
                 to: 'إلى',
@@ -1186,7 +1199,7 @@
             
             // Navigation buttons
             document.querySelector('[data-page="account"]').textContent = t.account;
-            document.querySelector('[data-page="memorize/recite"]').textContent = t.memorize/recite;
+            document.querySelector('[data-page="memorize"]').textContent = t.memorize;
             document.querySelector('[data-page="quiz"]').textContent = t.quiz;
             
             // Account page
@@ -1195,7 +1208,7 @@
             
             // Stats labels
             const statLabels = document.querySelectorAll('.stat-label');
-            if (statLabels[0]) statLabels[0].textContent = t.totalmemorize/recited;
+            if (statLabels[0]) statLabels[0].textContent = t.totalMemorized;
             if (statLabels[1]) statLabels[1].textContent = t.quranCompletion;
             if (statLabels[2]) statLabels[2].textContent = t.surahsCompleted;
             if (statLabels[3]) statLabels[3].textContent = t.versesReviewed;
@@ -1209,11 +1222,11 @@
             const signOutBtn = document.querySelector('#accountDashboard button');
             if (signOutBtn) signOutBtn.textContent = t.signOut;
             
-            // memorize/recite page
-            const memorize/reciteH2 = document.querySelector('#memorize/recite h2');
-            if (memorize/reciteH2) memorize/reciteH2.textContent = t.memorizationPractice;
+            // Memorize page
+            const memorizeH2 = document.querySelector('#memorize h2');
+            if (memorizeH2) memorizeH2.textContent = t.memorizationPractice;
             
-            // memorize/recite filters
+            // Memorize filters
             const labelViewMode = document.getElementById('labelViewMode');
             if (labelViewMode) labelViewMode.textContent = t.viewMode;
             
@@ -1229,11 +1242,11 @@
             const optionAllVerses = document.getElementById('optionAllVerses');
             if (optionAllVerses) optionAllVerses.textContent = t.allVerses;
             
-            const optionmemorize/recitedOnly = document.getElementById('optionmemorize/recitedOnly');
-            if (optionmemorize/recitedOnly) optionmemorize/recitedOnly.textContent = t.memorize/recitedOnly;
+            const optionMemorizedOnly = document.getElementById('optionMemorizedOnly');
+            if (optionMemorizedOnly) optionMemorizedOnly.textContent = t.memorizedOnly;
             
-            const optionNotmemorize/recited = document.getElementById('optionNotmemorize/recited');
-            if (optionNotmemorize/recited) optionNotmemorize/recited.textContent = t.notmemorize/recited;
+            const optionNotMemorized = document.getElementById('optionNotMemorized');
+            if (optionNotMemorized) optionNotMemorized.textContent = t.notMemorized;
             
             const labelJuz = document.getElementById('labelJuz');
             if (labelJuz) labelJuz.textContent = t.juz;
@@ -1272,8 +1285,8 @@
             const labelSelectSurah = document.getElementById('labelSelectSurah');
             if (labelSelectSurah) labelSelectSurah.textContent = t.selectSurah;
             
-            const optionAllmemorize/recited = document.getElementById('optionAllmemorize/recited');
-            if (optionAllmemorize/recited) optionAllmemorize/recited.textContent = t.allmemorize/recitedVerses;
+            const optionAllMemorized = document.getElementById('optionAllMemorized');
+            if (optionAllMemorized) optionAllMemorized.textContent = t.allMemorizedVerses;
             
             const labelAyahRange = document.getElementById('labelAyahRange');
             if (labelAyahRange) labelAyahRange.textContent = t.ayahRange;
@@ -1662,6 +1675,13 @@
                 document.getElementById('showTranslation').value = savedTranslation;
             }
             
+            // Load saved reciter preference
+            const savedReciter = localStorage.getItem('quran_reciter');
+            if (savedReciter) {
+                selectedReciter = savedReciter;
+                document.getElementById('reciterSelector').value = savedReciter;
+            }
+            
             await loadQuranData();
             populateFilters();
             checkSavedUser();
@@ -1869,6 +1889,19 @@
                 displayVerseWithNavigation(currentVerseIndex);
             }
         }
+        
+        function changeReciter() {
+            const reciter = document.getElementById('reciterSelector').value;
+            selectedReciter = reciter;
+            
+            // Save to database and localStorage
+            if (currentUser) {
+                saveUserData();
+            }
+            localStorage.setItem('quran_reciter', reciter);
+            
+            console.log('Reciter changed to:', reciter);
+        }
 
         function switchViewMode() {
             viewMode = document.getElementById('viewModeFilter').value;
@@ -1912,13 +1945,13 @@
             }
             
             // Apply memorization filter
-            if (view === 'memorize/recited') {
+            if (view === 'memorized') {
                 filteredVerses = filteredVerses.filter(v => 
-                    memorize/recitedVerses.has(`${v.surah}:${v.ayah}`)
+                    memorizedVerses.has(`${v.surah}:${v.ayah}`)
                 );
-            } else if (view === 'not_memorize/recited') {
+            } else if (view === 'not_memorized') {
                 filteredVerses = filteredVerses.filter(v => 
-                    !memorize/recitedVerses.has(`${v.surah}:${v.ayah}`)
+                    !memorizedVerses.has(`${v.surah}:${v.ayah}`)
                 );
             }
             
@@ -1940,8 +1973,8 @@
             
             // Update button styles
             document.getElementById('viewAllBtn').style.background = view === 'all' ? 'var(--secondary)' : 'var(--text-light)';
-            document.getElementById('viewmemorize/recitedBtn').style.background = view === 'memorize/recited' ? 'var(--secondary)' : 'var(--text-light)';
-            document.getElementById('viewNotmemorize/recitedBtn').style.background = view === 'not_memorize/recited' ? 'var(--secondary)' : 'var(--text-light)';
+            document.getElementById('viewMemorizedBtn').style.background = view === 'memorized' ? 'var(--secondary)' : 'var(--text-light)';
+            document.getElementById('viewNotMemorizedBtn').style.background = view === 'not_memorized' ? 'var(--secondary)' : 'var(--text-light)';
             
             // Filter verses
             filterVerses();
@@ -2001,14 +2034,14 @@
             // Filter verses
             filteredVerses = [...quranData];
             
-            // Apply view filter (memorize/recited/not memorize/recited)
-            if (view === 'memorize/recited') {
+            // Apply view filter (memorized/not memorized)
+            if (view === 'memorized') {
                 filteredVerses = filteredVerses.filter(v => 
-                    memorize/recitedVerses.has(`${v.surah}:${v.ayah}`)
+                    memorizedVerses.has(`${v.surah}:${v.ayah}`)
                 );
-            } else if (view === 'not_memorize/recited') {
+            } else if (view === 'not_memorized') {
                 filteredVerses = filteredVerses.filter(v => 
-                    !memorize/recitedVerses.has(`${v.surah}:${v.ayah}`)
+                    !memorizedVerses.has(`${v.surah}:${v.ayah}`)
                 );
             }
             
@@ -2052,9 +2085,9 @@
             const container = document.getElementById('verseDisplay');
             const pageNumber = versesToDisplay[0].page;
             
-            // Check if all verses on page are memorize/recited
-            const allmemorize/recited = versesToDisplay.every(v => 
-                memorize/recitedVerses.has(`${v.surah}:${v.ayah}`)
+            // Check if all verses on page are memorized
+            const allMemorized = versesToDisplay.every(v => 
+                memorizedVerses.has(`${v.surah}:${v.ayah}`)
             );
             
             // Create page card
@@ -2119,22 +2152,22 @@
             playButtonsContainer.appendChild(pauseBtn);
             playButtonsContainer.appendChild(restartBtn);
             
-            // Mark page as memorize/recited toggle
-            const memorize/recitedToggle = document.createElement('div');
-            memorize/recitedToggle.style.cssText = 'display: flex; align-items: center; gap: 1rem;';
-            memorize/recitedToggle.innerHTML = `
-                <span style="font-size: 0.95rem; font-weight: 600;">Page memorize/recited</span>
-                <div class="toggle-switch ${allmemorize/recited ? 'active' : ''}" id="pageToggle">
+            // Mark page as memorized toggle
+            const memorizedToggle = document.createElement('div');
+            memorizedToggle.style.cssText = 'display: flex; align-items: center; gap: 1rem;';
+            memorizedToggle.innerHTML = `
+                <span style="font-size: 0.95rem; font-weight: 600;">Page Memorized</span>
+                <div class="toggle-switch ${allMemorized ? 'active' : ''}" id="pageToggle">
                     <div class="toggle-slider"></div>
                 </div>
             `;
             
-            memorize/recitedToggle.querySelector('.toggle-switch').onclick = () => {
-                togglePagememorize/recited(versesToDisplay);
+            memorizedToggle.querySelector('.toggle-switch').onclick = () => {
+                togglePageMemorized(versesToDisplay);
             };
             
             controlsContainer.appendChild(playButtonsContainer);
-            controlsContainer.appendChild(memorize/recitedToggle);
+            controlsContainer.appendChild(memorizedToggle);
             pageCard.appendChild(controlsContainer);
             
             container.appendChild(pageCard);
@@ -2251,17 +2284,17 @@
             playNext();
         }
         
-        function togglePagememorize/recited(verses) {
-            const allmemorize/recited = verses.every(v => 
-                memorize/recitedVerses.has(`${v.surah}:${v.ayah}`)
+        function togglePageMemorized(verses) {
+            const allMemorized = verses.every(v => 
+                memorizedVerses.has(`${v.surah}:${v.ayah}`)
             );
             
             verses.forEach(v => {
                 const key = `${v.surah}:${v.ayah}`;
-                if (allmemorize/recited) {
-                    memorize/recitedVerses.delete(key);
+                if (allMemorized) {
+                    memorizedVerses.delete(key);
                 } else {
-                    memorize/recitedVerses.add(key);
+                    memorizedVerses.add(key);
                 }
             });
             
@@ -2333,7 +2366,7 @@
             
             versesToDisplay.forEach((verse, i) => {
                 const verseKey = `${verse.surah}:${verse.ayah}`;
-                const ismemorize/recited = memorize/recitedVerses.has(verseKey);
+                const isMemorized = memorizedVerses.has(verseKey);
                 const actualIndex = index + i;
                 
                 // Calculate the global ayah number for audio (1-6236)
@@ -2351,9 +2384,9 @@
                             <div class="audio-controls">
                                 <button class="audio-btn" data-ayah="${globalAyahNumber}" title="Listen to recitation">▶</button>
                             </div>
-                            <div class="memorize/recited-toggle">
-                                <span style="font-size: 0.9rem; font-weight: 600;">memorize/recited</span>
-                                <div class="toggle-switch ${ismemorize/recited ? 'active' : ''}" data-verse-key="${verseKey}" data-verse-index="${actualIndex}">
+                            <div class="memorized-toggle">
+                                <span style="font-size: 0.9rem; font-weight: 600;">Memorized</span>
+                                <div class="toggle-switch ${isMemorized ? 'active' : ''}" data-verse-key="${verseKey}" data-verse-index="${actualIndex}">
                                     <div class="toggle-slider"></div>
                                 </div>
                             </div>
@@ -2364,7 +2397,7 @@
                 // Add click handler to toggle switch
                 const toggleSwitch = verseCard.querySelector('.toggle-switch');
                 toggleSwitch.addEventListener('click', function() {
-                    togglememorize/recitedForVerse(this.dataset.verseKey, parseInt(this.dataset.verseIndex));
+                    toggleMemorizedForVerse(this.dataset.verseKey, parseInt(this.dataset.verseIndex));
                 });
                 
                 // Add click handler to audio button
@@ -2376,8 +2409,8 @@
                 container.appendChild(verseCard);
             });
             
-            // Check if all verses on this page are memorize/recited
-            const allmemorize/recited = versesToDisplay.every(v => memorize/recitedVerses.has(`${v.surah}:${v.ayah}`));
+            // Check if all verses on this page are memorized
+            const allMemorized = versesToDisplay.every(v => memorizedVerses.has(`${v.surah}:${v.ayah}`));
             
             // Add navigation buttons
             const navHTML = document.createElement('div');
@@ -2404,7 +2437,7 @@
             
             const isLastPage = index + versesPerPage >= filteredVerses.length;
             
-            if (allmemorize/recited) {
+            if (allMemorized) {
                 nextBtn.textContent = 'Next →';
                 if (isLastPage) {
                     nextBtn.disabled = true;
@@ -2412,13 +2445,13 @@
                     nextBtn.style.cursor = 'not-allowed';
                 }
             } else {
-                nextBtn.textContent = isLastPage ? 'Mark All as memorize/recited' : 'Next (Mark all) →';
+                nextBtn.textContent = isLastPage ? 'Mark All as Memorized/Recited' : 'Next (Mark all) →';
             }
             
             nextBtn.onclick = () => {
-                if (!allmemorize/recited) {
+                if (!allMemorized) {
                     versesToDisplay.forEach(v => {
-                        memorize/recitedVerses.add(`${v.surah}:${v.ayah}`);
+                        memorizedVerses.add(`${v.surah}:${v.ayah}`);
                     });
                     saveUserData();
                     updateAccountStats();
@@ -2451,10 +2484,19 @@
             // Stop any currently playing audio
             stopAudio();
             
-            // Mishary Al-Afasy audio URL from alquran.cloud CDN
-            const audioUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayahNumber}.mp3`;
+            // Build audio URL based on selected reciter
+            let audioUrl;
+            if (selectedReciter === 'ar.alafasy') {
+                // Mishary Al-Afasy from Islamic Network CDN
+                audioUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayahNumber}.mp3`;
+            } else {
+                // EveryAyah.com format for other reciters
+                // Format: surah number (3 digits) + ayah number (3 digits)
+                const paddedNumber = String(ayahNumber).padStart(6, '0');
+                audioUrl = `https://everyayah.com/data/${selectedReciter}/${paddedNumber}.mp3`;
+            }
             
-            console.log('Playing audio:', audioUrl);
+            console.log('Playing audio:', audioUrl, 'Reciter:', selectedReciter);
             
             // Create new audio player
             audioPlayer = new Audio(audioUrl);
@@ -2510,16 +2552,16 @@
             displayVerseWithNavigation(newIndex);
         }
 
-        function togglememorize/recitedForVerse(verseKey, verseIndex) {
+        function toggleMemorizedForVerse(verseKey, verseIndex) {
             if (!currentUser) {
                 alert('Please log in to track your progress');
                 return;
             }
 
-            if (memorize/recitedVerses.has(verseKey)) {
-                memorize/recitedVerses.delete(verseKey);
+            if (memorizedVerses.has(verseKey)) {
+                memorizedVerses.delete(verseKey);
             } else {
-                memorize/recitedVerses.add(verseKey);
+                memorizedVerses.add(verseKey);
             }
 
             saveUserData();
@@ -2541,7 +2583,7 @@
             console.log('Displaying verse:', verse);
             currentVerse = verse;
             const verseKey = `${verse.surah}:${verse.ayah}`;
-            const ismemorize/recited = memorize/recitedVerses.has(verseKey);
+            const isMemorized = memorizedVerses.has(verseKey);
 
             container.innerHTML = `
                 <div class="verse-card">
@@ -2549,9 +2591,9 @@
                     <div class="verse-arabic">${verse.arab || verse.ar || 'Arabic text not available'}</div>
                     <div class="verse-translation">${verse.translation || verse.en || verse.tr || 'Translation not available'}</div>
                     
-                    <div class="memorize/recited-toggle">
-                        <span style="font-size: 1.2rem; font-weight: 600;">memorize/recited</span>
-                        <div class="toggle-switch ${ismemorize/recited ? 'active' : ''}" onclick="togglememorize/recited()">
+                    <div class="memorized-toggle">
+                        <span style="font-size: 1.2rem; font-weight: 600;">Memorized</span>
+                        <div class="toggle-switch ${isMemorized ? 'active' : ''}" onclick="toggleMemorized()">
                             <div class="toggle-slider"></div>
                         </div>
                     </div>
@@ -2660,7 +2702,7 @@
 
         function logout() {
             currentUser = null;
-            memorize/recitedVerses.clear();
+            memorizedVerses.clear();
             reviewedVerses.clear();
             
             document.getElementById('loginForm').style.display = 'block';
@@ -2683,8 +2725,10 @@
             
             const data = {
                 email: currentUser,
-                memorize/recited: Array.from(memorize/recitedVerses),
-                reviewed: Array.from(reviewedVerses)
+                memorized: Array.from(memorizedVerses),
+                reviewed: Array.from(reviewedVerses),
+                language: language,
+                reciter: selectedReciter
             };
             
             // Save to localStorage as backup
@@ -2713,14 +2757,28 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    memorize/recitedVerses = new Set(result.memorize/recited || []);
+                    memorizedVerses = new Set(result.memorized || []);
                     reviewedVerses = new Set(result.reviewed || []);
-                    console.log('Loaded from database:', memorize/recitedVerses.size, 'memorize/recited,', reviewedVerses.size, 'reviewed');
+                    
+                    // Load language preference
+                    if (result.language) {
+                        language = result.language;
+                        document.getElementById('languageSelector').value = language;
+                        applyTranslations();
+                    }
+                    
+                    // Load reciter preference
+                    if (result.reciter) {
+                        selectedReciter = result.reciter;
+                        document.getElementById('reciterSelector').value = selectedReciter;
+                    }
+                    
+                    console.log('Loaded from database:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed');
                     
                     // Update stats after loading
                     updateAccountStats();
                     
-                    // Refresh display if we're on memorize/recite page
+                    // Refresh display if we're on memorize page
                     if (filteredVerses.length > 0) {
                         displayVerseWithNavigation(currentVerseIndex);
                     }
@@ -2734,14 +2792,28 @@
             const saved = localStorage.getItem(`quran_data_${currentUser}`);
             if (saved) {
                 const data = JSON.parse(saved);
-                memorize/recitedVerses = new Set(data.memorize/recited || []);
+                memorizedVerses = new Set(data.memorized || []);
                 reviewedVerses = new Set(data.reviewed || []);
-                console.log('Loaded from localStorage:', memorize/recitedVerses.size, 'memorize/recited,', reviewedVerses.size, 'reviewed');
+                
+                // Load language preference
+                if (data.language) {
+                    language = data.language;
+                    document.getElementById('languageSelector').value = language;
+                    applyTranslations();
+                }
+                
+                // Load reciter preference
+                if (data.reciter) {
+                    selectedReciter = data.reciter;
+                    document.getElementById('reciterSelector').value = selectedReciter;
+                }
+                
+                console.log('Loaded from localStorage:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed');
                 
                 // Update stats after loading
                 updateAccountStats();
                 
-                // Refresh display if we're on memorize/recite page
+                // Refresh display if we're on memorize page
                 if (filteredVerses.length > 0) {
                     displayVerseWithNavigation(currentVerseIndex);
                 }
@@ -2749,7 +2821,7 @@
         }
 
         function updateAccountStats() {
-            const total = memorize/recitedVerses.size;
+            const total = memorizedVerses.size;
             const totalQuran = 6236;
             const percentage = ((total / totalQuran) * 100).toFixed(1);
 
@@ -2757,11 +2829,11 @@
             let completedSurahs = 0;
             for (let i = 1; i <= 114; i++) {
                 const surahVerses = quranData.filter(v => v.surah === i);
-                const memorize/recitedInSurah = surahVerses.filter(v => 
-                    memorize/recitedVerses.has(`${v.surah}:${v.ayah}`)
+                const memorizedInSurah = surahVerses.filter(v => 
+                    memorizedVerses.has(`${v.surah}:${v.ayah}`)
                 ).length;
                 
-                if (memorize/recitedInSurah === surahVerses.length && surahVerses.length > 0) {
+                if (memorizedInSurah === surahVerses.length && surahVerses.length > 0) {
                     completedSurahs++;
                 }
             }
@@ -2776,7 +2848,7 @@
             document.getElementById('reviewedCount').textContent = reviewedCount;
             document.getElementById('progressText').textContent = `${total} / ${totalQuran} verses`;
             document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('reviewProgressText').textContent = `${reviewedCount} / ${total} memorize/recited verses`;
+            document.getElementById('reviewProgressText').textContent = `${reviewedCount} / ${total} memorized verses`;
             document.getElementById('reviewProgressFill').style.width = reviewPercentage + '%';
             
             // Update quiz surah filter
@@ -2787,16 +2859,16 @@
             const select = document.getElementById('quizSurahFilter');
             if (!select) return;
             
-            select.innerHTML = '<option value="">All memorize/recited Verses</option>';
+            select.innerHTML = '<option value="">All Memorized Verses</option>';
             
-            // Get all surahs that have at least one memorize/recited verse
-            const memorize/recitedSurahs = new Set();
-            memorize/recitedVerses.forEach(verseKey => {
+            // Get all surahs that have at least one memorized verse
+            const memorizedSurahs = new Set();
+            memorizedVerses.forEach(verseKey => {
                 const surah = parseInt(verseKey.split(':')[0]);
-                memorize/recitedSurahs.add(surah);
+                memorizedSurahs.add(surah);
             });
             
-            // Add options for each memorize/recited surah
+            // Add options for each memorized surah
             const surahNames = {
                 1: "Al-Fatihah", 2: "Al-Baqarah", 3: "Ali 'Imran", 4: "An-Nisa", 
                 5: "Al-Ma'idah", 6: "Al-An'am", 7: "Al-A'raf", 8: "Al-Anfal",
@@ -2829,13 +2901,13 @@
                 113: "Al-Falaq", 114: "An-Nas"
             };
             
-            Array.from(memorize/recitedSurahs).sort((a, b) => a - b).forEach(surah => {
+            Array.from(memorizedSurahs).sort((a, b) => a - b).forEach(surah => {
                 const option = document.createElement('option');
                 option.value = surah;
-                const memorize/recitedCount = Array.from(memorize/recitedVerses).filter(v => 
+                const memorizedCount = Array.from(memorizedVerses).filter(v => 
                     parseInt(v.split(':')[0]) === surah
                 ).length;
-                option.textContent = `${surah}. ${surahNames[surah]} (${memorize/recitedCount} verses)`;
+                option.textContent = `${surah}. ${surahNames[surah]} (${memorizedCount} verses)`;
                 select.appendChild(option);
             });
         }
@@ -2880,9 +2952,9 @@
                 return;
             }
 
-            if (memorize/recitedVerses.size < 1) {
-                alert('Please memorize/recite at least 1 verse before taking the quiz');
-                showPage('memorize/recite');
+            if (memorizedVerses.size < 1) {
+                alert('Please memorize at least 1 verse before taking the quiz');
+                showPage('memorize');
                 return;
             }
 
@@ -2890,8 +2962,8 @@
             const ayahFrom = document.getElementById('quizAyahFrom').value;
             const ayahTo = document.getElementById('quizAyahTo').value;
             
-            // Get memorize/recited verses, filtered by surah if selected
-            let quizPool = Array.from(memorize/recitedVerses);
+            // Get memorized verses, filtered by surah if selected
+            let quizPool = Array.from(memorizedVerses);
             if (selectedSurah) {
                 quizPool = quizPool.filter(verseKey => {
                     const [surah, ayah] = verseKey.split(':').map(Number);
@@ -2906,7 +2978,7 @@
             }
             
             if (quizPool.length < 1) {
-                alert('Not enough memorize/recited verses in this surah. Please select a different surah or memorize/recite more verses.');
+                alert('Not enough memorized verses in this surah. Please select a different surah or memorize more verses.');
                 return;
             }
             
@@ -3037,7 +3109,6 @@
             // For simplicity, we'll use the FIRST blank word as the answer (can be enhanced later)
             const blankIndex = blankIndices[0];
             const correctAnswer = correctAnswers[0];
-
 
             // Create wrong answers
             const wrongAnswers = [];
