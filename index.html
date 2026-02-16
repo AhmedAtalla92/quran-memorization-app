@@ -1932,8 +1932,8 @@
                 // Reset to Al-Fatiha (Surah 1) to avoid loading entire Quran
                 document.getElementById('juzFilter').value = '';
                 document.getElementById('surahFilter').value = '1';
-                document.getElementById('ayahStartFilter').value = '';
-                document.getElementById('ayahEndFilter').value = '';
+                document.getElementById('ayahFrom').value = '';
+                document.getElementById('ayahTo').value = '';
                 
                 // Load Al-Fatiha
                 filterVerses();
@@ -1965,8 +1965,16 @@
                 );
             }
             
-            // Auto-set to show all verses
-            versesPerPage = filteredVerses.length;
+            // Check current verses per page setting for page view
+            const versesPerPageSelect = document.getElementById('versesPerPage');
+            const selectedVersesPerPage = versesPerPageSelect ? versesPerPageSelect.value : 'all';
+            
+            // For page view, default to showing all verses on the page
+            if (selectedVersesPerPage === 'all') {
+                versesPerPage = filteredVerses.length;
+            } else {
+                versesPerPage = parseInt(selectedVersesPerPage) || filteredVerses.length;
+            }
             
             currentVerseIndex = 0;
             if (filteredVerses.length > 0) {
@@ -2079,8 +2087,16 @@
 
             console.log('Final filtered count:', filteredVerses.length);
             
-            // Default to showing all filtered verses
-            versesPerPage = filteredVerses.length;
+            // Check current verses per page setting
+            const versesPerPageSelect = document.getElementById('versesPerPage');
+            const selectedVersesPerPage = versesPerPageSelect ? versesPerPageSelect.value : '10';
+            
+            // Set verses per page based on user's selection
+            if (selectedVersesPerPage === 'all') {
+                versesPerPage = filteredVerses.length;
+            } else {
+                versesPerPage = parseInt(selectedVersesPerPage) || 10;
+            }
             
             currentVerseIndex = 0;
             if (filteredVerses.length > 0) {
