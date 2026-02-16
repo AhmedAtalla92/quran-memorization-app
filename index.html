@@ -1929,7 +1929,13 @@
                 document.getElementById('ayahFilterGroup').style.display = 'block';
                 document.getElementById('pageFilterGroup').style.display = 'none';
                 
-                // Reset filters and reload
+                // Reset to Al-Fatiha (Surah 1) to avoid loading entire Quran
+                document.getElementById('juzFilter').value = '';
+                document.getElementById('surahFilter').value = '1';
+                document.getElementById('ayahStartFilter').value = '';
+                document.getElementById('ayahEndFilter').value = '';
+                
+                // Load Al-Fatiha
                 filterVerses();
             }
         }
