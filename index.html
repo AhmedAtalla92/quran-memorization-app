@@ -3062,7 +3062,7 @@
             }
             
             // Get difficulty setting
-            const difficulty = parseInt(document.getElementById('quizDifficulty').value) || 1;
+            const difficulty = 1; // Temporarily fixed to easy mode (1 word)
             console.log('Quiz difficulty:', difficulty, 'missing words');
             
             let blankIndices = [];
@@ -3070,54 +3070,35 @@
             let questionWords;
             
             // Determine how many words to blank based on difficulty and verse length
-            const numBlanks = Math.min(difficulty, allWords.length);
+            const numBlanks = 1; // Always 1 for now
             
             if (allWords.length === 1) {
                 // Single word verse - blank the whole thing
                 blankIndices = [0];
                 correctAnswers = [allWords[0]];
                 questionWords = ['<span class="quiz-blank">____</span>'];
-            } else if (allWords.length === 2) {
-                // Two word verse - blank 1 or both based on difficulty
-                if (numBlanks === 1) {
-                    const idx = Math.floor(Math.random() * 2);
-                    blankIndices = [idx];
-                    correctAnswers = [allWords[idx]];
-                    questionWords = [...allWords];
-                    questionWords[idx] = '<span class="quiz-blank">____</span>';
-                } else {
-                    blankIndices = [0, 1];
-                    correctAnswers = [allWords[0], allWords[1]];
-                    questionWords = ['<span class="quiz-blank">____</span>', '<span class="quiz-blank">____</span>'];
-                }
             } else {
-                // 3+ words - blank multiple words based on difficulty
+                // Multiple words - pick one longer word to blank
                 const wordInfo = allWords.map((w, i) => ({word: w, index: i, length: w.length}));
                 
                 // Sort by length and pick from top candidates
                 wordInfo.sort((a, b) => b.length - a.length);
                 
-                // Select words to blank - prefer longer words
+                // Select one word to blank from top half
                 const candidatePool = wordInfo.slice(0, Math.ceil(wordInfo.length / 2));
-                const shuffled = candidatePool.sort(() => Math.random() - 0.5);
-                const selectedWords = shuffled.slice(0, numBlanks);
+                const chosen = candidatePool[Math.floor(Math.random() * candidatePool.length)];
                 
-                // Sort selected indices to maintain order
-                selectedWords.sort((a, b) => a.index - b.index);
-                
-                blankIndices = selectedWords.map(w => w.index);
-                correctAnswers = selectedWords.map(w => w.word);
+                blankIndices = [chosen.index];
+                correctAnswers = [chosen.word];
                 
                 questionWords = [...allWords];
-                blankIndices.forEach(idx => {
-                    questionWords[idx] = '<span class="quiz-blank">____</span>';
-                });
+                questionWords[chosen.index] = '<span class="quiz-blank">____</span>';
             }
             
             console.log('Blanking words at indices:', blankIndices, 'Words:', correctAnswers);
             
-            // For multiple blanks, create combined answer (all missing words together)
-            const correctAnswer = correctAnswers.join(' ');
+            // Single blank - simple answer
+            const correctAnswer = correctAnswers[0];
             console.log('Correct answer (combined):', correctAnswer);
 
             // Create wrong answers
@@ -3156,19 +3137,8 @@
                 const candidateWords = randomVerse.arab.split(/\s+/).filter(w => w.trim().length > 0);
                 if (candidateWords.length === 0) continue;
                 
-                // For multiple blanks (difficulty > 1), create a combination of random words
-                let wrongAnswer;
-                if (numBlanks === 1) {
-                    wrongAnswer = candidateWords[Math.floor(Math.random() * candidateWords.length)];
-                } else {
-                    // Pick multiple random words to match the number of blanks
-                    const selectedWrongWords = [];
-                    for (let i = 0; i < numBlanks && i < candidateWords.length; i++) {
-                        const randomIdx = Math.floor(Math.random() * candidateWords.length);
-                        selectedWrongWords.push(candidateWords[randomIdx]);
-                    }
-                    wrongAnswer = selectedWrongWords.join(' ');
-                }
+                // Pick a single random word
+                const wrongAnswer = candidateWords[Math.floor(Math.random() * candidateWords.length)];
                 
                 // Must be different from correct answer and not already added
                 if (wrongAnswer !== correctAnswer && 
