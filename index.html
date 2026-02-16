@@ -2258,7 +2258,16 @@
                     v.surah === verse.surah && v.ayah === verse.ayah
                 ) + 1;
                 
-                const audioUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalAyahNumber}.mp3`;
+                // Build audio URL based on selected reciter
+                let audioUrl;
+                if (selectedReciter === 'ar.alafasy') {
+                    audioUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalAyahNumber}.mp3`;
+                } else {
+                    const paddedSurah = String(verse.surah).padStart(3, '0');
+                    const paddedAyah = String(verse.ayah).padStart(3, '0');
+                    const formattedNumber = paddedSurah + paddedAyah;
+                    audioUrl = `https://everyayah.com/data/${selectedReciter}/${formattedNumber}.mp3`;
+                }
                 
                 if (audioPlayer) {
                     audioPlayer.pause();
@@ -2382,7 +2391,7 @@
                     <div class="verse-controls">
                         <div class="verse-controls-left">
                             <div class="audio-controls">
-                                <button class="audio-btn" data-ayah="${globalAyahNumber}" title="Listen to recitation">▶</button>
+                                <button class="audio-btn" data-ayah="${globalAyahNumber}" data-surah="${verse.surah}" data-ayah-num="${verse.ayah}" title="Listen to recitation">▶</button>
                             </div>
                             <div class="memorized-toggle">
                                 <span style="font-size: 0.9rem; font-weight: 600;">Memorized</span>
@@ -2403,7 +2412,7 @@
                 // Add click handler to audio button
                 const audioBtn = verseCard.querySelector('.audio-btn');
                 audioBtn.addEventListener('click', function() {
-                    playAudio(this.dataset.ayah, this);
+                    playAudio(this.dataset.ayah, this.dataset.surah, this.dataset.ayahNum, this);
                 });
                 
                 container.appendChild(verseCard);
@@ -2474,7 +2483,7 @@
             container.appendChild(navHTML);
         }
         
-        function playAudio(ayahNumber, buttonElement) {
+        function playAudio(ayahNumber, surahNum, ayahNum, buttonElement) {
             // If clicking the same button that's playing, stop it
             if (currentlyPlayingButton === buttonElement && audioPlayer && !audioPlayer.paused) {
                 stopAudio();
@@ -2487,16 +2496,18 @@
             // Build audio URL based on selected reciter
             let audioUrl;
             if (selectedReciter === 'ar.alafasy') {
-                // Mishary Al-Afasy from Islamic Network CDN
+                // Mishary Al-Afasy from Islamic Network CDN (uses global ayah number)
                 audioUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayahNumber}.mp3`;
             } else {
                 // EveryAyah.com format for other reciters
-                // Format: surah number (3 digits) + ayah number (3 digits)
-                const paddedNumber = String(ayahNumber).padStart(6, '0');
-                audioUrl = `https://everyayah.com/data/${selectedReciter}/${paddedNumber}.mp3`;
+                // Format: SSSAAA (3-digit surah + 3-digit ayah)
+                const paddedSurah = String(surahNum).padStart(3, '0');
+                const paddedAyah = String(ayahNum).padStart(3, '0');
+                const formattedNumber = paddedSurah + paddedAyah;
+                audioUrl = `https://everyayah.com/data/${selectedReciter}/${formattedNumber}.mp3`;
             }
             
-            console.log('Playing audio:', audioUrl, 'Reciter:', selectedReciter);
+            console.log('Playing audio:', audioUrl, 'Reciter:', selectedReciter, 'Surah:', surahNum, 'Ayah:', ayahNum);
             
             // Create new audio player
             audioPlayer = new Audio(audioUrl);
@@ -3105,10 +3116,9 @@
             
             console.log('Blanking words at indices:', blankIndices, 'Words:', correctAnswers);
             
-            // For multiple blanks, we need to create answer options that are word combinations
-            // For simplicity, we'll use the FIRST blank word as the answer (can be enhanced later)
-            const blankIndex = blankIndices[0];
-            const correctAnswer = correctAnswers[0];
+            // For multiple blanks, create combined answer (all missing words together)
+            const correctAnswer = correctAnswers.join(' ');
+            console.log('Correct answer (combined):', correctAnswer);
 
             // Create wrong answers
             const wrongAnswers = [];
@@ -3146,14 +3156,26 @@
                 const candidateWords = randomVerse.arab.split(/\s+/).filter(w => w.trim().length > 0);
                 if (candidateWords.length === 0) continue;
                 
-                const randomWord = candidateWords[Math.floor(Math.random() * candidateWords.length)];
+                // For multiple blanks (difficulty > 1), create a combination of random words
+                let wrongAnswer;
+                if (numBlanks === 1) {
+                    wrongAnswer = candidateWords[Math.floor(Math.random() * candidateWords.length)];
+                } else {
+                    // Pick multiple random words to match the number of blanks
+                    const selectedWrongWords = [];
+                    for (let i = 0; i < numBlanks && i < candidateWords.length; i++) {
+                        const randomIdx = Math.floor(Math.random() * candidateWords.length);
+                        selectedWrongWords.push(candidateWords[randomIdx]);
+                    }
+                    wrongAnswer = selectedWrongWords.join(' ');
+                }
                 
                 // Must be different from correct answer and not already added
-                if (randomWord !== correctAnswer && 
-                    !wrongAnswers.includes(randomWord) &&
-                    randomWord.trim() !== correctAnswer.trim()) {
-                    wrongAnswers.push(randomWord);
-                    console.log(`Found wrong answer ${wrongAnswers.length}:`, randomWord);
+                if (wrongAnswer !== correctAnswer && 
+                    !wrongAnswers.includes(wrongAnswer) &&
+                    wrongAnswer.trim() !== correctAnswer.trim()) {
+                    wrongAnswers.push(wrongAnswer);
+                    console.log(`Found wrong answer ${wrongAnswers.length}:`, wrongAnswer);
                 }
             }
             
