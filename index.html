@@ -850,10 +850,11 @@
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 2rem;">
-                        <label>Show Translation</label>
+                        <label>Translation Display / عرض الترجمة</label>
                         <select id="showTranslation" onchange="toggleTranslationDisplay()" style="font-size: 1rem;">
-                            <option value="show">Show</option>
-                            <option value="hide">Hide</option>
+                            <option value="english">English Translation</option>
+                            <option value="arabic">Arabic Meaning (التفسير الميسر)</option>
+                            <option value="hide">Hide Translation</option>
                         </select>
                     </div>
                     
@@ -1091,7 +1092,7 @@
         let currentlyPlayingButton = null;
         let viewMode = 'surah'; // 'surah' or 'page'
         let language = 'en'; // 'en' or 'ar'
-        let showTranslation = true; // show/hide translation
+        let translationMode = 'english'; // 'english', 'arabic', or 'hide'
         let selectedReciter = 'ar.alafasy'; // default reciter
         
         // Translations
@@ -1249,8 +1250,8 @@
             if (progressLabels[0]) progressLabels[0].textContent = t.memorizationProgress;
             if (progressLabels[1]) progressLabels[1].textContent = t.reviewProgress;
             
-            // Sign out button
-            const signOutBtn = document.querySelector('#accountDashboard button');
+            // Sign out button (use onclick attribute to be specific)
+            const signOutBtn = document.querySelector('#accountDashboard button[onclick="logout()"]');
             if (signOutBtn) signOutBtn.textContent = t.signOut;
             
             // Memorize page
@@ -1700,9 +1701,9 @@
             }
             
             // Load saved translation preference
-            const savedTranslation = localStorage.getItem('quran_show_translation');
+            const savedTranslation = localStorage.getItem('quran_translation_mode');
             if (savedTranslation) {
-                showTranslation = (savedTranslation === 'show');
+                translationMode = savedTranslation;
                 document.getElementById('showTranslation').value = savedTranslation;
             }
             
@@ -1775,9 +1776,9 @@
                 console.log('Page numbers range:', Math.min(...quranData.map(v => v.page)), '-', Math.max(...quranData.map(v => v.page)));
                 
                 // Update loading message
-                container.innerHTML = '<div class="loading">Loading translations... (Step 2/2)</div>';
+                container.innerHTML = '<div class="loading">Loading translations... (Step 2/3)</div>';
                 
-                // Now load English translation
+                // Load English translation
                 const transController = new AbortController();
                 const transTimeoutId = setTimeout(() => transController.abort(), 30000);
                 
@@ -1800,8 +1801,35 @@
                     });
                 }
                 
-                console.log('Translations loaded');
-                console.log('Sample verse with translation:', quranData[0]);
+                console.log('English translations loaded');
+                
+                // Load Arabic tafseer (Tafsir Al-Muyassar)
+                container.innerHTML = '<div class="loading">Loading Arabic meanings... (Step 3/3)</div>';
+                
+                const tafseerController = new AbortController();
+                const tafseerTimeoutId = setTimeout(() => tafseerController.abort(), 30000);
+                
+                const tafseerResponse = await fetch('https://api.alquran.cloud/v1/quran/ar.muyassar', {
+                    signal: tafseerController.signal
+                });
+                clearTimeout(tafseerTimeoutId);
+                
+                const tafseerResult = await tafseerResponse.json();
+                
+                if (tafseerResult.code === 200 && tafseerResult.data) {
+                    let verseIndex = 0;
+                    tafseerResult.data.surahs.forEach(surah => {
+                        surah.ayahs.forEach(ayah => {
+                            if (quranData[verseIndex]) {
+                                quranData[verseIndex].tafseer = ayah.text;
+                            }
+                            verseIndex++;
+                        });
+                    });
+                }
+                
+                console.log('Arabic tafseer loaded');
+                console.log('Sample verse with all data:', quranData[0]);
                 
                 // Auto-load all verses by default
                 filteredVerses = [...quranData];
@@ -1910,10 +1938,10 @@
 
         function toggleTranslationDisplay() {
             const value = document.getElementById('showTranslation').value;
-            showTranslation = (value === 'show');
+            translationMode = value; // 'english', 'arabic', or 'hide'
             
             // Save to localStorage
-            localStorage.setItem('quran_show_translation', value);
+            localStorage.setItem('quran_translation_mode', value);
             
             // Refresh display
             if (filteredVerses.length > 0) {
@@ -2464,10 +2492,19 @@
                 
                 const verseCard = document.createElement('div');
                 verseCard.className = 'verse-card';
+                
+                // Determine which translation to show
+                let translationHTML = '';
+                if (translationMode === 'english') {
+                    translationHTML = `<div class="verse-translation">${verse.translation || 'Translation not available'}</div>`;
+                } else if (translationMode === 'arabic') {
+                    translationHTML = `<div class="verse-translation" style="direction: rtl; text-align: right; font-family: 'Amiri', serif;">${verse.tafseer || 'التفسير غير متوفر'}</div>`;
+                }
+                
                 verseCard.innerHTML = `
                     <div class="verse-info">Surah ${verse.surah}, Ayah ${verse.ayah} (Juz ${verse.juz})</div>
                     <div class="verse-arabic">${verse.arab || verse.ar || 'Arabic text not available'}</div>
-                    ${showTranslation ? `<div class="verse-translation">${verse.translation || verse.en || verse.tr || 'Translation not available'}</div>` : ''}
+                    ${translationHTML}
                     
                     <div class="verse-controls">
                         <div class="verse-controls-left">
