@@ -1235,18 +1235,20 @@
                         <!-- Live Device Compass -->
                         <div id="qiblaDeviceCompass" style="display: none;">
                             <div style="position: relative; width: 280px; height: 280px; margin: 0 auto 1.5rem;">
-                                <!-- Rotating compass background -->
-                                <div id="deviceCompassRing" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); box-shadow: inset 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.1s ease-out;">
-                                    <!-- Cardinal directions on compass ring -->
+                                <!-- Fixed compass background -->
+                                <div id="deviceCompassRing" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);">
+                                    <!-- Cardinal directions on compass ring (these stay fixed) -->
                                     <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-weight: 700; font-size: 1.1rem; color: var(--error);">N</div>
                                     <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-weight: 700; font-size: 1.1rem;">S</div>
                                     <div style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); font-weight: 700; font-size: 1.1rem;">E</div>
                                     <div style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); font-weight: 700; font-size: 1.1rem;">W</div>
                                 </div>
                                 
-                                <!-- Fixed Qibla arrow pointing up (when aligned, this points to Kaaba) -->
-                                <div style="position: absolute; top: 30px; left: 50%; width: 4px; height: 100px; background: var(--success); transform: translateX(-50%); border-radius: 2px; box-shadow: 0 0 10px rgba(46, 125, 50, 0.5);"></div>
-                                <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 2rem;">🕋</div>
+                                <!-- Rotating Qibla arrow (points to Qibla direction) -->
+                                <div class="qibla-arrow-container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: transform 0.1s ease-out;">
+                                    <div style="width: 4px; height: 100px; background: var(--success); margin-left: -2px; margin-top: -50px; border-radius: 2px; box-shadow: 0 0 10px rgba(46, 125, 50, 0.5);"></div>
+                                    <div style="margin-top: -60px; margin-left: -16px; font-size: 2rem;">🕋</div>
+                                </div>
                                 
                                 <!-- Center dot -->
                                 <div style="position: absolute; top: 50%; left: 50%; width: 16px; height: 16px; background: white; border: 3px solid var(--primary); border-radius: 50%; transform: translate(-50%, -50%); z-index: 10;"></div>
@@ -1264,7 +1266,7 @@
                             
                             <div style="padding: 1rem; background: rgba(33, 150, 243, 0.1); border-radius: 8px; border-left: 4px solid #2196F3;">
                                 <div style="font-size: 0.85rem; color: var(--text-primary);">
-                                    <strong>How to use:</strong> Hold your device flat (screen facing up). Rotate slowly until the green arrow points straight up. When aligned, you're facing the Qibla direction! 🕋
+                                    <strong>How to use:</strong> Hold your device flat (screen facing up). The green arrow shows where Qibla is. Rotate yourself (and the device) until you're facing the arrow direction! 🕋
                                 </div>
                             </div>
                         </div>
@@ -3812,13 +3814,19 @@
                 // Normalize heading to 0-360
                 heading = Math.round(heading);
                 
-                // Calculate the rotation needed (rotate compass ring counter to heading)
-                const rotation = -heading;
+                // Calculate the rotation for the Qibla arrow
+                // The arrow should point to Qibla (135°) relative to North
+                // So we rotate it by (Qibla angle - current heading)
+                const qiblaRotation = QIBLA_ANGLE_CAIRO - heading;
                 
-                // Rotate the compass ring
+                // Rotate the Qibla arrow (NOT the compass ring)
                 const compassRing = document.getElementById('deviceCompassRing');
                 if (compassRing) {
-                    compassRing.style.transform = `rotate(${rotation}deg)`;
+                    // Keep compass ring fixed, rotate the arrow inside it
+                    const qiblaArrow = compassRing.parentElement.querySelector('.qibla-arrow-container');
+                    if (qiblaArrow) {
+                        qiblaArrow.style.transform = `translate(-50%, -50%) rotate(${qiblaRotation}deg)`;
+                    }
                 }
                 
                 // Update heading display
