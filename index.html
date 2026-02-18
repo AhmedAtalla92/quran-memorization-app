@@ -391,6 +391,11 @@
             background: linear-gradient(135deg, #c8860a, #e8a020);
         }
 
+        /* Recited toggle slider stays in place - only color changes */
+        .toggle-switch.recited-active .toggle-slider {
+            transform: translateX(0) !important;
+        }
+
         .toggle-slider {
             position: absolute;
             top: 2px;
@@ -887,7 +892,7 @@
                         </div>
                         <div class="stat-card" style="border-top: 3px solid #c8860a;">
                             <div class="stat-value" id="recitedCount" style="color: #c8860a;">0</div>
-                            <div class="stat-label">Verses Recited</div>
+                            <div class="stat-label">Pages Recited</div>
                         </div>
                     </div>
 
@@ -915,8 +920,8 @@
                         <div class="progress-label">
                             <span style="color: #c8860a; font-weight: 600;">Recitation Progress</span>
                             <div style="display: flex; align-items: center; gap: 0.6rem;">
-                                <span id="recitedProgressText">0 / 6236 verses</span>
-                                <button onclick="resetRecitedProgress()" title="Restart recitation progress from scratch" style="padding: 0.2rem 0.55rem; font-size: 0.75rem; background: #c8860a; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; line-height: 1.4;">↺ Restart</button>
+                                <span id="recitedProgressText">0 / 604 pages</span>
+                                <button onclick="resetRecitedProgress()" title="Reset recitation progress from scratch" style="padding: 0.2rem 0.55rem; font-size: 0.75rem; background: #c8860a; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; line-height: 1.4;">↺ Reset</button>
                             </div>
                         </div>
                         <div class="progress-bar">
@@ -1073,7 +1078,7 @@
         let quranData = [];
         let memorizedVerses = new Set();
         let reviewedVerses = new Set();
-        let recitedVerses = new Set();
+        let recitedPages = new Set(); // Tracks page numbers 1-604
         let currentVerse = null;
         let quizScore = 0;
         let quizTotal = 0;
@@ -2137,9 +2142,7 @@
             const allMemorized = versesToDisplay.every(v => 
                 memorizedVerses.has(`${v.surah}:${v.ayah}`)
             );
-            const allRecited = versesToDisplay.every(v =>
-                recitedVerses.has(`${v.surah}:${v.ayah}`)
-            );
+            const pageRecited = recitedPages.has(pageNumber);
             
             // Create page card
             const pageCard = document.createElement('div');
@@ -2212,7 +2215,7 @@
                     <div class="toggle-slider"></div>
                 </div>
                 <span style="font-size: 0.95rem; font-weight: 600; color: #c8860a;">Page Recited</span>
-                <div class="toggle-switch ${allRecited ? 'recited-active' : ''}" id="pageRecitedToggle">
+                <div class="toggle-switch ${pageRecited ? 'active' : ''}" id="pageRecitedToggle" style="${pageRecited ? 'background: linear-gradient(135deg, #c8860a, #e8a020);' : ''}">
                     <div class="toggle-slider"></div>
                 </div>
             `;
@@ -2372,18 +2375,18 @@
         }
 
         function togglePageRecited(verses) {
-            const allRecited = verses.every(v =>
-                recitedVerses.has(`${v.surah}:${v.ayah}`)
-            );
+            if (!currentUser) {
+                alert('Please log in to track your progress');
+                return;
+            }
 
-            verses.forEach(v => {
-                const key = `${v.surah}:${v.ayah}`;
-                if (allRecited) {
-                    recitedVerses.delete(key);
-                } else {
-                    recitedVerses.add(key);
-                }
-            });
+            const pageNumber = verses[0].page;
+            
+            if (recitedPages.has(pageNumber)) {
+                recitedPages.delete(pageNumber);
+            } else {
+                recitedPages.add(pageNumber);
+            }
 
             saveUserData();
             updateAccountStats();
@@ -2454,7 +2457,6 @@
             versesToDisplay.forEach((verse, i) => {
                 const verseKey = `${verse.surah}:${verse.ayah}`;
                 const isMemorized = memorizedVerses.has(verseKey);
-                const isRecited = recitedVerses.has(verseKey);
                 const actualIndex = index + i;
                 
                 // Calculate the global ayah number for audio (1-6236)
@@ -2478,12 +2480,6 @@
                                     <div class="toggle-slider"></div>
                                 </div>
                             </div>
-                            <div class="memorized-toggle">
-                                <span style="font-size: 0.9rem; font-weight: 600; color: #c8860a;">Recited</span>
-                                <div class="toggle-switch ${isRecited ? 'recited-active' : ''}" data-verse-key="${verseKey}" data-verse-index="${actualIndex}" data-toggle-type="recited">
-                                    <div class="toggle-slider"></div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 `;
@@ -2492,12 +2488,6 @@
                 const memorizedToggle = verseCard.querySelector('.toggle-switch[data-toggle-type="memorized"]');
                 memorizedToggle.addEventListener('click', function() {
                     toggleMemorizedForVerse(this.dataset.verseKey, parseInt(this.dataset.verseIndex));
-                });
-
-                // Add click handler to recited toggle switch
-                const recitedToggle = verseCard.querySelector('.toggle-switch[data-toggle-type="recited"]');
-                recitedToggle.addEventListener('click', function() {
-                    toggleRecitedForVerse(this.dataset.verseKey, this);
                 });
                 
                 // Add click handler to audio button
@@ -2673,23 +2663,6 @@
             displayVerseWithNavigation(currentVerseIndex);
         }
 
-        function toggleRecitedForVerse(verseKey, toggleEl) {
-            if (!currentUser) {
-                alert('Please log in to track your progress');
-                return;
-            }
-
-            if (recitedVerses.has(verseKey)) {
-                recitedVerses.delete(verseKey);
-                toggleEl.classList.remove('recited-active');
-            } else {
-                recitedVerses.add(verseKey);
-                toggleEl.classList.add('recited-active');
-            }
-
-            saveUserData();
-            updateAccountStats();
-        }
 
         // Display Single Verse
         function displayVerse(verse) {
@@ -2824,7 +2797,7 @@
             currentUser = null;
             memorizedVerses.clear();
             reviewedVerses.clear();
-            recitedVerses.clear();
+            recitedPages.clear();
             
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('accountDashboard').style.display = 'none';
@@ -2835,7 +2808,7 @@
 
         function resetRecitedProgress() {
             if (!confirm('Reset all recitation progress? This cannot be undone.')) return;
-            recitedVerses.clear();
+            recitedPages.clear();
             saveUserData();
             updateAccountStats();
             displayVerseWithNavigation(currentVerseIndex);
@@ -2856,7 +2829,7 @@
                 email: currentUser,
                 memorized: Array.from(memorizedVerses),
                 reviewed: Array.from(reviewedVerses),
-                recited: Array.from(recitedVerses),
+                recited: Array.from(recitedPages),
                 language: language,
                 reciter: selectedReciter
             };
@@ -2889,7 +2862,7 @@
                 if (result.success) {
                     memorizedVerses = new Set(result.memorized || []);
                     reviewedVerses = new Set(result.reviewed || []);
-                    recitedVerses = new Set(result.recited || []);
+                    recitedPages = new Set(result.recited || []);
                     
                     // Load language preference
                     if (result.language) {
@@ -2925,7 +2898,7 @@
                 const data = JSON.parse(saved);
                 memorizedVerses = new Set(data.memorized || []);
                 reviewedVerses = new Set(data.reviewed || []);
-                recitedVerses = new Set(data.recited || []);
+                recitedPages = new Set(data.recited || []);
                 
                 // Load language preference
                 if (data.language) {
@@ -2974,9 +2947,10 @@
             const reviewedCount = reviewedVerses.size;
             const reviewPercentage = total > 0 ? ((reviewedCount / total) * 100).toFixed(1) : 0;
 
-            // Recited progress
-            const recitedCount = recitedVerses.size;
-            const recitedPercentage = ((recitedCount / totalQuran) * 100).toFixed(1);
+            // Recited progress (pages)
+            const totalPages = 604;
+            const recitedCount = recitedPages.size;
+            const recitedPercentage = ((recitedCount / totalPages) * 100).toFixed(1);
 
             document.getElementById('totalVerses').textContent = total;
             document.getElementById('completionPercent').textContent = percentage + '%';
@@ -2987,7 +2961,7 @@
             document.getElementById('progressFill').style.width = percentage + '%';
             document.getElementById('reviewProgressText').textContent = `${reviewedCount} / ${total} memorized verses`;
             document.getElementById('reviewProgressFill').style.width = reviewPercentage + '%';
-            document.getElementById('recitedProgressText').textContent = `${recitedCount} / ${totalQuran} verses`;
+            document.getElementById('recitedProgressText').textContent = `${recitedCount} / ${totalPages} pages`;
             document.getElementById('recitedProgressFill').style.width = recitedPercentage + '%';
             
             // Update quiz surah filter
