@@ -861,6 +861,9 @@
             <button class="nav-btn" onclick="showPage('memorize')" data-page="memorize">
                 <span>Memorize</span>
             </button>
+            <button class="nav-btn" onclick="showPage('bookmarks')" data-page="bookmarks">
+                <span>Bookmarks</span>
+            </button>
             <button class="nav-btn" onclick="showPage('quiz')" data-page="quiz">
                 <span>Quiz</span>
             </button>
@@ -1132,6 +1135,33 @@
                 </div>
 
                 <div id="verseDisplay"></div>
+            </div>
+        </div>
+
+        <!-- Bookmarks Page -->
+        <div id="bookmarks" class="page">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                    <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin: 0; color: var(--primary);">
+                        🔖 Bookmarked Ayahs
+                    </h2>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">Translation:</span>
+                        <select id="bookmarkTranslationMode" onchange="changeBookmarkTranslation()" style="padding: 0.45rem 0.65rem; font-size: 0.85rem; border-radius: 6px; border: 2px solid var(--primary); background: white; font-weight: 600;">
+                            <option value="hide">Hide</option>
+                            <option value="english">English</option>
+                            <option value="arabic">Arabic</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="bookmarksEmpty" style="display: none; text-align: center; padding: 3rem; color: var(--text-light);">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📖</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">No bookmarked ayahs yet</div>
+                    <div style="font-size: 0.9rem;">Go to "Memorize" page and click "Save" on any ayah to bookmark it</div>
+                </div>
+
+                <div id="bookmarksDisplay"></div>
             </div>
         </div>
 
@@ -2666,12 +2696,6 @@
                 <div class="toggle-switch ${pageRecited ? 'active' : ''}" id="pageRecitedToggle" style="${pageRecited ? 'background: linear-gradient(135deg, #c8860a, #e8a020);' : ''}">
                     <div class="toggle-slider"></div>
                 </div>
-                <span style="font-size: 0.95rem; font-weight: 600; color: var(--primary); margin-left: 0.5rem;">Translation</span>
-                <select id="pageTranslationMode" onchange="changePageTranslation()" style="padding: 0.4rem 0.6rem; font-size: 0.85rem; border-radius: 6px; border: 2px solid var(--primary); background: white;">
-                    <option value="hide" ${translationMode === 'hide' ? 'selected' : ''}>Hide</option>
-                    <option value="english" ${translationMode === 'english' ? 'selected' : ''}>English</option>
-                    <option value="arabic" ${translationMode === 'arabic' ? 'selected' : ''}>Arabic</option>
-                </select>
             `;
             
             memorizedToggle.querySelector('#pageToggle').onclick = () => {
@@ -3614,23 +3638,102 @@
         }
 
         function viewAllBookmarks() {
-            if (bookmarkedVerses.size === 0) return;
+            showPage('bookmarks');
+        }
+        
+        let bookmarkTranslationMode = 'hide'; // Separate translation setting for bookmarks page
+        
+        function changeBookmarkTranslation() {
+            const value = document.getElementById('bookmarkTranslationMode').value;
+            bookmarkTranslationMode = value;
+            displayBookmarksPage();
+        }
+        
+        function displayBookmarksPage() {
+            const emptyState = document.getElementById('bookmarksEmpty');
+            const display = document.getElementById('bookmarksDisplay');
             
-            // Switch to memorize page and filter to show only bookmarked verses
-            showPage('memorize');
-            
-            // Switch to By Surah view mode
-            viewMode = 'surah';
-            document.getElementById('viewModeToggle').textContent = '📄 By Page';
-            
-            // Filter quranData to show only bookmarked verses
-            filteredVerses = quranData.filter(v => bookmarkedVerses.has(`${v.surah}:${v.ayah}`));
-            versesPerPage = 1; // Show one verse at a time
-            currentVerseIndex = 0;
-            
-            if (filteredVerses.length > 0) {
-                displayVerseWithNavigation(0);
+            if (bookmarkedVerses.size === 0) {
+                emptyState.style.display = 'block';
+                display.innerHTML = '';
+                return;
             }
+            
+            emptyState.style.display = 'none';
+            display.innerHTML = '';
+            
+            // Sort bookmarks by surah:ayah order
+            const bookmarksArray = Array.from(bookmarkedVerses).sort((a, b) => {
+                const [surahA, ayahA] = a.split(':').map(Number);
+                const [surahB, ayahB] = b.split(':').map(Number);
+                if (surahA !== surahB) return surahA - surahB;
+                return ayahA - ayahB;
+            });
+            
+            bookmarksArray.forEach(verseKey => {
+                const [surah, ayah] = verseKey.split(':');
+                const verseData = quranData.find(v => v.surah === parseInt(surah) && v.ayah === parseInt(ayah));
+                
+                if (verseData) {
+                    const surahName = surahNames[parseInt(surah)] || `Surah ${surah}`;
+                    const isMemorized = memorizedVerses.has(verseKey);
+                    
+                    // Determine translation HTML
+                    let translationHTML = '';
+                    if (bookmarkTranslationMode === 'english') {
+                        translationHTML = `<div class="verse-translation">${verseData.translation || 'Translation not available'}</div>`;
+                    } else if (bookmarkTranslationMode === 'arabic') {
+                        translationHTML = `<div class="verse-translation" style="direction: rtl; text-align: right; font-family: 'Amiri', serif;">${verseData.tafseer || 'التفسير غير متوفر'}</div>`;
+                    }
+                    
+                    const verseCard = document.createElement('div');
+                    verseCard.className = 'verse-card';
+                    verseCard.innerHTML = `
+                        <div class="verse-info">
+                            <span style="font-weight: 700; color: var(--primary);">${surahName}</span> - Surah ${surah}, Ayah ${ayah} (Juz ${verseData.juz})
+                            <button class="bookmark-remove-btn" data-verse-key="${verseKey}" style="background: var(--error); color: white; border: none; font-size: 0.75rem; cursor: pointer; padding: 0.35rem 0.6rem; margin-left: 0.5rem; border-radius: 5px; font-weight: 600; transition: all 0.2s ease;">
+                                Remove
+                            </button>
+                        </div>
+                        <div class="verse-arabic">${verseData.arab}</div>
+                        ${translationHTML}
+                        
+                        <div class="verse-controls">
+                            <div class="verse-controls-left">
+                                <div class="audio-controls">
+                                    <button class="audio-btn" data-ayah="${quranData.findIndex(v => v.surah === verseData.surah && v.ayah === verseData.ayah) + 1}" title="Listen to recitation">▶</button>
+                                </div>
+                                <div class="memorized-toggle">
+                                    <span style="font-size: 0.9rem; font-weight: 600;">Memorized</span>
+                                    <div class="toggle-switch ${isMemorized ? 'active' : ''}" data-verse-key="${verseKey}">
+                                        <div class="toggle-slider"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add remove bookmark handler
+                    const removeBtn = verseCard.querySelector('.bookmark-remove-btn');
+                    removeBtn.addEventListener('click', function() {
+                        toggleBookmark(this.dataset.verseKey);
+                    });
+                    
+                    // Add memorized toggle handler
+                    const toggle = verseCard.querySelector('.toggle-switch');
+                    toggle.addEventListener('click', function() {
+                        toggleMemorizedForVerse(this.dataset.verseKey, 0);
+                    });
+                    
+                    // Add audio button handler
+                    const audioBtn = verseCard.querySelector('.audio-btn');
+                    audioBtn.addEventListener('click', function() {
+                        playAudio(this.dataset.ayah);
+                    });
+                    
+                    display.appendChild(verseCard);
+                }
+            });
         }
         
         function updateQuizSurahFilter() {
@@ -4315,6 +4418,11 @@
             // Load prayer times when Pray page is opened
             if (pageId === 'pray') {
                 loadPrayerTimes();
+            }
+            
+            // Display bookmarks when Bookmarks page is opened
+            if (pageId === 'bookmarks') {
+                displayBookmarksPage();
             }
             
             // Refresh verse display when showing memorize page
