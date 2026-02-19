@@ -768,6 +768,30 @@
                 padding: 0.3rem 0.5rem !important;
             }
             
+            /* Mobile: Keep preferences on one line, smaller */
+            #accountDashboard > div[style*="grid-template-columns"] {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 0.5rem !important;
+            }
+            
+            #accountDashboard .form-group label {
+                font-size: 0.75rem !important;
+            }
+            
+            #accountDashboard .form-group select {
+                font-size: 0.8rem !important;
+                padding: 0.4rem 0.3rem !important;
+            }
+            
+            /* Mobile: Page toggles on same line with smaller font */
+            #pageToggle, #pageRecitedToggle {
+                transform: scale(0.9);
+            }
+            
+            .verse-card div[style*="grid-template-columns: auto auto auto auto"] span {
+                font-size: 0.8rem !important;
+            }
+            
             /* Page view buttons - very compact */
             #playPageBtn, #pausePageBtn, #restartPageBtn {
                 padding: 0.4rem 0.6rem !important;
@@ -994,6 +1018,26 @@
                         </div>
                     </div>
 
+                    <!-- Recitation: Stat + Progress Bar on same line (FIRST) -->
+                    <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1rem; align-items: center; margin-bottom: 1.5rem;">
+                        <div class="stat-card" style="border-top: 3px solid #c8860a; margin-bottom: 0; text-align: center;">
+                            <div class="stat-value" id="recitedCount" style="color: #c8860a; font-size: 1.8rem;">0</div>
+                            <div class="stat-label" style="font-size: 0.8rem;">Pages Recited</div>
+                        </div>
+                        <div class="progress-container" style="margin-bottom: 0;">
+                            <div class="progress-label" style="margin-bottom: 0.4rem;">
+                                <span style="color: #c8860a; font-weight: 600; font-size: 0.9rem;">Recitation Progress</span>
+                                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                    <span id="recitedProgressText" style="font-size: 0.85rem;">0 / 604</span>
+                                    <button onclick="resetRecitedProgress()" title="Reset recitation progress" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; background: #c8860a; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">↺</button>
+                                </div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="recitedProgressFill" style="width: 0%; background: linear-gradient(90deg, #c8860a 0%, #e8a020 100%);"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Memorization Stats (top 3 cards) -->
                     <div class="stats-grid" style="margin-bottom: 1.5rem;">
                         <div class="stat-card">
@@ -1021,41 +1065,11 @@
                         </div>
                     </div>
 
-                    <!-- Review: Stat + Progress Bar on same line -->
-                    <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1rem; align-items: center; margin-bottom: 1.5rem;">
-                        <div class="stat-card" style="margin-bottom: 0; text-align: center;">
-                            <div class="stat-value" id="reviewedCount" style="font-size: 1.8rem;">0</div>
-                            <div class="stat-label" style="font-size: 0.8rem;">Reviewed</div>
-                        </div>
-                        <div class="progress-container" style="margin-bottom: 0;">
-                            <div class="progress-label" style="margin-bottom: 0.4rem;">
-                                <span style="font-weight: 600; font-size: 0.9rem;">Review Progress</span>
-                                <span id="reviewProgressText" style="font-size: 0.85rem;">0 / 0</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="reviewProgressFill" style="width: 0%; background: linear-gradient(90deg, #8b6f47 0%, #d4af37 100%);"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Recitation: Stat + Progress Bar on same line -->
-                    <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1rem; align-items: center; margin-bottom: 1.5rem;">
-                        <div class="stat-card" style="border-top: 3px solid #c8860a; margin-bottom: 0; text-align: center;">
-                            <div class="stat-value" id="recitedCount" style="color: #c8860a; font-size: 1.8rem;">0</div>
-                            <div class="stat-label" style="font-size: 0.8rem;">Pages Recited</div>
-                        </div>
-                        <div class="progress-container" style="margin-bottom: 0;">
-                            <div class="progress-label" style="margin-bottom: 0.4rem;">
-                                <span style="color: #c8860a; font-weight: 600; font-size: 0.9rem;">Recitation Progress</span>
-                                <div style="display: flex; align-items: center; gap: 0.6rem;">
-                                    <span id="recitedProgressText" style="font-size: 0.85rem;">0 / 604</span>
-                                    <button onclick="resetRecitedProgress()" title="Reset recitation progress" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; background: #c8860a; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">↺</button>
-                                </div>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="recitedProgressFill" style="width: 0%; background: linear-gradient(90deg, #c8860a 0%, #e8a020 100%);"></div>
-                            </div>
-                        </div>
+                    <!-- Keep hidden element for reviewedCount (used by JS) -->
+                    <div style="display: none;">
+                        <div id="reviewedCount">0</div>
+                        <div id="reviewProgressText">0 / 0</div>
+                        <div id="reviewProgressFill"></div>
                     </div>
 
                     <!-- Bookmarked Ayahs Section -->
@@ -1152,13 +1166,13 @@
         <!-- Bookmarks Page -->
         <div id="bookmarks" class="page">
             <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
-                    <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin: 0; color: var(--primary);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin: 0; color: var(--primary); flex: 1; min-width: 200px;">
                         🔖 Bookmarked Ayahs
                     </h2>
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;">
                         <span style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">Translation:</span>
-                        <select id="bookmarkTranslationMode" onchange="changeBookmarkTranslation()" style="padding: 0.45rem 0.65rem; font-size: 0.85rem; border-radius: 6px; border: 2px solid var(--primary); background: white; font-weight: 600;">
+                        <select id="bookmarkTranslationMode" onchange="changeBookmarkTranslation()" style="padding: 0.5rem 0.7rem; font-size: 0.9rem; border-radius: 6px; border: 2px solid var(--primary); background: white; font-weight: 600; min-width: 100px;">
                             <option value="hide">Hide</option>
                             <option value="english">English</option>
                             <option value="arabic">Arabic</option>
@@ -2699,13 +2713,13 @@
             
             // Mark page as memorized toggle
             const memorizedToggle = document.createElement('div');
-            memorizedToggle.style.cssText = 'display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;';
+            memorizedToggle.style.cssText = 'display: grid; grid-template-columns: auto auto auto auto; gap: 0.75rem; align-items: center; justify-content: start;';
             memorizedToggle.innerHTML = `
-                <span style="font-size: 0.95rem; font-weight: 600;">Page Memorized</span>
+                <span style="font-size: 0.95rem; font-weight: 600; white-space: nowrap;">Page Memorized</span>
                 <div class="toggle-switch ${allMemorized ? 'active' : ''}" id="pageToggle">
                     <div class="toggle-slider"></div>
                 </div>
-                <span style="font-size: 0.95rem; font-weight: 600; color: #c8860a;">Page Recited</span>
+                <span style="font-size: 0.95rem; font-weight: 600; color: #c8860a; white-space: nowrap;">Page Recited</span>
                 <div class="toggle-switch ${pageRecited ? 'active' : ''}" id="pageRecitedToggle" style="${pageRecited ? 'background: linear-gradient(135deg, #c8860a, #e8a020);' : ''}">
                     <div class="toggle-slider"></div>
                 </div>
