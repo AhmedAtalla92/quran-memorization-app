@@ -3607,6 +3607,10 @@
         async function saveUserData() {
             if (!currentUser) return;
             
+            // Get current page number if in page view
+            const pageFilter = document.getElementById('pageFilter');
+            const currentPage = pageFilter ? pageFilter.value : null;
+            
             const data = {
                 email: currentUser,
                 memorized: Array.from(memorizedVerses),
@@ -3616,7 +3620,8 @@
                 language: language,
                 reciter: selectedReciter,
                 lastViewMode: viewMode,
-                lastVerseIndex: currentVerseIndex
+                lastVerseIndex: currentVerseIndex,
+                lastPageNumber: currentPage
             };
             
             // Save to localStorage as backup
@@ -3702,10 +3707,41 @@
                     // Restore last view mode and position
                     if (result.lastViewMode) {
                         viewMode = result.lastViewMode;
-                        switchViewMode(); // Apply the view mode
+                        
+                        // Set the view mode dropdown
+                        const viewModeFilter = document.getElementById('viewModeFilter');
+                        if (viewModeFilter) {
+                            viewModeFilter.value = viewMode;
+                        }
+                        
+                        // Update UI based on view mode
+                        if (viewMode === 'page') {
+                            document.getElementById('juzFilterGroup').style.display = 'none';
+                            document.getElementById('surahFilterGroup').style.display = 'none';
+                            document.getElementById('ayahFilterGroup').style.display = 'none';
+                            document.getElementById('memorizeFilterContainer').style.display = 'none';
+                            document.getElementById('pageFilterGroup').style.display = 'block';
+                        } else {
+                            document.getElementById('juzFilterGroup').style.display = 'block';
+                            document.getElementById('surahFilterGroup').style.display = 'block';
+                            document.getElementById('ayahFilterGroup').style.display = 'block';
+                            document.getElementById('memorizeFilterContainer').style.display = 'flex';
+                            document.getElementById('pageFilterGroup').style.display = 'none';
+                        }
                     }
+                    
                     if (result.lastVerseIndex !== undefined) {
                         currentVerseIndex = result.lastVerseIndex;
+                    }
+                    
+                    // Restore last page number if in page view
+                    if (viewMode === 'page' && result.lastPageNumber) {
+                        const pageFilter = document.getElementById('pageFilter');
+                        if (pageFilter) {
+                            pageFilter.value = result.lastPageNumber;
+                            // Trigger filterByPage to load that page
+                            filterByPage();
+                        }
                     }
                     
                     console.log('✅ Loaded from database:');
@@ -3715,6 +3751,7 @@
                     console.log('  - Bookmarked:', bookmarkedVerses.size, 'verses');
                     console.log('  - View Mode:', viewMode);
                     console.log('  - Verse Index:', currentVerseIndex);
+                    console.log('  - Page Number:', result.lastPageNumber);
                     console.log('Full result object:', result);
                     
                     // Update stats after loading
@@ -3759,10 +3796,40 @@
                 // Restore last view mode and position
                 if (data.lastViewMode) {
                     viewMode = data.lastViewMode;
-                    switchViewMode(); // Apply the view mode
+                    
+                    // Set the view mode dropdown
+                    const viewModeFilter = document.getElementById('viewModeFilter');
+                    if (viewModeFilter) {
+                        viewModeFilter.value = viewMode;
+                    }
+                    
+                    // Update UI based on view mode
+                    if (viewMode === 'page') {
+                        document.getElementById('juzFilterGroup').style.display = 'none';
+                        document.getElementById('surahFilterGroup').style.display = 'none';
+                        document.getElementById('ayahFilterGroup').style.display = 'none';
+                        document.getElementById('memorizeFilterContainer').style.display = 'none';
+                        document.getElementById('pageFilterGroup').style.display = 'block';
+                    } else {
+                        document.getElementById('juzFilterGroup').style.display = 'block';
+                        document.getElementById('surahFilterGroup').style.display = 'block';
+                        document.getElementById('ayahFilterGroup').style.display = 'block';
+                        document.getElementById('memorizeFilterContainer').style.display = 'flex';
+                        document.getElementById('pageFilterGroup').style.display = 'none';
+                    }
                 }
+                
                 if (data.lastVerseIndex !== undefined) {
                     currentVerseIndex = data.lastVerseIndex;
+                }
+                
+                // Restore last page number if in page view
+                if (viewMode === 'page' && data.lastPageNumber) {
+                    const pageFilter = document.getElementById('pageFilter');
+                    if (pageFilter) {
+                        pageFilter.value = data.lastPageNumber;
+                        filterByPage();
+                    }
                 }
                 
                 console.log('💿 Loaded from localStorage:');
@@ -4681,12 +4748,17 @@
                     bookmarkTranslationSelect.value = bookmarkTranslationMode;
                 }
                 // Ensure quranData is loaded before displaying
-                if (quranData && quranData.length > 0) {
-                    displayBookmarksPage();
-                } else {
-                    console.log('Waiting for Quran data to load...');
-                    setTimeout(() => displayBookmarksPage(), 500);
-                }
+                const tryDisplayBookmarks = (retries = 0) => {
+                    if (quranData && quranData.length > 0) {
+                        displayBookmarksPage();
+                    } else if (retries < 10) {
+                        console.log('Waiting for Quran data to load... attempt', retries + 1);
+                        setTimeout(() => tryDisplayBookmarks(retries + 1), 200);
+                    } else {
+                        console.error('Failed to load Quran data after 10 attempts');
+                    }
+                };
+                tryDisplayBookmarks();
             }
             
             // Refresh verse display when showing memorize page
