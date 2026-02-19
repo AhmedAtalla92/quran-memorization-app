@@ -413,6 +413,23 @@
             transform: translateX(26px);
         }
         
+        /* RTL Support for buttons */
+        [dir="rtl"] button {
+            text-align: right;
+        }
+        
+        [dir="rtl"] .nav-btn {
+            text-align: center;
+        }
+        
+        [dir="rtl"] .verse-controls {
+            flex-direction: row-reverse;
+        }
+        
+        [dir="rtl"] .verse-controls-left {
+            flex-direction: row-reverse;
+        }
+        
         /* Audio Player */
         .audio-controls {
             display: flex;
@@ -885,12 +902,6 @@
             <button class="nav-btn" onclick="showPage('memorize')" data-page="memorize">
                 <span>Memorize</span>
             </button>
-            <button class="nav-btn" onclick="showPage('bookmarks')" data-page="bookmarks">
-                <span>Bookmarks</span>
-            </button>
-            <button class="nav-btn" onclick="showPage('quiz')" data-page="quiz">
-                <span>Quiz</span>
-            </button>
             <button class="nav-btn" onclick="showPage('pray')" data-page="pray">
                 <span>Pray</span>
             </button>
@@ -1022,14 +1033,14 @@
                     <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1rem; align-items: center; margin-bottom: 1.5rem;">
                         <div class="stat-card" style="border-top: 3px solid #c8860a; margin-bottom: 0; text-align: center;">
                             <div class="stat-value" id="recitedCount" style="color: #c8860a; font-size: 1.8rem;">0</div>
-                            <div class="stat-label" style="font-size: 0.8rem;">Pages Recited</div>
+                            <div class="stat-label" id="labelPagesRecited" style="font-size: 0.8rem;">Total Pages Recited</div>
                         </div>
                         <div class="progress-container" style="margin-bottom: 0;">
                             <div class="progress-label" style="margin-bottom: 0.4rem;">
-                                <span style="color: #c8860a; font-weight: 600; font-size: 0.9rem;">Recitation Progress</span>
+                                <span id="labelRecitationProgress" style="color: #c8860a; font-weight: 600; font-size: 0.9rem;">Recitation Progress</span>
                                 <div style="display: flex; align-items: center; gap: 0.6rem;">
                                     <span id="recitedProgressText" style="font-size: 0.85rem;">0 / 604</span>
-                                    <button onclick="resetRecitedProgress()" title="Reset recitation progress" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; background: #c8860a; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">↺</button>
+                                    <button onclick="resetRecitedProgress()" title="Reset recitation progress" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; background: #c8860a; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">↺ Reset</button>
                                 </div>
                             </div>
                             <div class="progress-bar">
@@ -1042,23 +1053,28 @@
                     <div class="stats-grid" style="margin-bottom: 1.5rem;">
                         <div class="stat-card">
                             <div class="stat-value" id="totalVerses">0</div>
-                            <div class="stat-label">Verses Memorized</div>
+                            <div class="stat-label" id="labelTotalVerses">Verses Memorized</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="completionPercent">0%</div>
-                            <div class="stat-label">Completion</div>
+                            <div class="stat-label" id="labelCompletion">Completion</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="surahCount">0</div>
-                            <div class="stat-label">Surahs Done</div>
+                            <div class="stat-label" id="labelSurahsDone">Surahs Done</div>
                         </div>
                     </div>
 
                     <!-- Memorization Progress Bar -->
                     <div class="progress-container" style="margin-bottom: 1.5rem;">
                         <div class="progress-label">
-                            <span style="font-weight: 600;">Memorization Progress</span>
-                            <span id="progressText">0 / 6236 verses</span>
+                            <span id="labelMemorizationProgress" style="font-weight: 600;">Memorization Progress</span>
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <span id="progressText">0 / 6236 verses</span>
+                                <button onclick="showPage('quiz')" style="padding: 0.3rem 0.7rem; font-size: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                                    <span id="btnQuiz">📝 Quiz</span>
+                                </button>
+                            </div>
                         </div>
                         <div class="progress-bar">
                             <div class="progress-fill" id="progressFill" style="width: 0%"></div>
@@ -1511,6 +1527,12 @@
                 versesReviewed: 'Verses Reviewed',
                 memorizationProgress: 'Memorization Progress',
                 reviewProgress: 'Review Progress',
+                recitationProgress: 'Recitation Progress',
+                pagesRecited: 'Total Pages Recited',
+                versesMemorized: 'Verses Memorized',
+                completion: 'Completion',
+                surahsDone: 'Surahs Done',
+                quizButton: '📝 Quiz',
                 signOut: 'Sign Out',
                 // Memorize page
                 memorizationPractice: 'Memorization/Recitation Practice',
@@ -1569,6 +1591,12 @@
                 versesReviewed: 'الآيات المراجعة',
                 memorizationProgress: 'تقدم الحفظ',
                 reviewProgress: 'تقدم المراجعة',
+                recitationProgress: 'تقدم التلاوة',
+                pagesRecited: 'إجمالي الصفحات المتلوة',
+                versesMemorized: 'الآيات المحفوظة',
+                completion: 'الإكمال',
+                surahsDone: 'السور المنجزة',
+                quizButton: '📝 اختبار',
                 signOut: 'تسجيل الخروج',
                 // Memorize page
                 memorizationPractice: 'ممارسة الحفظ/التلاوة',
@@ -1631,25 +1659,36 @@
             // Navigation buttons
             document.querySelector('[data-page="account"]').textContent = t.account;
             document.querySelector('[data-page="memorize"]').textContent = t.memorize;
-            document.querySelector('[data-page="quiz"]').textContent = t.quiz;
+            const prayBtn = document.querySelector('[data-page="pray"]');
+            if (prayBtn) prayBtn.textContent = 'Pray'; // Keep English for now
             
             // Account page
             const accountH2 = document.querySelector('#account h2');
             if (accountH2) accountH2.textContent = t.yourAccount;
             
-            // Stats labels
-            const statLabels = document.querySelectorAll('.stat-label');
-            if (statLabels[0]) statLabels[0].textContent = t.totalMemorized;
-            if (statLabels[1]) statLabels[1].textContent = t.quranCompletion;
-            if (statLabels[2]) statLabels[2].textContent = t.surahsCompleted;
-            if (statLabels[3]) statLabels[3].textContent = t.versesReviewed;
+            // Account stat labels with IDs
+            const labelPagesRecited = document.getElementById('labelPagesRecited');
+            if (labelPagesRecited) labelPagesRecited.textContent = t.pagesRecited;
             
-            // Progress labels
-            const progressLabels = document.querySelectorAll('.progress-label span:first-child');
-            if (progressLabels[0]) progressLabels[0].textContent = t.memorizationProgress;
-            if (progressLabels[1]) progressLabels[1].textContent = t.reviewProgress;
+            const labelRecitationProgress = document.getElementById('labelRecitationProgress');
+            if (labelRecitationProgress) labelRecitationProgress.textContent = t.recitationProgress;
             
-            // Sign out button (use onclick attribute to be specific)
+            const labelTotalVerses = document.getElementById('labelTotalVerses');
+            if (labelTotalVerses) labelTotalVerses.textContent = t.versesMemorized;
+            
+            const labelCompletion = document.getElementById('labelCompletion');
+            if (labelCompletion) labelCompletion.textContent = t.completion;
+            
+            const labelSurahsDone = document.getElementById('labelSurahsDone');
+            if (labelSurahsDone) labelSurahsDone.textContent = t.surahsDone;
+            
+            const labelMemorizationProgress = document.getElementById('labelMemorizationProgress');
+            if (labelMemorizationProgress) labelMemorizationProgress.textContent = t.memorizationProgress;
+            
+            const btnQuiz = document.getElementById('btnQuiz');
+            if (btnQuiz) btnQuiz.textContent = t.quizButton;
+            
+            // Sign out button
             const signOutBtn = document.querySelector('#accountDashboard button[onclick="logout()"]');
             if (signOutBtn) signOutBtn.textContent = t.signOut;
             
@@ -2090,6 +2129,20 @@
 
         async function initApp() {
             console.log('=== INITIALIZING APP ===');
+            
+            // Check for app updates (PWA cache busting)
+            const APP_VERSION = '2.1.0'; // Increment this when pushing updates
+            const savedVersion = localStorage.getItem('app_version');
+            if (savedVersion !== APP_VERSION) {
+                console.log('New version detected, clearing cache...');
+                localStorage.setItem('app_version', APP_VERSION);
+                // Force reload from server
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => caches.delete(name));
+                    });
+                }
+            }
             
             // Load saved language
             const savedLang = localStorage.getItem('quran_language');
@@ -3064,30 +3117,15 @@
             
             const isLastPage = index + versesPerPage >= filteredVerses.length;
             
-            if (allMemorized) {
-                nextBtn.textContent = 'Next →';
-                if (isLastPage) {
-                    nextBtn.disabled = true;
-                    nextBtn.style.opacity = '0.5';
-                    nextBtn.style.cursor = 'not-allowed';
-                }
-            } else {
-                nextBtn.textContent = isLastPage ? 'Mark All as Memorized/Recited' : 'Next (Mark all) →';
+            // Always show "Next" without marking as memorized
+            nextBtn.textContent = 'Next →';
+            if (isLastPage) {
+                nextBtn.disabled = true;
+                nextBtn.style.opacity = '0.5';
+                nextBtn.style.cursor = 'not-allowed';
             }
             
             nextBtn.onclick = () => {
-                if (!allMemorized) {
-                    versesToDisplay.forEach(v => {
-                        memorizedVerses.add(`${v.surah}:${v.ayah}`);
-                    });
-                    saveUserData();
-                    updateAccountStats();
-                    
-                    if (isLastPage) {
-                        displayVerseWithNavigation(index);
-                        return;
-                    }
-                }
                 const nextIndex = index + versesPerPage;
                 if (nextIndex < filteredVerses.length) {
                     displayVerseWithNavigation(nextIndex);
@@ -3142,9 +3180,34 @@
                 stopAudio();
             });
             
-            // When audio ends, reset button
+            // When audio ends, auto-play next ayah in the current page
             audioPlayer.addEventListener('ended', () => {
-                stopAudio();
+                // Find the current ayah index in filteredVerses
+                const currentAyahIndex = filteredVerses.findIndex(v => {
+                    const globalAyahNum = quranData.findIndex(qv => qv.surah === v.surah && qv.ayah === v.ayah) + 1;
+                    return globalAyahNum === parseInt(ayahNumber);
+                });
+                
+                // Check if there's a next ayah on the current page
+                const pageStart = Math.floor(currentVerseIndex / versesPerPage) * versesPerPage;
+                const pageEnd = Math.min(pageStart + versesPerPage, filteredVerses.length);
+                
+                if (currentAyahIndex >= 0 && currentAyahIndex + 1 < pageEnd && currentAyahIndex + 1 < filteredVerses.length) {
+                    // Auto-play next ayah
+                    const nextVerse = filteredVerses[currentAyahIndex + 1];
+                    const nextGlobalAyahNum = quranData.findIndex(v => v.surah === nextVerse.surah && v.ayah === nextVerse.ayah) + 1;
+                    const nextButton = document.querySelector(`[data-ayah="${nextGlobalAyahNum}"]`);
+                    
+                    if (nextButton) {
+                        setTimeout(() => {
+                            playAudio(nextGlobalAyahNum, nextVerse.surah, nextVerse.ayah, nextButton);
+                        }, 500); // Small delay between ayahs
+                    } else {
+                        stopAudio();
+                    }
+                } else {
+                    stopAudio();
+                }
             });
             
             // Handle errors
