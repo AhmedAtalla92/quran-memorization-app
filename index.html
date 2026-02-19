@@ -2816,6 +2816,14 @@
             // Page header
             const pageHeader = document.createElement('div');
             const juzNumber = versesToDisplay[0].juz;
+            
+            // Get unique surahs on this page
+            const surahsOnPage = [...new Set(versesToDisplay.map(v => v.surah))];
+            const surahNamesText = surahsOnPage.map(surahNum => {
+                const name = getSurahName(surahNum);
+                return `${name} (${surahNum})`;
+            }).join(', ');
+            
             pageHeader.style.cssText = 'text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);';
             pageHeader.innerHTML = `
                 <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
@@ -2824,6 +2832,9 @@
                 </div>
                 <div style="font-size: 0.95rem; color: var(--accent); margin-top: 0.35rem; font-weight: 600;">
                     Juz ${juzNumber} | الجزء ${juzNumber}
+                </div>
+                <div style="font-size: 0.9rem; color: var(--primary); margin-top: 0.4rem; font-weight: 600;">
+                    ${surahNamesText}
                 </div>
                 <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
                     ${versesToDisplay.length} verses | ${versesToDisplay.length} آية
