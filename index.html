@@ -121,35 +121,13 @@
             letter-spacing: 0.5px;
         }
 
-        .nav-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
+        .nav-btn:hover {
             background: var(--secondary);
-            transition: left 0.3s ease;
-            z-index: 0;
-        }
-
-        .nav-btn:hover::before {
-            left: 0;
-        }
-
-        .nav-btn span {
-            position: relative;
-            z-index: 2;
-            color: white;
         }
 
         .nav-btn.active {
             background: var(--secondary);
             box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-        }
-        
-        .nav-btn.active::before {
-            left: 0;
         }
 
         /* Page Sections */
@@ -1027,7 +1005,7 @@
                     <!-- Preferences - all on one line -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.85rem;">Language</label>
+                            <label id="labelLanguage" style="font-size: 0.85rem;">Language / اللغة</label>
                             <select id="languageSelector" onchange="changeLanguage()" style="font-size: 0.9rem;">
                                 <option value="en">English</option>
                                 <option value="ar">العربية</option>
@@ -1035,7 +1013,7 @@
                         </div>
                         
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.85rem;">Translation</label>
+                            <label id="labelTranslation" style="font-size: 0.85rem;">Translation / تفسير</label>
                             <select id="showTranslation" onchange="toggleTranslationDisplay()" style="font-size: 0.9rem;">
                                 <option value="english">English</option>
                                 <option value="arabic">Arabic (تفسير)</option>
@@ -1044,7 +1022,7 @@
                         </div>
                         
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label id="labelReciter" style="font-size: 0.85rem;">Reciter</label>
+                            <label id="labelReciter" style="font-size: 0.85rem;">Reciter / القارئ</label>
                             <select id="reciterSelector" onchange="changeReciter()" style="font-size: 0.9rem;">
                                 <option value="ar.alafasy">Mishary Alafasy</option>
                                 <option value="Maher_AlMuaiqly_64kbps">Maher Al Muaiqly</option>
@@ -1121,19 +1099,19 @@
 
                     <!-- Bookmarked Ayahs Section -->
                     <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
-                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <h3 id="bookmarkedAyahsTitle" style="font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                             🔖 Bookmarked Ayahs
                             <span id="bookmarkCount" style="font-size: 0.9rem; background: var(--secondary); color: white; padding: 0.2rem 0.6rem; border-radius: 12px;">0</span>
                         </h3>
                         
                         <div id="bookmarksEmpty" style="text-align: center; padding: 2rem; color: var(--text-light); display: none;">
                             <div style="font-size: 3rem; margin-bottom: 0.5rem;">📖</div>
-                            <div>No bookmarked ayahs yet</div>
-                            <div style="font-size: 0.85rem; margin-top: 0.5rem;">Go to "By Page" view and click on ayah numbers to bookmark them</div>
+                            <div id="noBookmarksText">No bookmarked ayahs yet</div>
+                            <div id="bookmarkInstructionText" style="font-size: 0.85rem; margin-top: 0.5rem;">Go to "By Page" view and click on ayah numbers to bookmark them</div>
                         </div>
                         
                         <div id="bookmarksList" style="display: none;">
-                            <button onclick="viewAllBookmarks()" style="width: 100%; background: var(--secondary); margin-bottom: 1rem; font-size: 1rem; padding: 0.85rem;">
+                            <button id="viewAllBookmarksBtn" onclick="viewAllBookmarks()" style="width: 100%; background: var(--secondary); margin-bottom: 1rem; font-size: 1rem; padding: 0.85rem;">
                                 📖 View All Bookmarked Ayahs
                             </button>
                             
@@ -1565,6 +1543,10 @@
                 completion: 'Completion',
                 surahsDone: 'Surahs Done',
                 quizButton: '📝 Quiz',
+                bookmarkedAyahs: '🔖 Bookmarked Ayahs',
+                noBookmarksYet: 'No bookmarked ayahs yet',
+                bookmarkInstruction: 'Go to "By Page" view and click on ayah numbers to bookmark them',
+                viewAllBookmarks: '📖 View All Bookmarked Ayahs',
                 signOut: 'Sign Out',
                 // Memorize page
                 memorizationPractice: 'Memorization/Recitation Practice',
@@ -1617,7 +1599,7 @@
                 account: 'الحساب',
                 memorize: 'الحفظ/التلاوة',
                 quiz: 'الاختبار',
-                pray: 'صلِّ',
+                pray: 'الصلاة',
                 // Account page
                 yourAccount: 'حسابك',
                 welcome: 'مرحباً',
@@ -1634,6 +1616,10 @@
                 completion: 'الإكمال',
                 surahsDone: 'السور المنجزة',
                 quizButton: '📝 اختبار',
+                bookmarkedAyahs: '🔖 الآيات المحفوظة',
+                noBookmarksYet: 'لا توجد آيات محفوظة بعد',
+                bookmarkInstruction: 'انتقل إلى "عرض الصفحة" وانقر على أرقام الآيات لحفظها',
+                viewAllBookmarks: '📖 عرض جميع الآيات المحفوظة',
                 signOut: 'تسجيل الخروج',
                 // Memorize page
                 memorizationPractice: 'ممارسة الحفظ/التلاوة',
@@ -1693,6 +1679,9 @@
             // Repopulate filters with new language
             populateFilters();
             
+            // Repopulate reciters with new language
+            populateReciters();
+            
             // Update all UI text
             updateUILanguage();
         }
@@ -1731,6 +1720,23 @@
             
             const btnQuiz = document.getElementById('btnQuiz');
             if (btnQuiz) btnQuiz.textContent = t.quizButton;
+            
+            // Bookmarked Ayahs section
+            const bookmarkedAyahsTitle = document.getElementById('bookmarkedAyahsTitle');
+            if (bookmarkedAyahsTitle) {
+                const countSpan = bookmarkedAyahsTitle.querySelector('#bookmarkCount');
+                const countValue = countSpan ? countSpan.textContent : '0';
+                bookmarkedAyahsTitle.innerHTML = `${t.bookmarkedAyahs} <span id="bookmarkCount" style="font-size: 0.9rem; background: var(--secondary); color: white; padding: 0.2rem 0.6rem; border-radius: 12px;">${countValue}</span>`;
+            }
+            
+            const noBookmarksText = document.getElementById('noBookmarksText');
+            if (noBookmarksText) noBookmarksText.textContent = t.noBookmarksYet;
+            
+            const bookmarkInstructionText = document.getElementById('bookmarkInstructionText');
+            if (bookmarkInstructionText) bookmarkInstructionText.textContent = t.bookmarkInstruction;
+            
+            const viewAllBookmarksBtn = document.getElementById('viewAllBookmarksBtn');
+            if (viewAllBookmarksBtn) viewAllBookmarksBtn.textContent = t.viewAllBookmarks;
             
             // Sign out button
             const signOutBtn = document.querySelector('#accountDashboard button[onclick="logout()"]');
@@ -1803,7 +1809,7 @@
             if (optionAllSurahs) optionAllSurahs.textContent = t.allSurahs;
             
             const labelAyah = document.getElementById('labelAyah');
-            if (labelAyah) labelAyah.textContent = t.ayah;
+            if (labelAyah) labelAyah.textContent = t.ayahRange;
             
             const optionAllAyahs = document.getElementById('optionAllAyahs');
             if (optionAllAyahs) optionAllAyahs.textContent = t.allAyahs;
@@ -2247,6 +2253,7 @@
             
             await loadQuranData();
             populateFilters();
+            populateReciters(); // Populate reciter names based on language
             await checkSavedUser(); // Wait for user data to load
             updateUILanguage();
             
@@ -2537,6 +2544,35 @@
             if (filteredVerses.length > 0) {
                 displayVerseWithNavigation(currentVerseIndex);
             }
+        }
+        
+        const recitersData = [
+            { value: 'ar.alafasy', en: 'Mishary Alafasy', ar: 'مشاري راشد العفاسي' },
+            { value: 'Maher_AlMuaiqly_64kbps', en: 'Maher Al Muaiqly', ar: 'ماهر المعيقلي' },
+            { value: 'ahmed_ibn_ali_al_ajamy_128kbps', en: 'Ahmed Al Ajmi', ar: 'أحمد العجمي' },
+            { value: 'Saood_ash-Shuraym_64kbps', en: 'Saud Ash-Shuraim', ar: 'سعود الشريم' },
+            { value: 'Ghamadi_40kbps', en: 'Saad Al-Ghamdi', ar: 'سعد الغامدي' },
+            { value: 'Yasser_Ad-Dussary_128kbps', en: 'Yasser Al-Dosari', ar: 'ياسر الدوسري' },
+            { value: 'Hudhaify_128kbps', en: 'Ali Al-Hudhaify', ar: 'علي الحذيفي' },
+            { value: 'Abdul_Basit_Murattal_192kbps', en: 'Abdul Basit', ar: 'عبد الباسط عبد الصمد' },
+            { value: 'Abdurrahmaan_As-Sudais_192kbps', en: 'Abdurrahman As-Sudais', ar: 'عبد الرحمن السديس' },
+            { value: 'Abu_Bakr_Ash-Shaatree_128kbps', en: 'Abu Bakr Ash-Shatri', ar: 'أبو بكر الشاطري' }
+        ];
+        
+        function populateReciters() {
+            const reciterSelector = document.getElementById('reciterSelector');
+            const currentValue = reciterSelector.value;
+            reciterSelector.innerHTML = '';
+            
+            recitersData.forEach(reciter => {
+                const option = document.createElement('option');
+                option.value = reciter.value;
+                option.textContent = language === 'ar' ? reciter.ar : reciter.en;
+                if (reciter.value === currentValue) {
+                    option.selected = true;
+                }
+                reciterSelector.appendChild(option);
+            });
         }
         
         function changeReciter() {
@@ -3216,7 +3252,7 @@
             navHTML.style.cssText = 'display: flex; justify-content: space-between; margin-top: 1.5rem; gap: 1rem; align-items: center;';
             
             const prevBtn = document.createElement('button');
-            prevBtn.textContent = '← Previous';
+            prevBtn.textContent = '← ' + translations[language].previous;
             prevBtn.onclick = () => displayVerseWithNavigation(Math.max(0, index - versesPerPage));
             if (index === 0) {
                 prevBtn.disabled = true;
@@ -3237,7 +3273,7 @@
             const isLastPage = index + versesPerPage >= filteredVerses.length;
             
             // Always show "Next" without marking as memorized
-            nextBtn.textContent = 'Next →';
+            nextBtn.textContent = translations[language].next + ' →';
             if (isLastPage) {
                 nextBtn.disabled = true;
                 nextBtn.style.opacity = '0.5';
