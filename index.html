@@ -973,6 +973,28 @@
                         </div>
                     </div>
 
+                    <!-- Bookmarked Ayahs Section -->
+                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            🔖 Bookmarked Ayahs
+                            <span id="bookmarkCount" style="font-size: 0.9rem; background: var(--secondary); color: white; padding: 0.2rem 0.6rem; border-radius: 12px;">0</span>
+                        </h3>
+                        
+                        <div id="bookmarksEmpty" style="text-align: center; padding: 2rem; color: var(--text-light); display: none;">
+                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">📖</div>
+                            <div>No bookmarked ayahs yet</div>
+                            <div style="font-size: 0.85rem; margin-top: 0.5rem;">Go to "By Page" view and click on ayah numbers to bookmark them</div>
+                        </div>
+                        
+                        <div id="bookmarksList" style="display: none;">
+                            <button onclick="viewAllBookmarks()" style="width: 100%; background: var(--secondary); margin-bottom: 1rem; font-size: 1rem; padding: 0.85rem;">
+                                📖 View All Bookmarked Ayahs
+                            </button>
+                            
+                            <div id="bookmarksPreview" style="max-height: 300px; overflow-y: auto; background: var(--bg-light); border-radius: 8px; padding: 1rem;"></div>
+                        </div>
+                    </div>
+
                     <button onclick="logout()" style="background: var(--error); margin-top: 2rem;">Sign Out</button>
                 </div>
             </div>
@@ -1337,6 +1359,7 @@
         let memorizedVerses = new Set();
         let reviewedVerses = new Set();
         let recitedPages = new Set(); // Tracks page numbers 1-604
+        let bookmarkedVerses = new Set(); // Tracks bookmarked ayahs
         let currentVerse = null;
         let quizScore = 0;
         let quizTotal = 0;
@@ -2443,10 +2466,14 @@
             
             // Page header
             const pageHeader = document.createElement('div');
+            const juzNumber = versesToDisplay[0].juz;
             pageHeader.style.cssText = 'text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);';
             pageHeader.innerHTML = `
                 <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary);">
                     Page ${pageNumber} | صفحة ${pageNumber}
+                </div>
+                <div style="font-size: 0.95rem; color: var(--accent); margin-top: 0.35rem; font-weight: 600;">
+                    Juz ${juzNumber} | الجزء ${juzNumber}
                 </div>
                 <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
                     ${versesToDisplay.length} verses | ${versesToDisplay.length} آية
@@ -2458,12 +2485,36 @@
             const arabicContainer = document.createElement('div');
             arabicContainer.style.cssText = 'font-family: "Amiri", serif; font-size: 2rem; line-height: 2.8; text-align: right; direction: rtl; margin: 2rem 0; padding: 1.5rem; background: var(--bg-light); border-radius: 12px;';
             
-            let arabicText = '';
             versesToDisplay.forEach((verse, i) => {
-                // Add verse marker with number
-                arabicText += verse.arab + ' ۝' + verse.ayah + ' ';
+                const verseKey = `${verse.surah}:${verse.ayah}`;
+                const isBookmarked = bookmarkedVerses.has(verseKey);
+                
+                // Add verse text
+                const verseSpan = document.createElement('span');
+                verseSpan.textContent = verse.arab + ' ';
+                arabicContainer.appendChild(verseSpan);
+                
+                // Add clickable ayah number
+                const ayahMarker = document.createElement('span');
+                ayahMarker.textContent = '۝' + verse.ayah + ' ';
+                ayahMarker.style.cssText = `cursor: pointer; transition: all 0.2s ease; color: ${isBookmarked ? 'var(--secondary)' : 'inherit'}; font-weight: ${isBookmarked ? '700' : 'normal'};`;
+                ayahMarker.title = isBookmarked ? 'Click to remove bookmark' : 'Click to bookmark this ayah';
+                ayahMarker.onclick = () => toggleBookmark(verseKey);
+                
+                // Add hover effect
+                ayahMarker.onmouseenter = () => {
+                    ayahMarker.style.color = 'var(--secondary)';
+                    ayahMarker.style.transform = 'scale(1.2)';
+                    ayahMarker.style.display = 'inline-block';
+                };
+                ayahMarker.onmouseleave = () => {
+                    ayahMarker.style.color = isBookmarked ? 'var(--secondary)' : 'inherit';
+                    ayahMarker.style.transform = 'scale(1)';
+                };
+                
+                arabicContainer.appendChild(ayahMarker);
             });
-            arabicContainer.textContent = arabicText;
+            
             pageCard.appendChild(arabicContainer);
             
             // Page controls
@@ -2964,6 +3015,25 @@
             displayVerseWithNavigation(currentVerseIndex);
         }
 
+        function toggleBookmark(verseKey) {
+            if (!currentUser) {
+                alert('Please log in to save bookmarks');
+                return;
+            }
+
+            if (bookmarkedVerses.has(verseKey)) {
+                bookmarkedVerses.delete(verseKey);
+            } else {
+                bookmarkedVerses.add(verseKey);
+            }
+
+            saveUserData();
+            updateAccountStats();
+            
+            // Refresh the current page display
+            displayVerseWithNavigation(currentVerseIndex);
+        }
+
 
         // Display Single Verse
         function displayVerse(verse) {
@@ -3099,6 +3169,7 @@
             memorizedVerses.clear();
             reviewedVerses.clear();
             recitedPages.clear();
+            bookmarkedVerses.clear();
             
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('accountDashboard').style.display = 'none';
@@ -3131,6 +3202,7 @@
                 memorized: Array.from(memorizedVerses),
                 reviewed: Array.from(reviewedVerses),
                 recited: Array.from(recitedPages),
+                bookmarked: Array.from(bookmarkedVerses),
                 language: language,
                 reciter: selectedReciter
             };
@@ -3164,6 +3236,7 @@
                     memorizedVerses = new Set(result.memorized || []);
                     reviewedVerses = new Set(result.reviewed || []);
                     recitedPages = new Set(result.recited || []);
+                    bookmarkedVerses = new Set(result.bookmarked || []);
                     
                     // Load language preference
                     if (result.language) {
@@ -3200,6 +3273,7 @@
                 memorizedVerses = new Set(data.memorized || []);
                 reviewedVerses = new Set(data.reviewed || []);
                 recitedPages = new Set(data.recited || []);
+                bookmarkedVerses = new Set(data.bookmarked || []);
                 
                 // Load language preference
                 if (data.language) {
@@ -3265,8 +3339,76 @@
             document.getElementById('recitedProgressText').textContent = `${recitedCount} / ${totalPages} pages`;
             document.getElementById('recitedProgressFill').style.width = recitedPercentage + '%';
             
+            // Update bookmarks
+            updateBookmarksDisplay();
+            
             // Update quiz surah filter
             updateQuizSurahFilter();
+        }
+
+        function updateBookmarksDisplay() {
+            const bookmarkCount = document.getElementById('bookmarkCount');
+            const bookmarksEmpty = document.getElementById('bookmarksEmpty');
+            const bookmarksList = document.getElementById('bookmarksList');
+            const bookmarksPreview = document.getElementById('bookmarksPreview');
+            
+            if (!bookmarkCount) return;
+            
+            bookmarkCount.textContent = bookmarkedVerses.size;
+            
+            if (bookmarkedVerses.size === 0) {
+                bookmarksEmpty.style.display = 'block';
+                bookmarksList.style.display = 'none';
+            } else {
+                bookmarksEmpty.style.display = 'none';
+                bookmarksList.style.display = 'block';
+                
+                // Show preview of first 5 bookmarks
+                bookmarksPreview.innerHTML = '';
+                const bookmarksArray = Array.from(bookmarkedVerses).slice(0, 5);
+                
+                bookmarksArray.forEach(verseKey => {
+                    const [surah, ayah] = verseKey.split(':');
+                    const verseData = quranData.find(v => v.surah === parseInt(surah) && v.ayah === parseInt(ayah));
+                    
+                    if (verseData) {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'padding: 0.75rem; margin-bottom: 0.5rem; background: white; border-radius: 6px; border-left: 3px solid var(--secondary);';
+                        item.innerHTML = `
+                            <div style="font-size: 0.85rem; color: var(--accent); font-weight: 600; margin-bottom: 0.25rem;">
+                                Surah ${surah}, Ayah ${ayah}
+                            </div>
+                            <div style="font-size: 0.9rem; direction: rtl; text-align: right; font-family: 'Amiri', serif;">
+                                ${verseData.arab.substring(0, 100)}${verseData.arab.length > 100 ? '...' : ''}
+                            </div>
+                        `;
+                        bookmarksPreview.appendChild(item);
+                    }
+                });
+                
+                if (bookmarkedVerses.size > 5) {
+                    const more = document.createElement('div');
+                    more.style.cssText = 'text-align: center; padding: 0.5rem; color: var(--text-light); font-size: 0.85rem;';
+                    more.textContent = `+${bookmarkedVerses.size - 5} more bookmarks`;
+                    bookmarksPreview.appendChild(more);
+                }
+            }
+        }
+
+        function viewAllBookmarks() {
+            if (bookmarkedVerses.size === 0) return;
+            
+            // Switch to memorize page and filter to show only bookmarked verses
+            showPage('memorize');
+            
+            // Filter quranData to show only bookmarked verses
+            filteredVerses = quranData.filter(v => bookmarkedVerses.has(`${v.surah}:${v.ayah}`));
+            versesPerPage = filteredVerses.length; // Show all at once
+            currentVerseIndex = 0;
+            
+            if (filteredVerses.length > 0) {
+                displayVerseWithNavigation(0);
+            }
         }
         
         function updateQuizSurahFilter() {
