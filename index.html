@@ -3263,7 +3263,14 @@
             
             // Save to localStorage as backup
             localStorage.setItem(`quran_data_${currentUser}`, JSON.stringify(data));
-            console.log('Saving data:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed,', recitedPages.size, 'recited pages,', bookmarkedVerses.size, 'bookmarked');
+            console.log('💾 Saving data:');
+            console.log('  - Memorized:', memorizedVerses.size, 'verses');
+            console.log('  - Reviewed:', reviewedVerses.size, 'verses');
+            console.log('  - Recited:', recitedPages.size, 'pages');
+            console.log('  - Bookmarked:', bookmarkedVerses.size, 'verses');
+            console.log('  - View Mode:', viewMode);
+            console.log('  - Verse Index:', currentVerseIndex);
+            console.log('Full data object:', data);
             
             // Save to database
             try {
@@ -3273,9 +3280,14 @@
                     body: JSON.stringify(data)
                 });
                 const result = await response.json();
-                console.log('Progress saved to database:', result);
+                console.log('✅ Backend save response:', result);
+                if (result.success) {
+                    console.log('✅ Data successfully saved to backend');
+                } else {
+                    console.warn('⚠️ Backend save may have failed:', result);
+                }
             } catch (error) {
-                console.error('Failed to save to database:', error);
+                console.error('❌ Failed to save to database:', error);
             }
         }
 
@@ -3292,6 +3304,17 @@
                     reviewedVerses = new Set(result.reviewed || []);
                     recitedPages = new Set(result.recited || []);
                     bookmarkedVerses = new Set(result.bookmarked || []);
+                    
+                    // Warn if backend doesn't have new fields
+                    if (!result.hasOwnProperty('recited')) {
+                        console.warn('⚠️ Backend database does not have "recited" field. Update backend schema to persist recited pages.');
+                    }
+                    if (!result.hasOwnProperty('bookmarked')) {
+                        console.warn('⚠️ Backend database does not have "bookmarked" field. Update backend schema to persist bookmarks.');
+                    }
+                    if (!result.hasOwnProperty('lastViewMode')) {
+                        console.warn('⚠️ Backend database does not have "lastViewMode" field. Update backend schema to persist view mode.');
+                    }
                     
                     // Load language preference
                     if (result.language) {
@@ -3315,7 +3338,14 @@
                         currentVerseIndex = result.lastVerseIndex;
                     }
                     
-                    console.log('Loaded from database:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed,', recitedPages.size, 'recited pages,', bookmarkedVerses.size, 'bookmarked');
+                    console.log('✅ Loaded from database:');
+                    console.log('  - Memorized:', memorizedVerses.size, 'verses');
+                    console.log('  - Reviewed:', reviewedVerses.size, 'verses');
+                    console.log('  - Recited:', recitedPages.size, 'pages');
+                    console.log('  - Bookmarked:', bookmarkedVerses.size, 'verses');
+                    console.log('  - View Mode:', viewMode);
+                    console.log('  - Verse Index:', currentVerseIndex);
+                    console.log('Full result object:', result);
                     
                     // Update stats after loading
                     updateAccountStats();
@@ -3361,7 +3391,14 @@
                     currentVerseIndex = data.lastVerseIndex;
                 }
                 
-                console.log('Loaded from localStorage:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed,', recitedPages.size, 'recited pages,', bookmarkedVerses.size, 'bookmarked');
+                console.log('💿 Loaded from localStorage:');
+                console.log('  - Memorized:', memorizedVerses.size, 'verses');
+                console.log('  - Reviewed:', reviewedVerses.size, 'verses');
+                console.log('  - Recited:', recitedPages.size, 'pages');
+                console.log('  - Bookmarked:', bookmarkedVerses.size, 'verses');
+                console.log('  - View Mode:', viewMode);
+                console.log('  - Verse Index:', currentVerseIndex);
+                console.log('Full data object:', data);
                 
                 // Update stats after loading
                 updateAccountStats();
