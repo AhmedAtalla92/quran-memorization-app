@@ -679,6 +679,51 @@
                 margin-bottom: 0.5rem;
             }
             
+            /* Compact stats cards on mobile */
+            .stat-card {
+                padding: 0.75rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .stat-card h3 {
+                font-size: 1.1rem !important;
+                margin-bottom: 0.35rem !important;
+            }
+            
+            .stat-card .stat-value {
+                font-size: 1.4rem !important;
+            }
+            
+            /* Compact progress containers */
+            .progress-container {
+                padding: 0.75rem !important;
+                margin-bottom: 0.75rem !important;
+            }
+            
+            .progress-label {
+                font-size: 0.85rem !important;
+                margin-bottom: 0.4rem !important;
+            }
+            
+            .progress-bar {
+                height: 6px !important;
+            }
+            
+            /* Fix filter button text overflow */
+            .filters select,
+            .filters button {
+                font-size: 0.75rem !important;
+                padding: 0.4rem 0.3rem !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .filters label {
+                font-size: 0.75rem !important;
+                margin-bottom: 0.2rem !important;
+            }
+            
             /* BIGGER filter labels */
             .form-group label {
                 font-size: 0.9rem;
@@ -1007,32 +1052,23 @@
                     <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin: 0; color: var(--primary);">
                         Memorization Practice
                     </h2>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button id="viewAllBtn" onclick="changeView('all')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--secondary);">
-                            All
-                        </button>
-                        <button id="viewMemorizedBtn" onclick="changeView('memorized')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--text-light);">
-                            Memorized
-                        </button>
-                        <button id="viewNotMemorizedBtn" onclick="changeView('not_memorized')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--text-light);">
-                            Not Memorized
-                        </button>
-                    </div>
                 </div>
 
                 <div class="filters">
+                    <div class="form-group">
+                        <label>Filter Verses</label>
+                        <select id="viewFilter" onchange="changeView(this.value)" style="font-size: 0.95rem;">
+                            <option value="all">All Verses</option>
+                            <option value="memorized">Memorized Only</option>
+                            <option value="not_memorized">Not Memorized Only</option>
+                        </select>
+                    </div>
+                    
                     <div class="form-group">
                         <label id="labelViewMode">View Mode</label>
                         <select id="viewModeFilter" onchange="switchViewMode()">
                             <option value="surah" id="optionBySurah">By Surah</option>
                             <option value="page" id="optionByPage">By Page (Mushaf)</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="display: none;">
-                        <select id="viewFilter">
-                            <option value="all" id="optionAllVerses">All Verses</option>
-                            <option value="memorized" id="optionMemorizedOnly">Memorized Only</option>
-                            <option value="not_memorized" id="optionNotMemorized">Not Memorized</option>
                         </select>
                     </div>
                     <div class="form-group" id="juzFilterGroup">
@@ -2229,6 +2265,25 @@
             }
         }
         
+        function changePageTranslation() {
+            const value = document.getElementById('pageTranslationMode').value;
+            translationMode = value;
+            
+            // Save to localStorage
+            localStorage.setItem('quran_translation_mode', value);
+            
+            // Update main account translation dropdown to match
+            const mainTranslation = document.getElementById('showTranslation');
+            if (mainTranslation) {
+                mainTranslation.value = value;
+            }
+            
+            // Refresh display
+            if (filteredVerses.length > 0) {
+                displayVerseWithNavigation(currentVerseIndex);
+            }
+        }
+        
         function changeReciter() {
             const reciter = document.getElementById('reciterSelector').value;
             selectedReciter = reciter;
@@ -2583,6 +2638,12 @@
                 <div class="toggle-switch ${pageRecited ? 'active' : ''}" id="pageRecitedToggle" style="${pageRecited ? 'background: linear-gradient(135deg, #c8860a, #e8a020);' : ''}">
                     <div class="toggle-slider"></div>
                 </div>
+                <span style="font-size: 0.95rem; font-weight: 600; color: var(--primary); margin-left: 0.5rem;">Translation</span>
+                <select id="pageTranslationMode" onchange="changePageTranslation()" style="padding: 0.4rem 0.6rem; font-size: 0.85rem; border-radius: 6px; border: 2px solid var(--primary); background: white;">
+                    <option value="hide" ${translationMode === 'hide' ? 'selected' : ''}>Hide</option>
+                    <option value="english" ${translationMode === 'english' ? 'selected' : ''}>English</option>
+                    <option value="arabic" ${translationMode === 'arabic' ? 'selected' : ''}>Arabic</option>
+                </select>
             `;
             
             memorizedToggle.querySelector('#pageToggle').onclick = () => {
@@ -2847,8 +2908,8 @@
                 verseCard.innerHTML = `
                     <div class="verse-info">
                         <span style="font-weight: 700; color: var(--primary);">${surahName}</span> - Surah ${verse.surah}, Ayah ${verse.ayah} (Juz ${verse.juz})
-                        <button class="bookmark-btn" data-verse-key="${verseKey}" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.25rem 0.5rem; margin-left: 0.5rem; transition: transform 0.2s ease;" title="${isBookmarked ? 'Remove bookmark' : 'Bookmark this ayah'}">
-                            ${isBookmarked ? '🔖' : '📑'}
+                        <button class="bookmark-btn" data-verse-key="${verseKey}" style="background: ${isBookmarked ? 'var(--secondary)' : 'var(--success)'}; color: white; border: none; font-size: 0.85rem; cursor: pointer; padding: 0.4rem 0.75rem; margin-left: 0.5rem; border-radius: 6px; font-weight: 600; transition: all 0.2s ease;" title="${isBookmarked ? 'Remove bookmark' : 'Bookmark this ayah'}">
+                            ${isBookmarked ? '✓ Saved' : '+ Add'}
                         </button>
                     </div>
                     <div class="verse-arabic">${verse.arab || verse.ar || 'Arabic text not available'}</div>
@@ -3111,7 +3172,7 @@
         }
 
         // Account Management
-        function login() {
+        async function login() {
             try {
                 console.log('=== LOGIN FUNCTION CALLED ===');
                 
@@ -3151,9 +3212,9 @@
                 currentUser = email;
                 console.log('Current user set to:', currentUser);
                 
-                // Load user data
+                // Load user data and WAIT for it to complete
                 console.log('Loading user data...');
-                loadUserData();
+                await loadUserData();
                 console.log('User data loaded');
                 
                 // Get DOM elements
@@ -3238,11 +3299,11 @@
             alert('Recitation progress has been reset!');
         }
 
-        function checkSavedUser() {
+        async function checkSavedUser() {
             const savedUser = localStorage.getItem('quran_user');
             if (savedUser) {
                 document.getElementById('email').value = savedUser;
-                login();
+                await login();
             }
         }
 
