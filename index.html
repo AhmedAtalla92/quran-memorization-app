@@ -1052,19 +1052,17 @@
                     <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin: 0; color: var(--primary);">
                         Memorization Practice
                     </h2>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <label style="font-size: 0.9rem; font-weight: 600; color: var(--accent);">Filter:</label>
+                        <select id="viewFilter" onchange="changeView(this.value)" style="font-size: 0.9rem; padding: 0.5rem 0.75rem; border: 2px solid var(--accent); border-radius: 8px; background: var(--accent); color: white; font-weight: 600; cursor: pointer;">
+                            <option value="all">All Verses</option>
+                            <option value="memorized">Memorized</option>
+                            <option value="not_memorized">Not Memorized</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="filters">
-                    <div class="form-group">
-                        <label>Filter Verses</label>
-                        <select id="viewFilter" onchange="changeView(this.value)" style="font-size: 0.95rem;">
-                            <option value="all">All Verses</option>
-                            <option value="memorized">Memorized Only</option>
-                            <option value="not_memorized">Not Memorized Only</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
                         <label id="labelViewMode">View Mode</label>
                         <select id="viewModeFilter" onchange="switchViewMode()">
                             <option value="surah" id="optionBySurah">By Surah</option>
@@ -3381,7 +3379,11 @@
                     if (result.language) {
                         language = result.language;
                         document.getElementById('languageSelector').value = language;
-                        applyTranslations();
+                        try {
+                            updateUILanguage();
+                        } catch (e) {
+                            console.warn('Could not update UI language:', e);
+                        }
                     }
                     
                     // Load reciter preference
@@ -3434,7 +3436,11 @@
                 if (data.language) {
                     language = data.language;
                     document.getElementById('languageSelector').value = language;
-                    applyTranslations();
+                    try {
+                        updateUILanguage();
+                    } catch (e) {
+                        console.warn('Could not update UI language:', e);
+                    }
                 }
                 
                 // Load reciter preference
@@ -4279,6 +4285,11 @@
             // Load prayer times when Pray page is opened
             if (pageId === 'pray') {
                 loadPrayerTimes();
+            }
+            
+            // Refresh verse display when showing memorize page
+            if (pageId === 'memorize' && filteredVerses.length > 0) {
+                displayVerseWithNavigation(currentVerseIndex);
             }
         }
 
