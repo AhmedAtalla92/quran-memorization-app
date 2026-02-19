@@ -146,6 +146,15 @@
             background: var(--secondary);
             box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
         }
+        
+        .nav-btn.active::before {
+            left: 0;
+        }
+        
+        .nav-btn.active span {
+            color: white;
+            z-index: 2;
+        }
 
         /* Page Sections */
         .page {
@@ -809,6 +818,32 @@
                 font-size: 0.8rem !important;
             }
             
+            /* Mobile: Fix recitation meter alignment */
+            #accountDashboard > div[style*="grid-template-columns: 140px 1fr"] {
+                grid-template-columns: 120px 1fr !important;
+                gap: 0.75rem !important;
+            }
+            
+            #accountDashboard .stat-card {
+                padding: 0.75rem !important;
+            }
+            
+            #accountDashboard .stat-value {
+                font-size: 1.5rem !important;
+            }
+            
+            #accountDashboard .stat-label {
+                font-size: 0.7rem !important;
+            }
+            
+            #accountDashboard .progress-label {
+                font-size: 0.8rem !important;
+            }
+            
+            #accountDashboard .progress-label span {
+                font-size: 0.75rem !important;
+            }
+            
             /* Page view buttons - very compact */
             #playPageBtn, #pausePageBtn, #restartPageBtn {
                 padding: 0.4rem 0.6rem !important;
@@ -1123,7 +1158,7 @@
                         Memorization/Recitation Practice
                     </h2>
                     <div id="memorizeFilterContainer" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <label style="font-size: 0.85rem; font-weight: 600; color: var(--accent);">Filter:</label>
+                        <label id="labelFilter" style="font-size: 0.85rem; font-weight: 600; color: var(--accent);">Filter:</label>
                         <select id="viewFilter" onchange="changeView(this.value)" style="font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 2px solid var(--accent); border-radius: 6px; background: var(--accent); color: white; font-weight: 600; cursor: pointer;">
                             <option value="all">All</option>
                             <option value="memorized">Memorized</option>
@@ -1553,6 +1588,9 @@
                 selectPage: 'Select Page',
                 perPage: 'Per Page',
                 memorized: 'Memorized/Recited',
+                bookmark: 'Bookmark',
+                filter: 'Filter:',
+                all: 'All',
                 next: 'Next',
                 previous: 'Previous',
                 markAll: 'Mark All as Memorized/Recited',
@@ -1617,6 +1655,9 @@
                 selectPage: 'اختر الصفحة',
                 perPage: 'لكل صفحة',
                 memorized: 'محفوظة/متلوة',
+                bookmark: 'حفظ',
+                filter: 'تصفية:',
+                all: 'الكل',
                 next: 'التالي',
                 previous: 'السابق',
                 markAll: 'تعليم الكل كمحفوظ/متلو',
@@ -1648,6 +1689,9 @@
             
             // Update page direction
             document.body.dir = language === 'ar' ? 'rtl' : 'ltr';
+            
+            // Repopulate filters with new language
+            populateFilters();
             
             // Update all UI text
             updateUILanguage();
@@ -1695,6 +1739,34 @@
             // Memorize page
             const memorizeH2 = document.querySelector('#memorize h2');
             if (memorizeH2) memorizeH2.textContent = t.memorizationPractice;
+            
+            // Filter label
+            const labelFilter = document.getElementById('labelFilter');
+            if (labelFilter) labelFilter.textContent = t.filter;
+            
+            // Update viewFilter options
+            const viewFilterSelect = document.getElementById('viewFilter');
+            if (viewFilterSelect && viewFilterSelect.options) {
+                viewFilterSelect.options[0].textContent = t.all;
+                viewFilterSelect.options[1].textContent = t.memorizedOnly;
+                viewFilterSelect.options[2].textContent = t.notMemorized;
+            }
+            
+            // Update all "Memorized" labels in verse cards
+            document.querySelectorAll('.memorized-toggle span').forEach(span => {
+                if (span.textContent === 'Memorized' || span.textContent === 'محفوظة/متلوة') {
+                    span.textContent = t.memorized;
+                }
+            });
+            
+            // Update all "Bookmark" buttons
+            document.querySelectorAll('.bookmark-btn').forEach(btn => {
+                if (btn.textContent === 'Bookmark' || btn.textContent === 'حفظ') {
+                    btn.textContent = t.bookmark;
+                } else if (btn.textContent === '✓ Saved' || btn.textContent === '✓ محفوظ') {
+                    btn.textContent = '✓ ' + t.bookmark;
+                }
+            });
             
             // Memorize filters
             const labelViewMode = document.getElementById('labelViewMode');
@@ -2332,16 +2404,54 @@
             113: "Al-Falaq", 114: "An-Nas"
         };
         
+        const surahNamesArabic = {
+            1: "الفاتحة", 2: "البقرة", 3: "آل عمران", 4: "النساء",
+            5: "المائدة", 6: "الأنعام", 7: "الأعراف", 8: "الأنفال",
+            9: "التوبة", 10: "يونس", 11: "هود", 12: "يوسف",
+            13: "الرعد", 14: "إبراهيم", 15: "الحجر", 16: "النحل",
+            17: "الإسراء", 18: "الكهف", 19: "مريم", 20: "طه",
+            21: "الأنبياء", 22: "الحج", 23: "المؤمنون", 24: "النور",
+            25: "الفرقان", 26: "الشعراء", 27: "النمل", 28: "القصص",
+            29: "العنكبوت", 30: "الروم", 31: "لقمان", 32: "السجدة",
+            33: "الأحزاب", 34: "سبأ", 35: "فاطر", 36: "يس",
+            37: "الصافات", 38: "ص", 39: "الزمر", 40: "غافر",
+            41: "فصلت", 42: "الشورى", 43: "الزخرف", 44: "الدخان",
+            45: "الجاثية", 46: "الأحقاف", 47: "محمد", 48: "الفتح",
+            49: "الحجرات", 50: "ق", 51: "الذاريات", 52: "الطور",
+            53: "النجم", 54: "القمر", 55: "الرحمن", 56: "الواقعة",
+            57: "الحديد", 58: "المجادلة", 59: "الحشر", 60: "الممتحنة",
+            61: "الصف", 62: "الجمعة", 63: "المنافقون", 64: "التغابن",
+            65: "الطلاق", 66: "التحريم", 67: "الملك", 68: "القلم",
+            69: "الحاقة", 70: "المعارج", 71: "نوح", 72: "الجن",
+            73: "المزمل", 74: "المدثر", 75: "القيامة", 76: "الإنسان",
+            77: "المرسلات", 78: "النبأ", 79: "النازعات", 80: "عبس",
+            81: "التكوير", 82: "الإنفطار", 83: "المطففين", 84: "الإنشقاق",
+            85: "البروج", 86: "الطارق", 87: "الأعلى", 88: "الغاشية",
+            89: "الفجر", 90: "البلد", 91: "الشمس", 92: "الليل",
+            93: "الضحى", 94: "الشرح", 95: "التين", 96: "العلق",
+            97: "القدر", 98: "البينة", 99: "الزلزلة", 100: "العاديات",
+            101: "القارعة", 102: "التكاثر", 103: "العصر", 104: "الهمزة",
+            105: "الفيل", 106: "قريش", 107: "الماعون", 108: "الكوثر",
+            109: "الكافرون", 110: "النصر", 111: "المسد", 112: "الإخلاص",
+            113: "الفلق", 114: "الناس"
+        };
+        
+        // Helper function to get surah name based on language
+        function getSurahName(surahNum) {
+            return language === 'ar' ? surahNamesArabic[surahNum] : getSurahName(surahNum);
+        }
+        
         function populateSurahsByJuz(juzNumber) {
             const surahFilter = document.getElementById('surahFilter');
-            surahFilter.innerHTML = '<option value="">All Surahs</option>';
+            const allSurahsText = language === 'ar' ? 'كل السور' : 'All Surahs';
+            surahFilter.innerHTML = `<option value="">${allSurahsText}</option>`;
             
             if (!juzNumber) {
                 // Show all surahs
                 for (let i = 1; i <= 114; i++) {
                     const option = document.createElement('option');
                     option.value = i;
-                    option.textContent = `${i}. ${surahNames[i]}`;
+                    option.textContent = `${i}. ${getSurahName(i)}`;
                     surahFilter.appendChild(option);
                 }
             } else {
@@ -2355,7 +2465,7 @@
                 surahsInJuz.forEach(surahNum => {
                     const option = document.createElement('option');
                     option.value = surahNum;
-                    option.textContent = `${surahNum}. ${surahNames[surahNum]}`;
+                    option.textContent = `${surahNum}. ${getSurahName(surahNum)}`;
                     surahFilter.appendChild(option);
                 });
             }
@@ -2364,10 +2474,11 @@
         function populateFilters() {
             // Populate Juz (1-30)
             const juzFilter = document.getElementById('juzFilter');
+            juzFilter.innerHTML = '<option value="" id="optionAllJuz">All Juz</option>'; // Clear and add default
             for (let i = 1; i <= 30; i++) {
                 const option = document.createElement('option');
                 option.value = i;
-                option.textContent = `Juz ${i}`;
+                option.textContent = language === 'ar' ? `الجزء ${i}` : `Juz ${i}`;
                 juzFilter.appendChild(option);
             }
             
@@ -2380,10 +2491,11 @@
             
             // Populate Pages (1-604)
             const pageFilter = document.getElementById('pageFilter');
+            pageFilter.innerHTML = '<option value="" id="optionSelectPage">Select Page</option>'; // Clear and add default
             for (let i = 1; i <= 604; i++) {
                 const option = document.createElement('option');
                 option.value = i;
-                option.textContent = `Page ${i}`;
+                option.textContent = language === 'ar' ? `صفحة ${i}` : `Page ${i}`;
                 pageFilter.appendChild(option);
             }
         }
@@ -3027,7 +3139,7 @@
                 verseCard.className = 'verse-card';
                 
                 // Get surah name
-                const surahName = surahNames[verse.surah] || `Surah ${verse.surah}`;
+                const surahName = getSurahName(verse.surah) || `Surah ${verse.surah}`;
                 
                 // Determine which translation to show
                 let translationHTML = '';
@@ -3700,7 +3812,7 @@
                     const verseData = quranData.find(v => v.surah === parseInt(surah) && v.ayah === parseInt(ayah));
                     
                     if (verseData) {
-                        const surahName = surahNames[parseInt(surah)] || `Surah ${surah}`;
+                        const surahName = getSurahName(parseInt(surah)) || `Surah ${surah}`;
                         const item = document.createElement('div');
                         item.style.cssText = 'padding: 0.75rem; margin-bottom: 0.5rem; background: white; border-radius: 6px; border-left: 3px solid var(--secondary);';
                         item.innerHTML = `
@@ -3765,7 +3877,7 @@
                 const verseData = quranData.find(v => v.surah === parseInt(surah) && v.ayah === parseInt(ayah));
                 
                 if (verseData) {
-                    const surahName = surahNames[parseInt(surah)] || `Surah ${surah}`;
+                    const surahName = getSurahName(parseInt(surah)) || `Surah ${surah}`;
                     const isMemorized = memorizedVerses.has(verseKey);
                     
                     // Determine translation HTML
@@ -3781,9 +3893,6 @@
                     verseCard.innerHTML = `
                         <div class="verse-info">
                             <span style="font-weight: 700; color: var(--primary);">${surahName}</span> - Surah ${surah}, Ayah ${ayah} (Juz ${verseData.juz})
-                            <button class="bookmark-remove-btn" data-verse-key="${verseKey}" style="background: var(--error); color: white; border: none; font-size: 0.75rem; cursor: pointer; padding: 0.35rem 0.6rem; margin-left: 0.5rem; border-radius: 5px; font-weight: 600; transition: all 0.2s ease;">
-                                Remove
-                            </button>
                         </div>
                         <div class="verse-arabic">${verseData.arab}</div>
                         ${translationHTML}
@@ -3799,6 +3908,9 @@
                                         <div class="toggle-slider"></div>
                                     </div>
                                 </div>
+                                <button class="bookmark-remove-btn" data-verse-key="${verseKey}" style="background: var(--error); color: white; border: none; font-size: 0.7rem; cursor: pointer; padding: 0.3rem 0.5rem; margin-left: 0.75rem; border-radius: 4px; font-weight: 600; transition: all 0.2s ease;">
+                                    Remove
+                                </button>
                             </div>
                         </div>
                     `;
@@ -3878,7 +3990,7 @@
                 const memorizedCount = Array.from(memorizedVerses).filter(v => 
                     parseInt(v.split(':')[0]) === surah
                 ).length;
-                option.textContent = `${surah}. ${surahNames[surah]} (${memorizedCount} verses)`;
+                option.textContent = `${surah}. ${getSurahName(surah)} (${memorizedCount} verses)`;
                 select.appendChild(option);
             });
         }
@@ -4512,6 +4624,11 @@
             
             // Display bookmarks when Bookmarks page is opened
             if (pageId === 'bookmarks') {
+                // Sync translation dropdown with current mode
+                const bookmarkTranslationSelect = document.getElementById('bookmarkTranslationMode');
+                if (bookmarkTranslationSelect) {
+                    bookmarkTranslationSelect.value = bookmarkTranslationMode;
+                }
                 displayBookmarksPage();
             }
             
