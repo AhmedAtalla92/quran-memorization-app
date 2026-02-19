@@ -139,7 +139,8 @@
 
         .nav-btn span {
             position: relative;
-            z-index: 1;
+            z-index: 2;
+            color: white;
         }
 
         .nav-btn.active {
@@ -149,11 +150,6 @@
         
         .nav-btn.active::before {
             left: 0;
-        }
-        
-        .nav-btn.active span {
-            color: white;
-            z-index: 2;
         }
 
         /* Page Sections */
@@ -1552,6 +1548,7 @@
                 account: 'Account',
                 memorize: 'Memorize/Recite',
                 quiz: 'Quiz',
+                pray: 'Pray',
                 // Account page
                 yourAccount: 'Your Account',
                 welcome: 'Welcome',
@@ -1589,6 +1586,7 @@
                 perPage: 'Per Page',
                 memorized: 'Memorized/Recited',
                 bookmark: 'Bookmark',
+                remove: 'Remove',
                 filter: 'Filter:',
                 all: 'All',
                 next: 'Next',
@@ -1619,6 +1617,7 @@
                 account: 'الحساب',
                 memorize: 'الحفظ/التلاوة',
                 quiz: 'الاختبار',
+                pray: 'صلِّ',
                 // Account page
                 yourAccount: 'حسابك',
                 welcome: 'مرحباً',
@@ -1656,6 +1655,7 @@
                 perPage: 'لكل صفحة',
                 memorized: 'محفوظة/متلوة',
                 bookmark: 'حفظ',
+                remove: 'إزالة',
                 filter: 'تصفية:',
                 all: 'الكل',
                 next: 'التالي',
@@ -1704,7 +1704,7 @@
             document.querySelector('[data-page="account"]').textContent = t.account;
             document.querySelector('[data-page="memorize"]').textContent = t.memorize;
             const prayBtn = document.querySelector('[data-page="pray"]');
-            if (prayBtn) prayBtn.textContent = 'Pray'; // Keep English for now
+            if (prayBtn) prayBtn.textContent = t.pray;
             
             // Account page
             const accountH2 = document.querySelector('#account h2');
@@ -2220,7 +2220,14 @@
             const savedLang = localStorage.getItem('quran_language');
             if (savedLang) {
                 language = savedLang;
-                document.getElementById('languageSelector').value = savedLang;
+                const langSelector = document.getElementById('languageSelector');
+                if (langSelector) {
+                    // Set value without triggering onchange
+                    const currentOnChange = langSelector.onchange;
+                    langSelector.onchange = null;
+                    langSelector.value = savedLang;
+                    langSelector.onchange = currentOnChange;
+                }
                 document.body.dir = language === 'ar' ? 'rtl' : 'ltr';
             }
             
@@ -2240,7 +2247,7 @@
             
             await loadQuranData();
             populateFilters();
-            checkSavedUser();
+            await checkSavedUser(); // Wait for user data to load
             updateUILanguage();
             
             // Load only Al-Fatihah by default (filters show "All" but display is Fatihah)
@@ -3634,7 +3641,15 @@
                     // Load language preference
                     if (result.language) {
                         language = result.language;
-                        document.getElementById('languageSelector').value = language;
+                        const langSelector = document.getElementById('languageSelector');
+                        if (langSelector) {
+                            // Set value without triggering onchange
+                            const currentOnChange = langSelector.onchange;
+                            langSelector.onchange = null;
+                            langSelector.value = language;
+                            langSelector.onchange = currentOnChange;
+                        }
+                        document.body.dir = language === 'ar' ? 'rtl' : 'ltr';
                         try {
                             updateUILanguage();
                         } catch (e) {
@@ -3909,7 +3924,7 @@
                                     </div>
                                 </div>
                                 <button class="bookmark-remove-btn" data-verse-key="${verseKey}" style="background: var(--error); color: white; border: none; font-size: 0.7rem; cursor: pointer; padding: 0.3rem 0.5rem; margin-left: 0.75rem; border-radius: 4px; font-weight: 600; transition: all 0.2s ease;">
-                                    Remove
+                                    ${translations[language].remove}
                                 </button>
                             </div>
                         </div>
@@ -4629,7 +4644,13 @@
                 if (bookmarkTranslationSelect) {
                     bookmarkTranslationSelect.value = bookmarkTranslationMode;
                 }
-                displayBookmarksPage();
+                // Ensure quranData is loaded before displaying
+                if (quranData && quranData.length > 0) {
+                    displayBookmarksPage();
+                } else {
+                    console.log('Waiting for Quran data to load...');
+                    setTimeout(() => displayBookmarksPage(), 500);
+                }
             }
             
             // Refresh verse display when showing memorize page
