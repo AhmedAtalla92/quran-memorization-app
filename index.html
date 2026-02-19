@@ -2438,7 +2438,7 @@
         
         // Helper function to get surah name based on language
         function getSurahName(surahNum) {
-            return language === 'ar' ? surahNamesArabic[surahNum] : getSurahName(surahNum);
+            return language === 'ar' ? surahNamesArabic[surahNum] : surahNames[surahNum];
         }
         
         function populateSurahsByJuz(juzNumber) {
