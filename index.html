@@ -2458,6 +2458,7 @@
                 memorizedVerses.has(`${v.surah}:${v.ayah}`)
             );
             const pageRecited = recitedPages.has(pageNumber);
+            console.log('Page', pageNumber, 'recited status:', pageRecited, '(total recited pages:', recitedPages.size, ')');
             
             // Create page card
             const pageCard = document.createElement('div');
@@ -2469,8 +2470,9 @@
             const juzNumber = versesToDisplay[0].juz;
             pageHeader.style.cssText = 'text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);';
             pageHeader.innerHTML = `
-                <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary);">
-                    Page ${pageNumber} | صفحة ${pageNumber}
+                <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <span>Page ${pageNumber} | صفحة ${pageNumber}</span>
+                    ${pageRecited ? '<span style="color: var(--secondary); font-size: 1rem;">✓</span>' : ''}
                 </div>
                 <div style="font-size: 0.95rem; color: var(--accent); margin-top: 0.35rem; font-weight: 600;">
                     Juz ${juzNumber} | الجزء ${juzNumber}
@@ -2489,9 +2491,23 @@
                 const verseKey = `${verse.surah}:${verse.ayah}`;
                 const isBookmarked = bookmarkedVerses.has(verseKey);
                 
-                // Add verse text
+                // Add verse text with bookmark styling
                 const verseSpan = document.createElement('span');
                 verseSpan.textContent = verse.arab + ' ';
+                verseSpan.style.cssText = `cursor: pointer; transition: all 0.2s ease; color: ${isBookmarked ? 'var(--secondary)' : 'inherit'}; font-weight: ${isBookmarked ? '600' : 'normal'};`;
+                verseSpan.title = isBookmarked ? 'Click to remove bookmark' : 'Click to bookmark this ayah';
+                verseSpan.onclick = () => toggleBookmark(verseKey);
+                
+                // Add hover effect to verse text
+                verseSpan.onmouseenter = () => {
+                    verseSpan.style.color = 'var(--secondary)';
+                    verseSpan.style.fontWeight = '600';
+                };
+                verseSpan.onmouseleave = () => {
+                    verseSpan.style.color = isBookmarked ? 'var(--secondary)' : 'inherit';
+                    verseSpan.style.fontWeight = isBookmarked ? '600' : 'normal';
+                };
+                
                 arabicContainer.appendChild(verseSpan);
                 
                 // Add clickable ayah number
@@ -2501,15 +2517,21 @@
                 ayahMarker.title = isBookmarked ? 'Click to remove bookmark' : 'Click to bookmark this ayah';
                 ayahMarker.onclick = () => toggleBookmark(verseKey);
                 
-                // Add hover effect
+                // Add hover effect to ayah number
                 ayahMarker.onmouseenter = () => {
                     ayahMarker.style.color = 'var(--secondary)';
                     ayahMarker.style.transform = 'scale(1.2)';
                     ayahMarker.style.display = 'inline-block';
+                    // Also highlight the verse text
+                    verseSpan.style.color = 'var(--secondary)';
+                    verseSpan.style.fontWeight = '600';
                 };
                 ayahMarker.onmouseleave = () => {
                     ayahMarker.style.color = isBookmarked ? 'var(--secondary)' : 'inherit';
                     ayahMarker.style.transform = 'scale(1)';
+                    // Reset verse text color
+                    verseSpan.style.color = isBookmarked ? 'var(--secondary)' : 'inherit';
+                    verseSpan.style.fontWeight = isBookmarked ? '600' : 'normal';
                 };
                 
                 arabicContainer.appendChild(ayahMarker);
@@ -3183,7 +3205,14 @@
             recitedPages.clear();
             saveUserData();
             updateAccountStats();
-            displayVerseWithNavigation(currentVerseIndex);
+            
+            // Refresh display if on memorize page
+            if (document.getElementById('memorize').classList.contains('active') && filteredVerses.length > 0) {
+                displayVerseWithNavigation(currentVerseIndex);
+            }
+            
+            // Show confirmation
+            alert('Recitation progress has been reset!');
         }
 
         function checkSavedUser() {
@@ -3204,11 +3233,14 @@
                 recited: Array.from(recitedPages),
                 bookmarked: Array.from(bookmarkedVerses),
                 language: language,
-                reciter: selectedReciter
+                reciter: selectedReciter,
+                lastViewMode: viewMode,
+                lastVerseIndex: currentVerseIndex
             };
             
             // Save to localStorage as backup
             localStorage.setItem(`quran_data_${currentUser}`, JSON.stringify(data));
+            console.log('Saving data:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed,', recitedPages.size, 'recited pages,', bookmarkedVerses.size, 'bookmarked');
             
             // Save to database
             try {
@@ -3251,12 +3283,21 @@
                         document.getElementById('reciterSelector').value = selectedReciter;
                     }
                     
-                    console.log('Loaded from database:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed');
+                    // Restore last view mode and position
+                    if (result.lastViewMode) {
+                        viewMode = result.lastViewMode;
+                        switchViewMode(); // Apply the view mode
+                    }
+                    if (result.lastVerseIndex !== undefined) {
+                        currentVerseIndex = result.lastVerseIndex;
+                    }
+                    
+                    console.log('Loaded from database:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed,', recitedPages.size, 'recited pages,', bookmarkedVerses.size, 'bookmarked');
                     
                     // Update stats after loading
                     updateAccountStats();
                     
-                    // Refresh display if we're on memorize page
+                    // Refresh display to last position
                     if (filteredVerses.length > 0) {
                         displayVerseWithNavigation(currentVerseIndex);
                     }
@@ -3288,12 +3329,21 @@
                     document.getElementById('reciterSelector').value = selectedReciter;
                 }
                 
-                console.log('Loaded from localStorage:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed');
+                // Restore last view mode and position
+                if (data.lastViewMode) {
+                    viewMode = data.lastViewMode;
+                    switchViewMode(); // Apply the view mode
+                }
+                if (data.lastVerseIndex !== undefined) {
+                    currentVerseIndex = data.lastVerseIndex;
+                }
+                
+                console.log('Loaded from localStorage:', memorizedVerses.size, 'memorized,', reviewedVerses.size, 'reviewed,', recitedPages.size, 'recited pages,', bookmarkedVerses.size, 'bookmarked');
                 
                 // Update stats after loading
                 updateAccountStats();
                 
-                // Refresh display if we're on memorize page
+                // Refresh display to last position
                 if (filteredVerses.length > 0) {
                     displayVerseWithNavigation(currentVerseIndex);
                 }
