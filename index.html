@@ -2762,17 +2762,19 @@
             const navHTML = document.createElement('div');
             navHTML.style.cssText = 'display: flex; justify-content: space-between; margin-top: 1.5rem; gap: 1rem;';
             
+            const currentPage = filteredVerses[index].page;
+            
             const prevBtn = document.createElement('button');
             prevBtn.textContent = '← Previous Page';
             prevBtn.onclick = () => {
-                const currentPage = filteredVerses[index].page;
-                const prevPageVerses = quranData.filter(v => v.page === currentPage - 1);
-                if (prevPageVerses.length > 0) {
-                    document.getElementById('pageFilter').value = currentPage - 1;
+                const prevPageNumber = currentPage - 1;
+                if (prevPageNumber >= 1) {
+                    document.getElementById('pageFilter').value = prevPageNumber;
                     filterByPage();
                 }
             };
-            if (index === 0) {
+            // Disable if on page 1
+            if (currentPage <= 1) {
                 prevBtn.disabled = true;
                 prevBtn.style.opacity = '0.5';
             }
@@ -2780,14 +2782,14 @@
             const nextBtn = document.createElement('button');
             nextBtn.textContent = 'Next Page →';
             nextBtn.onclick = () => {
-                const currentPage = filteredVerses[index].page;
-                const nextPageVerses = quranData.filter(v => v.page === currentPage + 1);
-                if (nextPageVerses.length > 0) {
-                    document.getElementById('pageFilter').value = currentPage + 1;
+                const nextPageNumber = currentPage + 1;
+                if (nextPageNumber <= 604) {
+                    document.getElementById('pageFilter').value = nextPageNumber;
                     filterByPage();
                 }
             };
-            if (filteredVerses[index].page >= 604) {
+            // Disable if on page 604
+            if (currentPage >= 604) {
                 nextBtn.disabled = true;
                 nextBtn.style.opacity = '0.5';
             }
@@ -2822,6 +2824,7 @@
             versesToDisplay.forEach((verse, i) => {
                 const verseKey = `${verse.surah}:${verse.ayah}`;
                 const isMemorized = memorizedVerses.has(verseKey);
+                const isBookmarked = bookmarkedVerses.has(verseKey);
                 const actualIndex = index + i;
                 
                 // Calculate the global ayah number for audio (1-6236)
@@ -2829,6 +2832,9 @@
                 
                 const verseCard = document.createElement('div');
                 verseCard.className = 'verse-card';
+                
+                // Get surah name
+                const surahName = surahNames[verse.surah] || `Surah ${verse.surah}`;
                 
                 // Determine which translation to show
                 let translationHTML = '';
@@ -2839,7 +2845,12 @@
                 }
                 
                 verseCard.innerHTML = `
-                    <div class="verse-info">Surah ${verse.surah}, Ayah ${verse.ayah} (Juz ${verse.juz})</div>
+                    <div class="verse-info">
+                        <span style="font-weight: 700; color: var(--primary);">${surahName}</span> - Surah ${verse.surah}, Ayah ${verse.ayah} (Juz ${verse.juz})
+                        <button class="bookmark-btn" data-verse-key="${verseKey}" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.25rem 0.5rem; margin-left: 0.5rem; transition: transform 0.2s ease;" title="${isBookmarked ? 'Remove bookmark' : 'Bookmark this ayah'}">
+                            ${isBookmarked ? '🔖' : '📑'}
+                        </button>
+                    </div>
                     <div class="verse-arabic">${verse.arab || verse.ar || 'Arabic text not available'}</div>
                     ${translationHTML}
                     
@@ -2857,6 +2868,18 @@
                         </div>
                     </div>
                 `;
+                
+                // Add click handler to bookmark button
+                const bookmarkBtn = verseCard.querySelector('.bookmark-btn');
+                bookmarkBtn.addEventListener('click', function() {
+                    toggleBookmark(this.dataset.verseKey);
+                });
+                bookmarkBtn.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.3)';
+                });
+                bookmarkBtn.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
                 
                 // Add click handler to memorized toggle switch
                 const memorizedToggle = verseCard.querySelector('.toggle-switch[data-toggle-type="memorized"]');
@@ -3413,19 +3436,30 @@
                 bookmarksEmpty.style.display = 'none';
                 bookmarksList.style.display = 'block';
                 
-                // Show preview of first 5 bookmarks
+                // Show preview of first 5 bookmarks in sequential order
                 bookmarksPreview.innerHTML = '';
-                const bookmarksArray = Array.from(bookmarkedVerses).slice(0, 5);
+                
+                // Sort bookmarks by surah:ayah order
+                const bookmarksArray = Array.from(bookmarkedVerses).sort((a, b) => {
+                    const [surahA, ayahA] = a.split(':').map(Number);
+                    const [surahB, ayahB] = b.split(':').map(Number);
+                    if (surahA !== surahB) return surahA - surahB;
+                    return ayahA - ayahB;
+                }).slice(0, 5);
                 
                 bookmarksArray.forEach(verseKey => {
                     const [surah, ayah] = verseKey.split(':');
                     const verseData = quranData.find(v => v.surah === parseInt(surah) && v.ayah === parseInt(ayah));
                     
                     if (verseData) {
+                        const surahName = surahNames[parseInt(surah)] || `Surah ${surah}`;
                         const item = document.createElement('div');
                         item.style.cssText = 'padding: 0.75rem; margin-bottom: 0.5rem; background: white; border-radius: 6px; border-left: 3px solid var(--secondary);';
                         item.innerHTML = `
-                            <div style="font-size: 0.85rem; color: var(--accent); font-weight: 600; margin-bottom: 0.25rem;">
+                            <div style="font-size: 0.95rem; color: var(--primary); font-weight: 700; margin-bottom: 0.35rem;">
+                                ${surahName}
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--accent); font-weight: 600; margin-bottom: 0.35rem;">
                                 Surah ${surah}, Ayah ${ayah}
                             </div>
                             <div style="font-size: 0.9rem; direction: rtl; text-align: right; font-family: 'Amiri', serif;">
@@ -3451,9 +3485,13 @@
             // Switch to memorize page and filter to show only bookmarked verses
             showPage('memorize');
             
+            // Switch to By Surah view mode
+            viewMode = 'surah';
+            document.getElementById('viewModeToggle').textContent = '📄 By Page';
+            
             // Filter quranData to show only bookmarked verses
             filteredVerses = quranData.filter(v => bookmarkedVerses.has(`${v.surah}:${v.ayah}`));
-            versesPerPage = filteredVerses.length; // Show all at once
+            versesPerPage = 1; // Show one verse at a time
             currentVerseIndex = 0;
             
             if (filteredVerses.length > 0) {
