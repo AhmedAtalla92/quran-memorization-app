@@ -129,6 +129,16 @@
             background: var(--secondary);
             box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
         }
+        
+        /* Inspire category buttons */
+        .inspire-category-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25) !important;
+        }
+        
+        .inspire-category-btn:active {
+            transform: translateY(-2px);
+        }
 
         /* Page Sections */
         .page {
@@ -914,6 +924,9 @@
             <button class="nav-btn" onclick="showPage('pray')" data-page="pray">
                 <span>Pray</span>
             </button>
+            <button class="nav-btn" onclick="showPage('inspire')" data-page="inspire">
+                <span>Inspire</span>
+            </button>
         </nav>
 
         <!-- Install to Home Screen Banner (shows only on mobile) -->
@@ -1215,13 +1228,29 @@
                             />
                         </div>
                         
-                        <!-- Select Surah Dropdown -->
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.85rem; margin-bottom: 0.3rem;">Select Surah</label>
-                            <select id="mushafSurahFilter" onchange="jumpToSurahPage()" style="font-size: 0.9rem;">
-                                <option value="">All Surahs</option>
-                            </select>
+                        <!-- Surah Search/Select (Combined) -->
+                        <div class="form-group" style="margin-bottom: 0; position: relative;">
+                            <label style="font-size: 0.85rem; margin-bottom: 0.3rem;">Surah</label>
+                            <div style="position: relative;">
+                                <input 
+                                    type="text" 
+                                    id="mushafSurahSearch" 
+                                    placeholder="Search or select surah..."
+                                    autocomplete="off"
+                                    style="font-size: 0.9rem; padding: 0.5rem 2rem 0.5rem 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box; cursor: pointer;" 
+                                    oninput="filterMushafSurahDropdown()"
+                                    onfocus="showMushafSurahDropdown(); this.style.borderColor='var(--primary)'"
+                                    onblur="setTimeout(() => hideMushafSurahDropdown(), 200); this.style.borderColor='var(--border)'"
+                                />
+                                <span style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-light);">▼</span>
+                            </div>
+                            <div id="mushafSurahDropdownList" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid var(--primary); border-top: none; border-radius: 0 0 6px 6px; max-height: 300px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
+                        
+                        <!-- Hidden select for compatibility -->
+                        <select id="mushafSurahFilter" style="display: none;">
+                            <option value="">All Surahs</option>
+                        </select>
                     </div>
                 </div>
 
@@ -1310,6 +1339,54 @@
                 </div>
 
                 <div id="bookmarksPageDisplay"></div>
+            </div>
+        </div>
+
+        <!-- Inspire Page -->
+        <div id="inspire" class="page">
+            <div class="card">
+                <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin: 0 0 1.5rem 0; color: var(--primary); text-align: center;">
+                    ✨ Inspire / إلهام
+                </h2>
+                
+                <!-- Categories Grid -->
+                <div id="inspireCategories" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <button onclick="showInspireCategory('patience')" class="inspire-category-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        🤲<br>الصبر<br><span style="font-size: 0.8rem; font-weight: 400;">Patience</span>
+                    </button>
+                    
+                    <button onclick="showInspireCategory('provision')" class="inspire-category-btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        💰<br>الرزق<br><span style="font-size: 0.8rem; font-weight: 400;">Provision</span>
+                    </button>
+                    
+                    <button onclick="showInspireCategory('mercy')" class="inspire-category-btn" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        ❤️<br>الرحمة<br><span style="font-size: 0.8rem; font-weight: 400;">Mercy</span>
+                    </button>
+                    
+                    <button onclick="showInspireCategory('morals')" class="inspire-category-btn" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        🌟<br>الأخلاق<br><span style="font-size: 0.8rem; font-weight: 400;">Morals</span>
+                    </button>
+                    
+                    <button onclick="showInspireCategory('trials')" class="inspire-category-btn" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        ⚡<br>المحنة<br><span style="font-size: 0.8rem; font-weight: 400;">Trials</span>
+                    </button>
+                    
+                    <button onclick="showInspireCategory('faith')" class="inspire-category-btn" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        ☪️<br>الإيمان<br><span style="font-size: 0.8rem; font-weight: 400;">Faith</span>
+                    </button>
+                </div>
+                
+                <!-- Ayahs Display -->
+                <div id="inspireContent" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <button onclick="backToCategories()" style="background: var(--text-light); color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer; font-weight: 600;">
+                            ← Back
+                        </button>
+                        <h3 id="inspireCategoryTitle" style="font-size: 1.3rem; font-weight: 700; color: var(--primary); margin: 0;"></h3>
+                    </div>
+                    
+                    <div id="inspireAyahs"></div>
+                </div>
             </div>
         </div>
 
@@ -1630,6 +1707,7 @@
                 memorize: 'Memorize/Recite',
                 quiz: 'Quiz',
                 pray: 'Pray',
+                inspire: 'Inspire',
                 // Account page
                 yourAccount: 'Your Account',
                 welcome: 'Welcome',
@@ -1703,6 +1781,7 @@
                 memorize: 'الحفظ/التلاوة',
                 quiz: 'الاختبار',
                 pray: 'الصلاة',
+                inspire: 'إلهام',
                 // Account page
                 yourAccount: 'حسابك',
                 welcome: 'مرحباً',
@@ -1789,6 +1868,136 @@
             updateUILanguage();
         }
         
+        // Inspire Page Data - Curated Ayahs by Category
+        const inspireData = {
+            patience: {
+                title: { en: 'Patience / الصبر', ar: 'الصبر / Patience' },
+                ayahs: [
+                    { surah: 2, ayah: 153 },  // يَا أَيُّهَا الَّذِينَ آمَنُوا اسْتَعِينُوا بِالصَّبْرِ
+                    { surah: 2, ayah: 155 },  // وَلَنَبْلُوَنَّكُم بِشَيْءٍ مِّنَ الْخَوْفِ
+                    { surah: 3, ayah: 200 },  // يَا أَيُّهَا الَّذِينَ آمَنُوا اصْبِرُوا
+                    { surah: 39, ayah: 10 },  // إِنَّمَا يُوَفَّى الصَّابِرُونَ
+                    { surah: 94, ayah: 5 },   // فَإِنَّ مَعَ الْعُسْرِ يُسْرًا
+                    { surah: 94, ayah: 6 }    // إِنَّ مَعَ الْعُسْرِ يُسْرًا
+                ]
+            },
+            provision: {
+                title: { en: 'Provision / الرزق', ar: 'الرزق / Provision' },
+                ayahs: [
+                    { surah: 11, ayah: 6 },   // وَمَا مِن دَابَّةٍ فِي الْأَرْضِ
+                    { surah: 65, ayah: 3 },   // وَمَن يَتَوَكَّلْ عَلَى اللَّهِ
+                    { surah: 29, ayah: 60 },  // وَكَأَيِّن مِن دَابَّةٍ لَّا تَحْمِلُ
+                    { surah: 51, ayah: 22 },  // وَفِي السَّمَاءِ رِزْقُكُمْ
+                    { surah: 67, ayah: 21 },  // أَمَّنْ هَٰذَا الَّذِي يَرْزُقُكُمْ
+                    { surah: 2, ayah: 212 }   // زُيِّنَ لِلَّذِينَ كَفَرُوا الْحَيَاةُ
+                ]
+            },
+            mercy: {
+                title: { en: 'Mercy / الرحمة', ar: 'الرحمة / Mercy' },
+                ayahs: [
+                    { surah: 7, ayah: 156 },  // وَرَحْمَتِي وَسِعَتْ كُلَّ شَيْءٍ
+                    { surah: 21, ayah: 107 }, // وَمَا أَرْسَلْنَاكَ إِلَّا رَحْمَةً
+                    { surah: 39, ayah: 53 },  // قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا
+                    { surah: 6, ayah: 54 },   // كَتَبَ رَبُّكُمْ عَلَىٰ نَفْسِهِ الرَّحْمَةَ
+                    { surah: 12, ayah: 64 },  // فَاللَّهُ خَيْرٌ حَافِظًا
+                    { surah: 12, ayah: 87 }   // لَا تَيْأَسُوا مِن رَّوْحِ اللَّهِ
+                ]
+            },
+            morals: {
+                title: { en: 'Morals / الأخلاق', ar: 'الأخلاق / Morals' },
+                ayahs: [
+                    { surah: 49, ayah: 13 },  // إِنَّ أَكْرَمَكُمْ عِندَ اللَّهِ أَتْقَاكُمْ
+                    { surah: 17, ayah: 53 },  // وَقُل لِّعِبَادِي يَقُولُوا الَّتِي هِيَ أَحْسَنُ
+                    { surah: 25, ayah: 63 },  // وَإِذَا خَاطَبَهُمُ الْجَاهِلُونَ قَالُوا سَلَامًا
+                    { surah: 68, ayah: 4 },   // وَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍ
+                    { surah: 41, ayah: 34 },  // ادْفَعْ بِالَّتِي هِيَ أَحْسَنُ
+                    { surah: 3, ayah: 134 }   // الَّذِينَ يُنفِقُونَ فِي السَّرَّاءِ وَالضَّرَّاءِ
+                ]
+            },
+            trials: {
+                title: { en: 'Trials / المحنة', ar: 'المحنة / Trials' },
+                ayahs: [
+                    { surah: 2, ayah: 286 },  // لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا
+                    { surah: 29, ayah: 2 },   // أَحَسِبَ النَّاسُ أَن يُتْرَكُوا
+                    { surah: 2, ayah: 214 },  // أَمْ حَسِبْتُمْ أَن تَدْخُلُوا الْجَنَّةَ
+                    { surah: 94, ayah: 5 },   // فَإِنَّ مَعَ الْعُسْرِ يُسْرًا
+                    { surah: 8, ayah: 28 },   // وَاعْلَمُوا أَنَّمَا أَمْوَالُكُمْ وَأَوْلَادُكُمْ فِتْنَةٌ
+                    { surah: 64, ayah: 15 }   // إِنَّمَا أَمْوَالُكُمْ وَأَوْلَادُكُمْ فِتْنَةٌ
+                ]
+            },
+            faith: {
+                title: { en: 'Faith / الإيمان', ar: 'الإيمان / Faith' },
+                ayahs: [
+                    { surah: 2, ayah: 186 },  // وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ
+                    { surah: 13, ayah: 28 },  // أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ
+                    { surah: 3, ayah: 159 },  // فَاعْفُ عَنْهُمْ وَاسْتَغْفِرْ لَهُمْ
+                    { surah: 16, ayah: 97 },  // مَنْ عَمِلَ صَالِحًا مِّن ذَكَرٍ أَوْ أُنثَىٰ
+                    { surah: 3, ayah: 160 },  // إِن يَنصُرْكُمُ اللَّهُ فَلَا غَالِبَ لَكُمْ
+                    { surah: 2, ayah: 257 }   // اللَّهُ وَلِيُّ الَّذِينَ آمَنُوا
+                ]
+            }
+        };
+        
+        function showInspireCategory(category) {
+            const categoriesDiv = document.getElementById('inspireCategories');
+            const contentDiv = document.getElementById('inspireContent');
+            const ayahsDiv = document.getElementById('inspireAyahs');
+            const titleEl = document.getElementById('inspireCategoryTitle');
+            
+            const data = inspireData[category];
+            if (!data) return;
+            
+            // Hide categories, show content
+            categoriesDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+            
+            // Set title
+            titleEl.textContent = language === 'ar' ? data.title.ar : data.title.en;
+            
+            // Clear and populate ayahs
+            ayahsDiv.innerHTML = '';
+            
+            data.ayahs.forEach(item => {
+                const verseKey = `${item.surah}:${item.ayah}`;
+                const verseData = quranData.find(v => v.surah === item.surah && v.ayah === item.ayah);
+                
+                if (!verseData) return;
+                
+                const surahName = getSurahName(item.surah);
+                const isBookmarked = bookmarkedVerses.has(verseKey);
+                
+                const verseCard = document.createElement('div');
+                verseCard.className = 'verse-card';
+                verseCard.style.marginBottom = '1.5rem';
+                
+                verseCard.innerHTML = `
+                    <div class="verse-info" style="margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border);">
+                        <span style="font-weight: 700; color: var(--primary);">${surahName}</span> - Surah ${item.surah}, Ayah ${item.ayah}
+                    </div>
+                    <div class="verse-text" style="font-family: 'Amiri', serif; font-size: 1.8rem; line-height: 2.5; direction: rtl; text-align: right; margin-bottom: 1rem;">
+                        ${verseData.arab}
+                    </div>
+                    ${translationMode !== 'hide' ? `
+                        <div class="verse-translation" style="font-size: 1rem; line-height: 1.8; color: var(--text); margin-bottom: 1rem; padding: 1rem; background: var(--bg-light); border-radius: 8px;">
+                            ${translationMode === 'english' ? verseData.translation : verseData.tafseer || 'Tafseer not available'}
+                        </div>
+                    ` : ''}
+                    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                        <button class="bookmark-btn" onclick="toggleBookmark('${verseKey}')" style="background: ${isBookmarked ? 'var(--secondary)' : 'var(--success)'}; color: white; border: none; font-size: 0.85rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">
+                            ${isBookmarked ? '✓ ' : ''}${translations[language].bookmark}
+                        </button>
+                    </div>
+                `;
+                
+                ayahsDiv.appendChild(verseCard);
+            });
+        }
+        
+        function backToCategories() {
+            document.getElementById('inspireCategories').style.display = 'grid';
+            document.getElementById('inspireContent').style.display = 'none';
+        }
+        
         function updateUILanguage() {
             const t = translations[language];
             
@@ -1797,6 +2006,9 @@
             document.querySelector('[data-page="memorize"]').textContent = t.memorize;
             const prayBtn = document.querySelector('[data-page="pray"]');
             if (prayBtn) prayBtn.textContent = t.pray;
+            
+            const inspireBtn = document.querySelector('[data-page="inspire"]');
+            if (inspireBtn) inspireBtn.textContent = t.inspire;
             
             // Account page
             const accountH2 = document.querySelector('#account h2');
@@ -2678,6 +2890,109 @@
             }
         }
         
+        function showMushafSurahDropdown() {
+            const dropdown = document.getElementById('mushafSurahDropdownList');
+            dropdown.style.display = 'block';
+            filterMushafSurahDropdown(); // Populate with all surahs initially
+        }
+        
+        function hideMushafSurahDropdown() {
+            const dropdown = document.getElementById('mushafSurahDropdownList');
+            dropdown.style.display = 'none';
+        }
+        
+        function selectMushafSurah(surahNum, surahName) {
+            const searchInput = document.getElementById('mushafSurahSearch');
+            const surahFilter = document.getElementById('mushafSurahFilter');
+            
+            // Update input display
+            searchInput.value = `${surahNum}. ${surahName}`;
+            
+            // Update hidden select
+            surahFilter.value = surahNum;
+            
+            // Hide dropdown
+            hideMushafSurahDropdown();
+            
+            // Jump to surah page
+            jumpToSurahPage();
+        }
+        
+        function filterMushafSurahDropdown() {
+            const searchInput = document.getElementById('mushafSurahSearch');
+            const dropdown = document.getElementById('mushafSurahDropdownList');
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            // Clear dropdown
+            dropdown.innerHTML = '';
+            
+            // All surahs (1-114)
+            const surahsToShow = Array.from({length: 114}, (_, i) => i + 1);
+            
+            let matchCount = 0;
+            let lastMatch = null;
+            
+            // Add "All Surahs" option
+            if (searchTerm === '') {
+                const allOption = document.createElement('div');
+                allOption.style.cssText = 'padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid var(--border);';
+                allOption.textContent = language === 'ar' ? 'كل السور' : 'All Surahs';
+                allOption.onmouseover = () => allOption.style.background = 'var(--bg-light)';
+                allOption.onmouseout = () => allOption.style.background = 'white';
+                allOption.onclick = () => {
+                    searchInput.value = '';
+                    document.getElementById('mushafSurahFilter').value = '';
+                    hideMushafSurahDropdown();
+                };
+                dropdown.appendChild(allOption);
+            }
+            
+            // Filter and display surahs
+            surahsToShow.forEach(surahNum => {
+                const surahName = getSurahName(surahNum);
+                const surahNameLower = surahName.toLowerCase();
+                // Remove common prefixes and apostrophes for better English search
+                const surahNameClean = surahNameLower
+                    .replace(/^al-/i, '')
+                    .replace(/^an-/i, '')
+                    .replace(/^at-/i, '')
+                    .replace(/^ar-/i, '')
+                    .replace(/^as-/i, '')
+                    .replace(/^ash-/i, '')
+                    .replace(/^adh-/i, '')
+                    .replace(/'/g, '')
+                    .replace(/-/g, '');
+                const surahNumStr = surahNum.toString();
+                
+                // Clean search term too
+                const searchClean = searchTerm.replace(/'/g, '').replace(/-/g, '');
+                
+                // Match if search term is in name (with or without prefix/punctuation) or number
+                if (searchTerm === '' || 
+                    surahNameLower.includes(searchTerm) || 
+                    surahNameClean.includes(searchClean) ||
+                    surahNumStr.includes(searchTerm)) {
+                    
+                    const option = document.createElement('div');
+                    option.style.cssText = 'padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid var(--border);';
+                    option.textContent = `${surahNum}. ${surahName}`;
+                    option.onmouseover = () => option.style.background = 'var(--bg-light)';
+                    option.onmouseout = () => option.style.background = 'white';
+                    option.onclick = () => selectMushafSurah(surahNum, surahName);
+                    dropdown.appendChild(option);
+                    
+                    matchCount++;
+                    lastMatch = surahNum;
+                }
+            });
+            
+            // Auto-select if only one match
+            if (matchCount === 1 && searchTerm !== '') {
+                const surahName = getSurahName(lastMatch);
+                selectMushafSurah(lastMatch, surahName);
+            }
+        }
+        
         function jumpToSurahPage() {
             const surahNum = parseInt(document.getElementById('mushafSurahFilter').value);
             if (!surahNum) return;
@@ -2844,19 +3159,6 @@
                 option.textContent = language === 'ar' ? `صفحة ${i}` : `Page ${i}`;
                 pageFilter.appendChild(option);
             }
-            
-            // Populate Mushaf View Surah dropdown (all 114 surahs)
-            const mushafSurahFilter = document.getElementById('mushafSurahFilter');
-            if (mushafSurahFilter) {
-                const allSurahsText = language === 'ar' ? 'كل السور' : 'All Surahs';
-                mushafSurahFilter.innerHTML = `<option value="">${allSurahsText}</option>`;
-                for (let i = 1; i <= 114; i++) {
-                    const option = document.createElement('option');
-                    option.value = i;
-                    option.textContent = `${i}. ${getSurahName(i)}`;
-                    mushafSurahFilter.appendChild(option);
-                }
-            }
         }
 
         function toggleTranslationDisplay() {
@@ -2935,11 +3237,11 @@
         
         // Athan Functions
         const athanUrls = {
-            makkah: 'https://server6.mp3quran.net/thubti/Adhan/001.mp3',
-            madinah: 'https://server8.mp3quran.net/bsfr/Rewayat-Hafs-A-n-Assem/001.mp3',
-            egypt: 'https://server11.mp3quran.net/sds/Rewayat-Hafs-A-n-Assem/001.mp3',
-            alafasy: 'https://server13.mp3quran.net/husr/Azan/azan_001.mp3',
-            alarabi: 'https://download.tvquran.com/download/TvQuran.com__Athan/Athan_Omar_Hashim.mp3'
+            alafasy: 'https://equran.nos.wjv-1.neo.id/audio-adhan/mishary-rashed-alafasy.mp3',
+            alarabi: 'https://equran.nos.wjv-1.neo.id/audio-adhan/omar-al-kazabri.mp3',
+            makkah: 'https://equran.nos.wjv-1.neo.id/audio-adhan/adhan-makkah-fajr.mp3',
+            madinah: 'https://equran.nos.wjv-1.neo.id/audio-adhan/muhammad-al-muhaisni.mp3',
+            egypt: 'https://equran.nos.wjv-1.neo.id/audio-adhan/abdulbaset-abdulsamad.mp3'
         };
         
         function toggleAthan() {
