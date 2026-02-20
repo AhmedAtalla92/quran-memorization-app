@@ -2136,6 +2136,40 @@
             }
         };
         
+        function playVerseAudio(surah, ayah) {
+            // Stop any currently playing audio
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer = null;
+            }
+            
+            // Build audio URL
+            const paddedSurah = String(surah).padStart(3, '0');
+            const paddedAyah = String(ayah).padStart(3, '0');
+            const formattedNumber = paddedSurah + paddedAyah;
+            const audioUrl = `https://everyayah.com/data/${selectedReciter}/${formattedNumber}.mp3`;
+            
+            console.log(`Playing audio for Surah ${surah}, Ayah ${ayah}: ${audioUrl}`);
+            
+            // Create and play audio
+            audioPlayer = new Audio(audioUrl);
+            audioPlayer.volume = 0.9;
+            
+            audioPlayer.play().catch(error => {
+                console.error('Error playing audio:', error);
+                alert('Could not play audio. Please try again.');
+            });
+            
+            audioPlayer.onended = () => {
+                console.log('Audio playback completed');
+            };
+            
+            audioPlayer.onerror = (error) => {
+                console.error('Audio error:', error);
+                alert('Error loading audio. Please check your connection.');
+            };
+        }
+        
         function showInspireCategory(category) {
             const categoriesDiv = document.getElementById('inspireCategories');
             const contentDiv = document.getElementById('inspireContent');
@@ -3460,11 +3494,11 @@
         
         // Athan Functions
         const athanUrls = {
-            alafasy: 'https://ia801407.us.archive.org/29/items/adhan-mishary-rashid-alafasy/Adhan%20Mishary%20Rashid%20Alafasy.mp3',
-            alarabi: 'https://ia800200.us.archive.org/7/items/AzanMakkahHDQuality/AzanMakkahHDQuality.mp3',
-            makkah: 'https://ia800200.us.archive.org/7/items/AzanMakkahHDQuality/AzanMakkahHDQuality.mp3',
-            madinah: 'https://ia902706.us.archive.org/15/items/azan-madinah/Azan%20Madinah.mp3',
-            egypt: 'https://ia800708.us.archive.org/12/items/AzanEgypt/AzanEgypt.mp3'
+            alafasy: 'https://cdn.aladhan.com/audio/adhan-mishary-alafasy.mp3',
+            alarabi: 'https://cdn.aladhan.com/audio/adhan-ahmed-al-ameer.mp3',
+            makkah: 'https://cdn.aladhan.com/audio/adhan-makkah.mp3',
+            madinah: 'https://cdn.aladhan.com/audio/adhan-madinah.mp3',
+            egypt: 'https://cdn.aladhan.com/audio/adhan-egypt.mp3'
         };
         
         function toggleAthan() {
