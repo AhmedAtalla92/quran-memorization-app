@@ -1127,80 +1127,121 @@
         <!-- Memorize Page -->
         <div id="memorize" class="page">
             <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
-                    <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin: 0; color: var(--primary);">
-                        Memorization/Recitation Practice
-                    </h2>
-                    <div id="memorizeFilterContainer" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <label id="labelFilter" style="font-size: 0.85rem; font-weight: 600; color: var(--accent);">Filter:</label>
-                        <select id="viewFilter" onchange="changeView(this.value)" style="font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 2px solid var(--accent); border-radius: 6px; background: var(--accent); color: white; font-weight: 600; cursor: pointer;">
-                            <option value="all">All</option>
-                            <option value="memorized">Memorized</option>
-                            <option value="not_memorized">Not Memorized</option>
-                        </select>
-                    </div>
-                </div>
+                <h2 style="font-family: 'Amiri', serif; font-size: 1.6rem; margin: 0 0 1rem 0; color: var(--primary);">
+                    Memorization/Recitation Practice
+                </h2>
 
-                <!-- First row: View Mode, Juz, Surah -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+                <!-- View Mode Selection (Always visible) -->
+                <div style="margin-bottom: 1rem;">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label id="labelViewMode" style="font-size: 0.85rem; margin-bottom: 0.3rem;">View Mode</label>
                         <select id="viewModeFilter" onchange="switchViewMode()" style="font-size: 0.9rem;">
-                            <option value="surah" id="optionBySurah">By Surah</option>
-                            <option value="page" id="optionByPage">By Page</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="juzFilterGroup" style="margin-bottom: 0;">
-                        <label id="labelJuz" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Juz</label>
-                        <select id="juzFilter" onchange="filterVerses()" style="font-size: 0.9rem;">
-                            <option value="" id="optionAllJuz">All Juz</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="surahFilterGroup" style="margin-bottom: 0;">
-                        <label id="labelSurah" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Surah</label>
-                        <input 
-                            type="text" 
-                            id="surahSearch" 
-                            placeholder="Type to search..." 
-                            style="font-size: 0.9rem; margin-bottom: 0.5rem; padding: 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box;" 
-                            oninput="filterSurahDropdown()"
-                            onfocus="this.style.borderColor='var(--primary)'"
-                            onblur="this.style.borderColor='var(--border)'"
-                        />
-                        <select id="surahFilter" onchange="filterVerses(); document.getElementById('surahSearch').value = '';" style="font-size: 0.9rem;">
-                            <option value="" id="optionAllSurahs">All Surahs</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="pageFilterGroup" style="display:none; margin-bottom: 0;">
-                        <label id="labelPage" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Page / Surah</label>
-                        <input 
-                            type="text" 
-                            id="pageSearch" 
-                            placeholder="Page number or surah name..." 
-                            style="font-size: 0.9rem; margin-bottom: 0.5rem; padding: 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box;" 
-                            oninput="filterPageDropdown()"
-                            onfocus="this.style.borderColor='var(--primary)'"
-                            onblur="this.style.borderColor='var(--border)'"
-                        />
-                        <select id="pageFilter" onchange="filterByPage(); document.getElementById('pageSearch').value = '';" style="font-size: 0.9rem;">
-                            <option value="" id="optionSelectPage">Select Page</option>
+                            <option value="page" id="optionByPage">Mushaf View</option>
+                            <option value="surah" id="optionBySurah">By Ayah</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- Second row: Ayah Range -->
-                <div class="form-group" id="ayahFilterGroup" style="margin-bottom: 1rem;">
-                    <label id="labelAyah" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Ayah Range</label>
-                    <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center;">
-                        <select id="ayahFrom" onchange="filterVerses()" style="font-size: 0.9rem;">
-                            <option value="">From (All)</option>
-                        </select>
-                        <span style="color: var(--text-light); font-size: 0.8rem;">to</span>
-                        <select id="ayahTo" onchange="filterVerses()" style="font-size: 0.9rem;">
-                            <option value="">To (All)</option>
-                        </select>
+                <!-- MUSHAF VIEW FILTERS (Single Line) -->
+                <div id="mushafFilters" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                        <!-- Page Number -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.85rem; margin-bottom: 0.3rem;">Choose Page</label>
+                            <select id="pageFilter" onchange="filterByPage(); document.getElementById('pageSearch').value = '';" style="font-size: 0.9rem;">
+                                <option value="" id="optionSelectPage">Select Page</option>
+                            </select>
+                        </div>
+                        
+                        <!-- OR Text -->
+                        <div style="display: flex; align-items: center; justify-content: center; padding-top: 1.5rem;">
+                            <span style="font-weight: 600; color: var(--text-light);">OR</span>
+                        </div>
+                        
+                        <!-- Surah Search -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.85rem; margin-bottom: 0.3rem;">Type Surah Name</label>
+                            <input 
+                                type="text" 
+                                id="pageSearch" 
+                                placeholder="Search surah..." 
+                                style="font-size: 0.9rem; padding: 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box;" 
+                                oninput="filterPageDropdown()"
+                                onfocus="this.style.borderColor='var(--primary)'"
+                                onblur="this.style.borderColor='var(--border)'"
+                            />
+                        </div>
                     </div>
                 </div>
+
+                <!-- BY AYAH VIEW FILTERS (Multiple Lines) -->
+                <div id="ayahFilters" style="display: none;">
+                    <!-- Filter Button -->
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;" id="memorizeFilterContainer">
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <label id="labelFilter" style="font-size: 0.85rem; font-weight: 600; color: var(--accent);">Filter:</label>
+                            <div style="display: flex; gap: 0.4rem;">
+                                <button id="viewAllBtn" onclick="changeView('all')" style="background: var(--secondary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">All</button>
+                                <button id="viewMemorizedBtn" onclick="changeView('memorized')" style="background: var(--text-light); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Memorized</button>
+                                <button id="viewNotMemorizedBtn" onclick="changeView('not_memorized')" style="background: var(--text-light); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Not Memorized</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- First Row: Juz, Surah Search, Surah Dropdown -->
+                    <div style="display: grid; grid-template-columns: 1fr 1.5fr 1.5fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                        <!-- Juz Filter -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label id="labelJuz" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Juz</label>
+                            <select id="juzFilter" onchange="filterVerses()" style="font-size: 0.9rem;">
+                                <option value="" id="optionAllJuz">All Juz</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Surah Search -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label id="labelSurah" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Surah Search</label>
+                            <input 
+                                type="text" 
+                                id="surahSearch" 
+                                placeholder="Type to search..." 
+                                style="font-size: 0.9rem; padding: 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box;" 
+                                oninput="filterSurahDropdown()"
+                                onfocus="this.style.borderColor='var(--primary)'"
+                                onblur="this.style.borderColor='var(--border)'"
+                            />
+                        </div>
+                        
+                        <!-- Surah Dropdown -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.85rem; margin-bottom: 0.3rem;">Select Surah</label>
+                            <select id="surahFilter" onchange="filterVerses(); document.getElementById('surahSearch').value = '';" style="font-size: 0.9rem;">
+                                <option value="" id="optionAllSurahs">All Surahs</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Second Row: Ayah Range -->
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label id="labelAyah" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Ayah Range</label>
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center;">
+                            <select id="ayahFrom" onchange="filterVerses()" style="font-size: 0.9rem;">
+                                <option value="">From (All)</option>
+                            </select>
+                            <span style="color: var(--text-light); font-size: 0.8rem;">to</span>
+                            <select id="ayahTo" onchange="filterVerses()" style="font-size: 0.9rem;">
+                                <option value="">To (All)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden select for compatibility -->
+                <select id="viewFilter" style="display: none;">
+                    <option value="all">All</option>
+                    <option value="memorized">Memorized</option>
+                    <option value="not_memorized">Not Memorized</option>
+                </select>
 
                 <div id="verseDisplay"></div>
             </div>
@@ -2767,12 +2808,9 @@
             viewMode = document.getElementById('viewModeFilter').value;
             
             if (viewMode === 'page') {
-                // Hide surah/juz/ayah filters and memorize filter, show page filter
-                document.getElementById('juzFilterGroup').style.display = 'none';
-                document.getElementById('surahFilterGroup').style.display = 'none';
-                document.getElementById('ayahFilterGroup').style.display = 'none';
-                document.getElementById('memorizeFilterContainer').style.display = 'none';
-                document.getElementById('pageFilterGroup').style.display = 'block';
+                // Show Mushaf View filters, hide By Ayah filters
+                document.getElementById('mushafFilters').style.display = 'block';
+                document.getElementById('ayahFilters').style.display = 'none';
                 
                 // Auto-select page 1
                 document.getElementById('pageFilter').value = '1';
@@ -2780,12 +2818,9 @@
                 // Load page 1
                 filterByPage();
             } else {
-                // Show surah/juz/ayah filters and memorize filter, hide page filter
-                document.getElementById('juzFilterGroup').style.display = 'block';
-                document.getElementById('surahFilterGroup').style.display = 'block';
-                document.getElementById('ayahFilterGroup').style.display = 'block';
-                document.getElementById('memorizeFilterContainer').style.display = 'flex';
-                document.getElementById('pageFilterGroup').style.display = 'none';
+                // Show By Ayah filters, hide Mushaf View filters
+                document.getElementById('mushafFilters').style.display = 'none';
+                document.getElementById('ayahFilters').style.display = 'block';
                 
                 // Reset to Al-Fatiha (Surah 1) to avoid loading entire Quran
                 document.getElementById('juzFilter').value = '';
@@ -3902,17 +3937,11 @@
                         
                         // Update UI based on view mode
                         if (viewMode === 'page') {
-                            document.getElementById('juzFilterGroup').style.display = 'none';
-                            document.getElementById('surahFilterGroup').style.display = 'none';
-                            document.getElementById('ayahFilterGroup').style.display = 'none';
-                            document.getElementById('memorizeFilterContainer').style.display = 'none';
-                            document.getElementById('pageFilterGroup').style.display = 'block';
+                            document.getElementById('mushafFilters').style.display = 'block';
+                            document.getElementById('ayahFilters').style.display = 'none';
                         } else {
-                            document.getElementById('juzFilterGroup').style.display = 'block';
-                            document.getElementById('surahFilterGroup').style.display = 'block';
-                            document.getElementById('ayahFilterGroup').style.display = 'block';
-                            document.getElementById('memorizeFilterContainer').style.display = 'flex';
-                            document.getElementById('pageFilterGroup').style.display = 'none';
+                            document.getElementById('mushafFilters').style.display = 'none';
+                            document.getElementById('ayahFilters').style.display = 'block';
                         }
                     }
                     
@@ -3991,17 +4020,11 @@
                     
                     // Update UI based on view mode
                     if (viewMode === 'page') {
-                        document.getElementById('juzFilterGroup').style.display = 'none';
-                        document.getElementById('surahFilterGroup').style.display = 'none';
-                        document.getElementById('ayahFilterGroup').style.display = 'none';
-                        document.getElementById('memorizeFilterContainer').style.display = 'none';
-                        document.getElementById('pageFilterGroup').style.display = 'block';
+                        document.getElementById('mushafFilters').style.display = 'block';
+                        document.getElementById('ayahFilters').style.display = 'none';
                     } else {
-                        document.getElementById('juzFilterGroup').style.display = 'block';
-                        document.getElementById('surahFilterGroup').style.display = 'block';
-                        document.getElementById('ayahFilterGroup').style.display = 'block';
-                        document.getElementById('memorizeFilterContainer').style.display = 'flex';
-                        document.getElementById('pageFilterGroup').style.display = 'none';
+                        document.getElementById('mushafFilters').style.display = 'none';
+                        document.getElementById('ayahFilters').style.display = 'block';
                     }
                 }
                 
