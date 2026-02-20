@@ -1037,6 +1037,41 @@
                             </select>
                         </div>
                     </div>
+                    
+                    <!-- Athan Settings -->
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border);">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem;">
+                            🕌 Athan Settings / إعدادات الأذان
+                        </h3>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <!-- Athan Toggle -->
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 0.85rem;">Enable Athan / تفعيل الأذان</label>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem;">
+                                    <div class="toggle-switch" id="athanToggle" onclick="toggleAthan()" style="width: 50px; height: 26px;">
+                                        <div class="toggle-slider"></div>
+                                    </div>
+                                    <span id="athanStatus" style="font-size: 0.85rem; color: var(--text-light);">Off</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Athan Reciter -->
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 0.85rem;">Athan Reciter / المؤذن</label>
+                                <select id="athanReciterSelector" onchange="changeAthanReciter()" style="font-size: 0.9rem;">
+                                    <option value="makkah">Makkah / مكة</option>
+                                    <option value="madinah">Madinah / المدينة</option>
+                                    <option value="egypt">Egypt / مصر</option>
+                                    <option value="menshawy">Al-Menshawy / المنشاوي</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="background: var(--bg-light); padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; color: var(--text-light);">
+                            ℹ️ Athan will play automatically at prayer times when the app is open or running in the background (if installed to home screen).
+                        </div>
+                    </div>
 
                     <!-- Recitation: Stat + Progress Bar on same line (FIRST) -->
                     <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1rem; align-items: center; margin-bottom: 1.5rem;">
@@ -1144,7 +1179,7 @@
 
                 <!-- MUSHAF VIEW FILTERS (Single Line) -->
                 <div id="mushafFilters" style="display: none;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                    <div style="display: grid; grid-template-columns: 2fr 0.5fr 2fr 2fr; gap: 0.75rem; margin-bottom: 1rem; align-items: end;">
                         <!-- Page Number -->
                         <div class="form-group" style="margin-bottom: 0;">
                             <label style="font-size: 0.85rem; margin-bottom: 0.3rem;">Choose Page</label>
@@ -1154,7 +1189,7 @@
                         </div>
                         
                         <!-- OR Text -->
-                        <div style="display: flex; align-items: center; justify-content: center; padding-top: 1.5rem;">
+                        <div style="display: flex; align-items: center; justify-content: center; padding-bottom: 0.3rem;">
                             <span style="font-weight: 600; color: var(--text-light);">OR</span>
                         </div>
                         
@@ -1171,20 +1206,28 @@
                                 onblur="this.style.borderColor='var(--border)'"
                             />
                         </div>
+                        
+                        <!-- Select Surah Dropdown -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.85rem; margin-bottom: 0.3rem;">Select Surah</label>
+                            <select id="mushafSurahFilter" onchange="jumpToSurahPage()" style="font-size: 0.9rem;">
+                                <option value="">All Surahs</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <!-- BY AYAH VIEW FILTERS (Multiple Lines) -->
                 <div id="ayahFilters" style="display: none;">
-                    <!-- Filter Button -->
-                    <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;" id="memorizeFilterContainer">
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <!-- Filter Dropdown at Top Right -->
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <label id="labelFilter" style="font-size: 0.85rem; font-weight: 600; color: var(--accent);">Filter:</label>
-                            <div style="display: flex; gap: 0.4rem;">
-                                <button id="viewAllBtn" onclick="changeView('all')" style="background: var(--secondary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">All</button>
-                                <button id="viewMemorizedBtn" onclick="changeView('memorized')" style="background: var(--text-light); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Memorized</button>
-                                <button id="viewNotMemorizedBtn" onclick="changeView('not_memorized')" style="background: var(--text-light); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Not Memorized</button>
-                            </div>
+                            <select id="viewFilter" onchange="changeView(this.value)" style="font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 2px solid var(--accent); border-radius: 6px; background: var(--accent); color: white; font-weight: 600; cursor: pointer;">
+                                <option value="all">All</option>
+                                <option value="memorized">Memorized</option>
+                                <option value="not_memorized">Not Memorized</option>
+                            </select>
                         </div>
                     </div>
                     
@@ -1235,13 +1278,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Hidden select for compatibility -->
-                <select id="viewFilter" style="display: none;">
-                    <option value="all">All</option>
-                    <option value="memorized">Memorized</option>
-                    <option value="not_memorized">Not Memorized</option>
-                </select>
 
                 <div id="verseDisplay"></div>
             </div>
@@ -1577,6 +1613,11 @@
         let language = 'en'; // 'en' or 'ar'
         let translationMode = 'english'; // 'english', 'arabic', or 'hide'
         let selectedReciter = 'ar.alafasy'; // default reciter
+        let athanEnabled = false;
+        let athanReciter = 'makkah';
+        let athanCheckInterval = null;
+        let lastAthanPlayed = {};
+        let athanAudio = null;
         
         // Translations
         const translations = {
@@ -2313,6 +2354,7 @@
             await loadQuranData();
             populateFilters();
             populateReciters(); // Populate reciter names based on language
+            loadAthanSettings(); // Load athan preferences
             await checkSavedUser(); // Wait for user data to load
             updateUILanguage();
             
@@ -2576,6 +2618,20 @@
             }
         }
         
+        function jumpToSurahPage() {
+            const surahNum = parseInt(document.getElementById('mushafSurahFilter').value);
+            if (!surahNum) return;
+            
+            // Find the first page that contains this surah
+            const firstVerse = quranData.find(v => v.surah === surahNum);
+            if (firstVerse) {
+                const pageNum = firstVerse.page;
+                document.getElementById('pageFilter').value = pageNum;
+                document.getElementById('pageSearch').value = '';
+                filterByPage();
+            }
+        }
+        
         function filterPageDropdown() {
             const searchInput = document.getElementById('pageSearch');
             const pageFilter = document.getElementById('pageFilter');
@@ -2728,6 +2784,19 @@
                 option.textContent = language === 'ar' ? `صفحة ${i}` : `Page ${i}`;
                 pageFilter.appendChild(option);
             }
+            
+            // Populate Mushaf View Surah dropdown (all 114 surahs)
+            const mushafSurahFilter = document.getElementById('mushafSurahFilter');
+            if (mushafSurahFilter) {
+                const allSurahsText = language === 'ar' ? 'كل السور' : 'All Surahs';
+                mushafSurahFilter.innerHTML = `<option value="">${allSurahsText}</option>`;
+                for (let i = 1; i <= 114; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i}. ${getSurahName(i)}`;
+                    mushafSurahFilter.appendChild(option);
+                }
+            }
         }
 
         function toggleTranslationDisplay() {
@@ -2802,6 +2871,194 @@
             localStorage.setItem('quran_reciter', reciter);
             
             console.log('Reciter changed to:', reciter);
+        }
+        
+        // Athan Functions
+        const athanUrls = {
+            makkah: 'https://www.islamcan.com/audio/adhan/azan1.mp3',
+            madinah: 'https://www.islamcan.com/audio/adhan/azan5.mp3',
+            egypt: 'https://www.islamcan.com/audio/adhan/azan7.mp3',
+            menshawy: 'https://cdn.islamic.network/adhan/azan-al-menshawy.mp3'
+        };
+        
+        function toggleAthan() {
+            athanEnabled = !athanEnabled;
+            const toggle = document.getElementById('athanToggle');
+            const status = document.getElementById('athanStatus');
+            
+            if (athanEnabled) {
+                toggle.classList.add('active');
+                status.textContent = 'On';
+                status.style.color = 'var(--success)';
+                startAthanCheck();
+                requestNotificationPermission();
+            } else {
+                toggle.classList.remove('active');
+                status.textContent = 'Off';
+                status.style.color = 'var(--text-light)';
+                stopAthanCheck();
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('athan_enabled', athanEnabled);
+            
+            console.log('Athan', athanEnabled ? 'enabled' : 'disabled');
+        }
+        
+        function changeAthanReciter() {
+            athanReciter = document.getElementById('athanReciterSelector').value;
+            localStorage.setItem('athan_reciter', athanReciter);
+            console.log('Athan reciter changed to:', athanReciter);
+        }
+        
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    console.log('Notification permission:', permission);
+                });
+            }
+        }
+        
+        function startAthanCheck() {
+            if (athanCheckInterval) return;
+            
+            // Check every minute
+            athanCheckInterval = setInterval(() => {
+                checkAndPlayAthan();
+            }, 60000); // Every 60 seconds
+            
+            // Also check immediately
+            checkAndPlayAthan();
+            
+            console.log('Athan check started');
+        }
+        
+        function stopAthanCheck() {
+            if (athanCheckInterval) {
+                clearInterval(athanCheckInterval);
+                athanCheckInterval = null;
+            }
+            console.log('Athan check stopped');
+        }
+        
+        function checkAndPlayAthan() {
+            if (!athanEnabled) return;
+            
+            const now = new Date();
+            const currentTime = now.toTimeString().substring(0, 5); // HH:MM
+            const today = now.toDateString();
+            
+            // Get prayer times from the page
+            const prayerElements = {
+                fajr: document.getElementById('fajrTime'),
+                dhuhr: document.getElementById('dhuhrTime'),
+                asr: document.getElementById('asrTime'),
+                maghrib: document.getElementById('maghribTime'),
+                isha: document.getElementById('ishaTime')
+            };
+            
+            for (const [prayer, element] of Object.entries(prayerElements)) {
+                if (!element) continue;
+                
+                const prayerTime = element.textContent.trim();
+                
+                // Check if it's time for this prayer
+                if (prayerTime === currentTime) {
+                    // Check if we haven't played athan for this prayer today
+                    const lastPlayed = lastAthanPlayed[prayer];
+                    if (lastPlayed !== today) {
+                        playAthan(prayer);
+                        lastAthanPlayed[prayer] = today;
+                        localStorage.setItem('last_athan_played', JSON.stringify(lastAthanPlayed));
+                    }
+                }
+            }
+        }
+        
+        function playAthan(prayerName) {
+            const athanUrl = athanUrls[athanReciter] || athanUrls.makkah;
+            
+            console.log(`Playing Athan for ${prayerName} - Reciter: ${athanReciter}`);
+            
+            // Stop any currently playing athan
+            if (athanAudio) {
+                athanAudio.pause();
+                athanAudio = null;
+            }
+            
+            // Create and play new athan
+            athanAudio = new Audio(athanUrl);
+            athanAudio.volume = 0.9;
+            
+            athanAudio.play().catch(error => {
+                console.error('Error playing athan:', error);
+                // If auto-play is blocked, show notification
+                showAthanNotification(prayerName);
+            });
+            
+            // Show notification
+            showAthanNotification(prayerName);
+            
+            // Clean up after athan finishes
+            athanAudio.addEventListener('ended', () => {
+                athanAudio = null;
+            });
+        }
+        
+        function showAthanNotification(prayerName) {
+            const prayerNames = {
+                fajr: 'Fajr / الفجر',
+                dhuhr: 'Dhuhr / الظهر',
+                asr: 'Asr / العصر',
+                maghrib: 'Maghrib / المغرب',
+                isha: 'Isha / العشاء'
+            };
+            
+            const displayName = prayerNames[prayerName] || prayerName;
+            
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('🕌 Prayer Time / وقت الصلاة', {
+                    body: `It's time for ${displayName} prayer`,
+                    icon: '/favicon.ico',
+                    tag: 'prayer-time',
+                    requireInteraction: true
+                });
+            }
+        }
+        
+        // Load Athan settings on init
+        function loadAthanSettings() {
+            const savedAthanEnabled = localStorage.getItem('athan_enabled');
+            const savedAthanReciter = localStorage.getItem('athan_reciter');
+            const savedLastPlayed = localStorage.getItem('last_athan_played');
+            
+            if (savedAthanEnabled === 'true') {
+                athanEnabled = true;
+                const toggle = document.getElementById('athanToggle');
+                const status = document.getElementById('athanStatus');
+                if (toggle && status) {
+                    toggle.classList.add('active');
+                    status.textContent = 'On';
+                    status.style.color = 'var(--success)';
+                }
+                startAthanCheck();
+            }
+            
+            if (savedAthanReciter) {
+                athanReciter = savedAthanReciter;
+                const selector = document.getElementById('athanReciterSelector');
+                if (selector) {
+                    selector.value = athanReciter;
+                }
+            }
+            
+            if (savedLastPlayed) {
+                try {
+                    lastAthanPlayed = JSON.parse(savedLastPlayed);
+                } catch (e) {
+                    lastAthanPlayed = {};
+                }
+            }
         }
 
         function switchViewMode() {
@@ -2879,15 +3136,7 @@
 
         // Filter and Display Verses
         function changeView(view) {
-            // Update hidden select
-            document.getElementById('viewFilter').value = view;
-            
-            // Update button styles
-            document.getElementById('viewAllBtn').style.background = view === 'all' ? 'var(--secondary)' : 'var(--text-light)';
-            document.getElementById('viewMemorizedBtn').style.background = view === 'memorized' ? 'var(--secondary)' : 'var(--text-light)';
-            document.getElementById('viewNotMemorizedBtn').style.background = view === 'not_memorized' ? 'var(--secondary)' : 'var(--text-light)';
-            
-            // Filter verses
+            // Just filter verses - dropdown handles its own state
             filterVerses();
         }
 
