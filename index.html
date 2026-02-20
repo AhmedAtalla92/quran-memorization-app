@@ -1172,8 +1172,17 @@
                         </select>
                     </div>
                     <div class="form-group" id="pageFilterGroup" style="display:none; margin-bottom: 0;">
-                        <label id="labelPage" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Page</label>
-                        <select id="pageFilter" onchange="filterByPage()" style="font-size: 0.9rem;">
+                        <label id="labelPage" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Page / Surah</label>
+                        <input 
+                            type="text" 
+                            id="pageSearch" 
+                            placeholder="Page number or surah name..." 
+                            style="font-size: 0.9rem; margin-bottom: 0.5rem; padding: 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box;" 
+                            oninput="filterPageDropdown()"
+                            onfocus="this.style.borderColor='var(--primary)'"
+                            onblur="this.style.borderColor='var(--border)'"
+                        />
+                        <select id="pageFilter" onchange="filterByPage(); document.getElementById('pageSearch').value = '';" style="font-size: 0.9rem;">
                             <option value="" id="optionSelectPage">Select Page</option>
                         </select>
                     </div>
@@ -2523,6 +2532,101 @@
             } else if (currentSelection && surahFilter.querySelector(`option[value="${currentSelection}"]`)) {
                 // Restore previous selection if it still exists
                 surahFilter.value = currentSelection;
+            }
+        }
+        
+        function filterPageDropdown() {
+            const searchInput = document.getElementById('pageSearch');
+            const pageFilter = document.getElementById('pageFilter');
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            // Store current selection
+            const currentSelection = pageFilter.value;
+            
+            // Clear dropdown
+            const selectPageText = language === 'ar' ? 'اختر الصفحة' : 'Select Page';
+            pageFilter.innerHTML = `<option value="">${selectPageText}</option>`;
+            
+            if (searchTerm === '') {
+                // Show all pages (1-604)
+                for (let i = 1; i <= 604; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = language === 'ar' ? `صفحة ${i}` : `Page ${i}`;
+                    pageFilter.appendChild(option);
+                }
+                
+                // Restore selection if it exists
+                if (currentSelection && pageFilter.querySelector(`option[value="${currentSelection}"]`)) {
+                    pageFilter.value = currentSelection;
+                }
+                return;
+            }
+            
+            let matchCount = 0;
+            let lastMatch = null;
+            
+            // Check if searching by page number
+            const pageNum = parseInt(searchTerm);
+            if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= 604) {
+                // Show pages that contain this number
+                for (let i = 1; i <= 604; i++) {
+                    if (i.toString().includes(searchTerm)) {
+                        const option = document.createElement('option');
+                        option.value = i;
+                        option.textContent = language === 'ar' ? `صفحة ${i}` : `Page ${i}`;
+                        pageFilter.appendChild(option);
+                        matchCount++;
+                        lastMatch = i;
+                    }
+                }
+            } else {
+                // Search by surah name - find pages that contain verses from matching surahs
+                const matchingPages = new Set();
+                
+                for (let surahNum = 1; surahNum <= 114; surahNum++) {
+                    const surahName = getSurahName(surahNum);
+                    const surahNameLower = surahName.toLowerCase();
+                    
+                    if (surahNameLower.includes(searchTerm)) {
+                        // Get all pages that contain this surah
+                        const pagesInSurah = [...new Set(
+                            quranData
+                                .filter(v => v.surah === surahNum)
+                                .map(v => v.page)
+                        )].sort((a, b) => a - b);
+                        
+                        pagesInSurah.forEach(page => matchingPages.add(page));
+                    }
+                }
+                
+                // Add matching pages to dropdown
+                const sortedPages = Array.from(matchingPages).sort((a, b) => a - b);
+                sortedPages.forEach(page => {
+                    // Get surahs on this page for display
+                    const surahsOnPage = [...new Set(
+                        quranData.filter(v => v.page === page).map(v => v.surah)
+                    )];
+                    const surahNames = surahsOnPage.map(s => getSurahName(s)).join(', ');
+                    
+                    const option = document.createElement('option');
+                    option.value = page;
+                    option.textContent = language === 'ar' 
+                        ? `صفحة ${page} - ${surahNames}`
+                        : `Page ${page} - ${surahNames}`;
+                    pageFilter.appendChild(option);
+                    matchCount++;
+                    lastMatch = page;
+                });
+            }
+            
+            // Auto-select if only one match
+            if (matchCount === 1) {
+                pageFilter.value = lastMatch;
+                // Auto-trigger filter
+                filterByPage();
+                // Clear search
+                searchInput.value = '';
             }
         }
         
@@ -4055,26 +4159,34 @@
             console.log('=== displayBookmarksPage called ===');
             console.log('bookmarkedVerses.size:', bookmarkedVerses.size);
             console.log('quranData loaded:', quranData && quranData.length);
+            console.log('bookmarkedVerses contents:', Array.from(bookmarkedVerses));
             
             const emptyState = document.getElementById('bookmarksPageEmpty');
             const display = document.getElementById('bookmarksPageDisplay');
             
+            console.log('emptyState element:', emptyState);
+            console.log('display element:', display);
+            
             if (!emptyState || !display) {
                 console.error('Bookmarks page elements not found!');
+                console.error('Available IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
                 return;
             }
             
             if (bookmarkedVerses.size === 0) {
+                console.log('No bookmarks, showing empty state');
                 emptyState.style.display = 'block';
                 display.innerHTML = '';
                 return;
             }
             
+            console.log('Hiding empty state, showing loading message');
             emptyState.style.display = 'none';
-            display.innerHTML = '<div class="loading">Loading bookmarks...</div>';
+            display.innerHTML = '<div class="loading" style="text-align: center; padding: 2rem; font-size: 1.2rem;">Loading bookmarks...</div>';
             
             // Small delay to ensure DOM is ready
             setTimeout(() => {
+                console.log('Rendering bookmarks now...');
                 display.innerHTML = '';
                 
                 // Sort bookmarks by surah:ayah order
@@ -4086,6 +4198,11 @@
                 });
                 
                 console.log('Rendering', bookmarksArray.length, 'bookmarks');
+                
+                if (bookmarksArray.length === 0) {
+                    display.innerHTML = '<div class="loading">No bookmarks to display</div>';
+                    return;
+                }
                 
                 bookmarksArray.forEach(verseKey => {
                 const [surah, ayah] = verseKey.split(':');
@@ -4845,18 +4962,15 @@
                 if (bookmarkTranslationSelect) {
                     bookmarkTranslationSelect.value = bookmarkTranslationMode;
                 }
-                // Ensure quranData is loaded before displaying
-                const tryDisplayBookmarks = (retries = 0) => {
-                    if (quranData && quranData.length > 0) {
-                        displayBookmarksPage();
-                    } else if (retries < 10) {
-                        console.log('Waiting for Quran data to load... attempt', retries + 1);
-                        setTimeout(() => tryDisplayBookmarks(retries + 1), 200);
-                    } else {
-                        console.error('Failed to load Quran data after 10 attempts');
-                    }
-                };
-                tryDisplayBookmarks();
+                
+                // By the time user clicks "View All Bookmarks", quranData should be loaded
+                // Just call displayBookmarksPage directly
+                console.log('Showing bookmarks page, quranData loaded:', quranData && quranData.length);
+                
+                // Force a small delay to ensure page transition completes
+                setTimeout(() => {
+                    displayBookmarksPage();
+                }, 100);
             }
             
             // Refresh verse display when showing memorize page
