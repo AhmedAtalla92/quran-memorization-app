@@ -2136,10 +2136,17 @@
         };
         
         function playVerseAudio(surah, ayah, buttonElement) {
+            console.log('=== playVerseAudio called ===');
+            console.log('Surah:', surah, 'Ayah:', ayah);
+            console.log('Button element:', buttonElement);
+            console.log('Current audioPlayer:', audioPlayer);
+            console.log('Current playing button:', currentPlayingButton);
+            
             const isCurrentlyPlaying = audioPlayer && !audioPlayer.paused && currentPlayingButton === buttonElement;
             
             // If clicking the same playing button, pause it
             if (isCurrentlyPlaying) {
+                console.log('Pausing currently playing audio');
                 audioPlayer.pause();
                 buttonElement.innerHTML = '▶️ Play';
                 currentPlayingButton = null;
@@ -2148,11 +2155,13 @@
             
             // Reset previous button if exists
             if (currentPlayingButton) {
+                console.log('Resetting previous button');
                 currentPlayingButton.innerHTML = '▶️ Play';
             }
             
             // Stop any currently playing audio
             if (audioPlayer) {
+                console.log('Stopping previous audio');
                 audioPlayer.pause();
                 audioPlayer = null;
             }
@@ -2163,7 +2172,8 @@
             const formattedNumber = paddedSurah + paddedAyah;
             const audioUrl = `https://everyayah.com/data/${selectedReciter}/${formattedNumber}.mp3`;
             
-            console.log(`Playing audio for Surah ${surah}, Ayah ${ayah}: ${audioUrl}`);
+            console.log(`Playing audio: ${audioUrl}`);
+            console.log(`Selected reciter: ${selectedReciter}`);
             
             // Update button to pause icon
             buttonElement.innerHTML = '⏸️ Pause';
@@ -2173,11 +2183,14 @@
             audioPlayer = new Audio(audioUrl);
             audioPlayer.volume = 0.9;
             
-            audioPlayer.play().catch(error => {
+            console.log('Attempting to play audio...');
+            audioPlayer.play().then(() => {
+                console.log('Audio playing successfully');
+            }).catch(error => {
                 console.error('Error playing audio:', error);
                 buttonElement.innerHTML = '▶️ Play';
                 currentPlayingButton = null;
-                alert('Could not play audio. Please try again.');
+                alert('Could not play audio. Error: ' + error.message);
             });
             
             audioPlayer.onended = () => {
@@ -2188,9 +2201,10 @@
             
             audioPlayer.onerror = (error) => {
                 console.error('Audio error:', error);
+                console.error('Failed URL:', audioUrl);
                 buttonElement.innerHTML = '▶️ Play';
                 currentPlayingButton = null;
-                alert('Error loading audio. Please check your connection.');
+                alert('Error loading audio. URL: ' + audioUrl);
             };
         }
         
@@ -2249,7 +2263,7 @@
                         </div>
                     ` : ''}
                     <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
-                        <button onclick="playVerseAudio(${item.surah}, ${item.ayah}, this)" style="background: var(--primary); color: white; border: none; font-size: 0.85rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">
+                        <button class="inspire-audio-btn" data-surah="${item.surah}" data-ayah="${item.ayah}" style="background: var(--primary); color: white; border: none; font-size: 0.85rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">
                             ▶️ Play
                         </button>
                         <button class="bookmark-btn" onclick="toggleBookmark('${verseKey}')" style="background: ${isBookmarked ? 'var(--secondary)' : 'var(--success)'}; color: white; border: none; font-size: 0.85rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">
@@ -2259,6 +2273,19 @@
                 `;
                 
                 ayahsDiv.appendChild(verseCard);
+            });
+            
+            // Add event listeners to all inspire audio buttons
+            document.querySelectorAll('.inspire-audio-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const surah = parseInt(this.dataset.surah);
+                    const ayah = parseInt(this.dataset.ayah);
+                    const verseData = quranData.find(v => v.surah === surah && v.ayah === ayah);
+                    if (verseData) {
+                        const globalAyahNumber = quranData.findIndex(v => v.surah === surah && v.ayah === ayah) + 1;
+                        playAudio(globalAyahNumber, surah, ayah, this);
+                    }
+                });
             });
         }
         
@@ -3522,11 +3549,11 @@
         
         // Athan Functions
         const athanUrls = {
-            alafasy: 'https://raw.githubusercontent.com/islamic-network/aladhan.com/master/public/audio/adhan-mishary-alafasy.mp3',
-            alarabi: 'https://raw.githubusercontent.com/islamic-network/aladhan.com/master/public/audio/adhan-ahmed-al-ameer.mp3',
-            makkah: 'https://raw.githubusercontent.com/islamic-network/aladhan.com/master/public/audio/adhan-makkah.mp3',
-            madinah: 'https://raw.githubusercontent.com/islamic-network/aladhan.com/master/public/audio/adhan-madinah.mp3',
-            egypt: 'https://raw.githubusercontent.com/islamic-network/aladhan.com/master/public/audio/adhan-egypt.mp3'
+            alafasy: 'https://server11.mp3quran.net/sds/Athan/Athan_Fajr_Makkah.mp3',
+            alarabi: 'https://server11.mp3quran.net/sds/Athan/Athan_Fajr_Makkah.mp3',
+            makkah: 'https://server11.mp3quran.net/sds/Athan/Athan_Fajr_Makkah.mp3',
+            madinah: 'https://server11.mp3quran.net/sds/Athan/Athan_Madenh.mp3',
+            egypt: 'https://server11.mp3quran.net/sds/Athan/Athan_Egypt.mp3'
         };
         
         function toggleAthan() {
