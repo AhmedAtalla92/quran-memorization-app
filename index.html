@@ -1158,7 +1158,16 @@
                     </div>
                     <div class="form-group" id="surahFilterGroup" style="margin-bottom: 0;">
                         <label id="labelSurah" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Surah</label>
-                        <select id="surahFilter" onchange="filterVerses()" style="font-size: 0.9rem;">
+                        <input 
+                            type="text" 
+                            id="surahSearch" 
+                            placeholder="Type to search..." 
+                            style="font-size: 0.9rem; margin-bottom: 0.5rem; padding: 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box;" 
+                            oninput="filterSurahDropdown()"
+                            onfocus="this.style.borderColor='var(--primary)'"
+                            onblur="this.style.borderColor='var(--border)'"
+                        />
+                        <select id="surahFilter" onchange="filterVerses(); document.getElementById('surahSearch').value = '';" style="font-size: 0.9rem;">
                             <option value="" id="optionAllSurahs">All Surahs</option>
                         </select>
                     </div>
@@ -1205,13 +1214,13 @@
                     </div>
                 </div>
 
-                <div id="bookmarksEmpty" style="display: none; text-align: center; padding: 3rem; color: var(--text-light);">
+                <div id="bookmarksPageEmpty" style="display: none; text-align: center; padding: 3rem; color: var(--text-light);">
                     <div style="font-size: 4rem; margin-bottom: 1rem;">📖</div>
                     <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">No bookmarked ayahs yet</div>
                     <div style="font-size: 0.9rem;">Go to "Memorize" page and click "Save" on any ayah to bookmark it</div>
                 </div>
 
-                <div id="bookmarksDisplay"></div>
+                <div id="bookmarksPageDisplay"></div>
             </div>
         </div>
 
@@ -2453,6 +2462,68 @@
         // Helper function to get surah name based on language
         function getSurahName(surahNum) {
             return language === 'ar' ? surahNamesArabic[surahNum] : surahNames[surahNum];
+        }
+        
+        function filterSurahDropdown() {
+            const searchInput = document.getElementById('surahSearch');
+            const surahFilter = document.getElementById('surahFilter');
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            // Get current juz if one is selected
+            const juzFilter = document.getElementById('juzFilter');
+            const selectedJuz = juzFilter ? juzFilter.value : null;
+            
+            // Store current selection
+            const currentSelection = surahFilter.value;
+            
+            // Clear and repopulate based on search
+            const allSurahsText = language === 'ar' ? 'كل السور' : 'All Surahs';
+            surahFilter.innerHTML = `<option value="">${allSurahsText}</option>`;
+            
+            let surahsToShow = [];
+            if (!selectedJuz) {
+                // Show all surahs (1-114)
+                surahsToShow = Array.from({length: 114}, (_, i) => i + 1);
+            } else {
+                // Get surahs in selected juz
+                surahsToShow = [...new Set(
+                    quranData
+                        .filter(v => v.juz === parseInt(selectedJuz))
+                        .map(v => v.surah)
+                )].sort((a, b) => a - b);
+            }
+            
+            let matchCount = 0;
+            let lastMatch = null;
+            
+            // Filter by search term
+            surahsToShow.forEach(surahNum => {
+                const surahName = getSurahName(surahNum);
+                const surahNameLower = surahName.toLowerCase();
+                const surahNumStr = surahNum.toString();
+                
+                // Match if search term is in name or number
+                if (searchTerm === '' || 
+                    surahNameLower.includes(searchTerm) || 
+                    surahNumStr.includes(searchTerm)) {
+                    const option = document.createElement('option');
+                    option.value = surahNum;
+                    option.textContent = `${surahNum}. ${surahName}`;
+                    surahFilter.appendChild(option);
+                    matchCount++;
+                    lastMatch = surahNum;
+                }
+            });
+            
+            // Auto-select if only one match (excluding "All Surahs")
+            if (matchCount === 1 && searchTerm !== '') {
+                surahFilter.value = lastMatch;
+                // Auto-trigger filter
+                filterVerses();
+            } else if (currentSelection && surahFilter.querySelector(`option[value="${currentSelection}"]`)) {
+                // Restore previous selection if it still exists
+                surahFilter.value = currentSelection;
+            }
         }
         
         function populateSurahsByJuz(juzNumber) {
@@ -3981,8 +4052,17 @@
         }
         
         function displayBookmarksPage() {
-            const emptyState = document.getElementById('bookmarksEmpty');
-            const display = document.getElementById('bookmarksDisplay');
+            console.log('=== displayBookmarksPage called ===');
+            console.log('bookmarkedVerses.size:', bookmarkedVerses.size);
+            console.log('quranData loaded:', quranData && quranData.length);
+            
+            const emptyState = document.getElementById('bookmarksPageEmpty');
+            const display = document.getElementById('bookmarksPageDisplay');
+            
+            if (!emptyState || !display) {
+                console.error('Bookmarks page elements not found!');
+                return;
+            }
             
             if (bookmarkedVerses.size === 0) {
                 emptyState.style.display = 'block';
@@ -3991,17 +4071,23 @@
             }
             
             emptyState.style.display = 'none';
-            display.innerHTML = '';
+            display.innerHTML = '<div class="loading">Loading bookmarks...</div>';
             
-            // Sort bookmarks by surah:ayah order
-            const bookmarksArray = Array.from(bookmarkedVerses).sort((a, b) => {
-                const [surahA, ayahA] = a.split(':').map(Number);
-                const [surahB, ayahB] = b.split(':').map(Number);
-                if (surahA !== surahB) return surahA - surahB;
-                return ayahA - ayahB;
-            });
-            
-            bookmarksArray.forEach(verseKey => {
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                display.innerHTML = '';
+                
+                // Sort bookmarks by surah:ayah order
+                const bookmarksArray = Array.from(bookmarkedVerses).sort((a, b) => {
+                    const [surahA, ayahA] = a.split(':').map(Number);
+                    const [surahB, ayahB] = b.split(':').map(Number);
+                    if (surahA !== surahB) return surahA - surahB;
+                    return ayahA - ayahB;
+                });
+                
+                console.log('Rendering', bookmarksArray.length, 'bookmarks');
+                
+                bookmarksArray.forEach(verseKey => {
                 const [surah, ayah] = verseKey.split(':');
                 const verseData = quranData.find(v => v.surah === parseInt(surah) && v.ayah === parseInt(ayah));
                 
@@ -4065,6 +4151,7 @@
                     display.appendChild(verseCard);
                 }
             });
+            }, 50); // Small delay
         }
         
         function updateQuizSurahFilter() {
