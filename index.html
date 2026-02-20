@@ -1068,7 +1068,14 @@
                             </div>
                         </div>
                         
-                        <div style="background: var(--bg-light); padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; color: var(--text-light);">
+                        <!-- Preview Button -->
+                        <div style="margin-top: 0.75rem;">
+                            <button onclick="previewAthan()" style="width: 100%; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                                🔊 Preview Athan / معاينة الأذان
+                            </button>
+                        </div>
+                        
+                        <div style="background: var(--bg-light); padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; color: var(--text-light); margin-top: 0.75rem;">
                             ℹ️ Athan will play automatically at prayer times when the app is open or running in the background (if installed to home screen).
                         </div>
                     </div>
@@ -1219,18 +1226,6 @@
 
                 <!-- BY AYAH VIEW FILTERS (Multiple Lines) -->
                 <div id="ayahFilters" style="display: none;">
-                    <!-- Filter Dropdown at Top Right -->
-                    <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <label id="labelFilter" style="font-size: 0.85rem; font-weight: 600; color: var(--accent);">Filter:</label>
-                            <select id="viewFilter" onchange="changeView(this.value)" style="font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 2px solid var(--accent); border-radius: 6px; background: var(--accent); color: white; font-weight: 600; cursor: pointer;">
-                                <option value="all">All</option>
-                                <option value="memorized">Memorized</option>
-                                <option value="not_memorized">Not Memorized</option>
-                            </select>
-                        </div>
-                    </div>
-                    
                     <!-- First Row: Juz, Surah Search, Surah Dropdown -->
                     <div style="display: grid; grid-template-columns: 1fr 1.5fr 1.5fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                         <!-- Juz Filter -->
@@ -1278,6 +1273,11 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Hidden viewFilter for compatibility - always shows all verses -->
+                <select id="viewFilter" style="display: none;">
+                    <option value="all" selected>All</option>
+                </select>
 
                 <div id="verseDisplay"></div>
             </div>
@@ -2592,11 +2592,21 @@
             surahsToShow.forEach(surahNum => {
                 const surahName = getSurahName(surahNum);
                 const surahNameLower = surahName.toLowerCase();
+                // Also search without "Al-", "An-", "At-", "Ar-", "As-", "Ash-" prefix for English
+                const surahNameWithoutPrefix = surahNameLower
+                    .replace(/^al-/, '')
+                    .replace(/^an-/, '')
+                    .replace(/^at-/, '')
+                    .replace(/^ar-/, '')
+                    .replace(/^as-/, '')
+                    .replace(/^ash-/, '')
+                    .replace(/^adh-/, '');
                 const surahNumStr = surahNum.toString();
                 
-                // Match if search term is in name or number
+                // Match if search term is in name (with or without prefix) or number
                 if (searchTerm === '' || 
                     surahNameLower.includes(searchTerm) || 
+                    surahNameWithoutPrefix.includes(searchTerm) ||
                     surahNumStr.includes(searchTerm)) {
                     const option = document.createElement('option');
                     option.value = surahNum;
@@ -2998,6 +3008,32 @@
             
             // Show notification
             showAthanNotification(prayerName);
+            
+            // Clean up after athan finishes
+            athanAudio.addEventListener('ended', () => {
+                athanAudio = null;
+            });
+        }
+        
+        function previewAthan() {
+            const athanUrl = athanUrls[athanReciter] || athanUrls.makkah;
+            
+            console.log(`Previewing Athan - Reciter: ${athanReciter}`);
+            
+            // Stop any currently playing athan
+            if (athanAudio) {
+                athanAudio.pause();
+                athanAudio = null;
+            }
+            
+            // Create and play athan
+            athanAudio = new Audio(athanUrl);
+            athanAudio.volume = 0.9;
+            
+            athanAudio.play().catch(error => {
+                console.error('Error playing athan preview:', error);
+                alert('Could not play athan. Please check your internet connection or try a different reciter.');
+            });
             
             // Clean up after athan finishes
             athanAudio.addEventListener('ended', () => {
