@@ -1355,6 +1355,26 @@
                     <button onclick="showInspireCategory('faith')" class="inspire-category-btn" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                         ☪️<br>الإيمان<br><span style="font-size: 0.8rem; font-weight: 400;">Faith</span>
                     </button>
+                    
+                    <button onclick="showInspireCategory('contentment')" class="inspire-category-btn" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        😌<br>الرضا<br><span style="font-size: 0.8rem; font-weight: 400;">Contentment</span>
+                    </button>
+                    
+                    <button onclick="showInspireCategory('repentance')" class="inspire-category-btn" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        🙏<br>التوبة<br><span style="font-size: 0.8rem; font-weight: 400;">Repentance</span>
+                    </button>
+                    
+                    <button onclick="showInspireCategory('forgiveness')" class="inspire-category-btn" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        💚<br>المغفرة<br><span style="font-size: 0.8rem; font-weight: 400;">Forgiveness</span>
+                    </button>
+                    
+                    <button onclick="showInspireCategory('generosity')" class="inspire-category-btn" style="background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        🤝<br>الكرم<br><span style="font-size: 0.8rem; font-weight: 400;">Generosity</span>
+                    </button>
+                    
+                    <button onclick="showInspireCategory('lovegod')" class="inspire-category-btn" style="background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        💖<br>حب الله<br><span style="font-size: 0.8rem; font-weight: 400;">Love of Allah</span>
+                    </button>
                 </div>
                 
                 <!-- Ayahs Display -->
@@ -1943,14 +1963,83 @@
                     { surah: 49, ayah: 15 },  // إِنَّمَا الْمُؤْمِنُونَ الَّذِينَ آمَنُوا
                     { surah: 57, ayah: 16 }   // أَلَمْ يَأْنِ لِلَّذِينَ آمَنُوا
                 ]
+            },
+            contentment: {
+                title: { en: 'Contentment / الرضا', ar: 'الرضا / Contentment' },
+                ayahs: [
+                    { surah: 2, ayah: 216 },  // وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا
+                    { surah: 5, ayah: 119 },  // رَّضِيَ اللَّهُ عَنْهُمْ وَرَضُوا عَنْهُ
+                    { surah: 9, ayah: 59 },   // وَلَوْ أَنَّهُمْ رَضُوا
+                    { surah: 9, ayah: 100 },  // رَّضِيَ اللَّهُ عَنْهُمْ
+                    { surah: 13, ayah: 28 },  // أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ
+                    { surah: 58, ayah: 22 },  // أُولَٰئِكَ حِزْبُ اللَّهِ
+                    { surah: 89, ayah: 27 },  // يَا أَيَّتُهَا النَّفْسُ الْمُطْمَئِنَّةُ
+                    { surah: 89, ayah: 28 },  // ارْجِعِي إِلَىٰ رَبِّكِ رَاضِيَةً
+                    { surah: 98, ayah: 8 },   // رَّضِيَ اللَّهُ عَنْهُمْ وَرَضُوا عَنْهُ
+                    { surah: 103, ayah: 3 }   // وَتَوَاصَوْا بِالْحَقِّ
+                ]
+            },
+            repentance: {
+                title: { en: 'Repentance / التوبة', ar: 'التوبة / Repentance' },
+                ayahs: [
+                    { surah: 2, ayah: 222 },  // إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ
+                    { surah: 4, ayah: 17 },   // إِنَّمَا التَّوْبَةُ عَلَى اللَّهِ
+                    { surah: 4, ayah: 110 },  // وَمَن يَعْمَلْ سُوءًا
+                    { surah: 11, ayah: 3 },   // وَأَنِ اسْتَغْفِرُوا رَبَّكُمْ ثُمَّ تُوبُوا إِلَيْهِ
+                    { surah: 25, ayah: 70 },  // إِلَّا مَن تَابَ وَآمَنَ
+                    { surah: 39, ayah: 53 },  // قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا
+                    { surah: 42, ayah: 25 },  // وَهُوَ الَّذِي يَقْبَلُ التَّوْبَةَ
+                    { surah: 66, ayah: 8 },   // يَا أَيُّهَا الَّذِينَ آمَنُوا تُوبُوا
+                    { surah: 71, ayah: 10 },  // فَقُلْتُ اسْتَغْفِرُوا رَبَّكُمْ
+                    { surah: 73, ayah: 20 }   // إِنَّ رَبَّكَ يَعْلَمُ
+                ]
+            },
+            forgiveness: {
+                title: { en: 'Forgiveness / المغفرة', ar: 'المغفرة / Forgiveness' },
+                ayahs: [
+                    { surah: 2, ayah: 199 },  // ثُمَّ أَفِيضُوا مِنْ حَيْثُ أَفَاضَ النَّاسُ
+                    { surah: 3, ayah: 133 },  // وَسَارِعُوا إِلَىٰ مَغْفِرَةٍ مِّن رَّبِّكُمْ
+                    { surah: 3, ayah: 135 },  // وَالَّذِينَ إِذَا فَعَلُوا فَاحِشَةً
+                    { surah: 4, ayah: 48 },   // إِنَّ اللَّهَ لَا يَغْفِرُ أَن يُشْرَكَ بِهِ
+                    { surah: 4, ayah: 106 },  // وَاسْتَغْفِرِ اللَّهَ
+                    { surah: 39, ayah: 53 },  // قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا
+                    { surah: 40, ayah: 7 },   // فَاغْفِرْ لِلَّذِينَ تَابُوا
+                    { surah: 57, ayah: 21 },  // سَابِقُوا إِلَىٰ مَغْفِرَةٍ مِّن رَّبِّكُمْ
+                    { surah: 67, ayah: 12 },  // إِنَّ الَّذِينَ يَخْشَوْنَ رَبَّهُم
+                    { surah: 71, ayah: 10 }   // فَقُلْتُ اسْتَغْفِرُوا رَبَّكُمْ
+                ]
+            },
+            generosity: {
+                title: { en: 'Generosity / الكرم', ar: 'الكرم / Generosity' },
+                ayahs: [
+                    { surah: 2, ayah: 261 },  // مَّثَلُ الَّذِينَ يُنفِقُونَ أَمْوَالَهُمْ
+                    { surah: 2, ayah: 262 },  // الَّذِينَ يُنفِقُونَ أَمْوَالَهُمْ
+                    { surah: 2, ayah: 274 },  // الَّذِينَ يُنفِقُونَ أَمْوَالَهُم
+                    { surah: 3, ayah: 92 },   // لَن تَنَالُوا الْبِرَّ حَتَّىٰ تُنفِقُوا
+                    { surah: 9, ayah: 103 },  // خُذْ مِنْ أَمْوَالِهِمْ صَدَقَةً
+                    { surah: 57, ayah: 7 },   // آمِنُوا بِاللَّهِ وَرَسُولِهِ وَأَنفِقُوا
+                    { surah: 57, ayah: 10 },  // وَمَا لَكُمْ أَلَّا تُنفِقُوا
+                    { surah: 63, ayah: 10 },  // وَأَنفِقُوا مِن مَّا رَزَقْنَاكُم
+                    { surah: 64, ayah: 16 },  // فَاتَّقُوا اللَّهَ مَا اسْتَطَعْتُمْ
+                    { surah: 92, ayah: 18 }   // الَّذِي يُؤْتِي مَالَهُ يَتَزَكَّىٰ
+                ]
+            },
+            lovegod: {
+                title: { en: 'Love of Allah / حب الله', ar: 'حب الله / Love of Allah' },
+                ayahs: [
+                    { surah: 2, ayah: 165 },  // وَالَّذِينَ آمَنُوا أَشَدُّ حُبًّا لِّلَّهِ
+                    { surah: 3, ayah: 31 },   // قُلْ إِن كُنتُمْ تُحِبُّونَ اللَّهَ
+                    { surah: 5, ayah: 54 },   // يُحِبُّهُمْ وَيُحِبُّونَهُ
+                    { surah: 9, ayah: 24 },   // قُلْ إِن كَانَ آبَاؤُكُمْ
+                    { surah: 9, ayah: 108 },  // فِيهِ رِجَالٌ يُحِبُّونَ أَن يَتَطَهَّرُوا
+                    { surah: 11, ayah: 90 },  // وَاسْتَغْفِرُوا رَبَّكُمْ
+                    { surah: 76, ayah: 8 },   // وَيُطْعِمُونَ الطَّعَامَ عَلَىٰ حُبِّهِ
+                    { surah: 85, ayah: 14 },  // وَهُوَ الْغَفُورُ الْوَدُودُ
+                    { surah: 89, ayah: 29 },  // وَادْخُلِي جَنَّتِي
+                    { surah: 100, ayah: 8 }   // وَإِنَّهُ لِحُبِّ الْخَيْرِ لَشَدِيدٌ
+                ]
             }
         };
-        
-        // Inspire audio playback state
-        let inspireAudio = null;
-        let inspirePlaylist = [];
-        let inspireCurrentIndex = 0;
-        let inspireIsPlaying = false;
         
         function showInspireCategory(category) {
             const categoriesDiv = document.getElementById('inspireCategories');
@@ -1962,11 +2051,10 @@
             if (!data) return;
             
             // Stop any playing audio
-            stopInspireAudio();
-            
-            // Build playlist
-            inspirePlaylist = data.ayahs;
-            inspireCurrentIndex = 0;
+            if (audio) {
+                audio.pause();
+                audio = null;
+            }
             
             // Hide categories, show content
             categoriesDiv.style.display = 'none';
@@ -1975,22 +2063,8 @@
             // Set title
             titleEl.textContent = language === 'ar' ? data.title.ar : data.title.en;
             
-            // Add audio controls at top
-            const audioControls = document.createElement('div');
-            audioControls.id = 'inspireAudioControls';
-            audioControls.style.cssText = 'margin-bottom: 1.5rem; display: flex; gap: 0.75rem; justify-content: center; padding: 1rem; background: var(--bg-light); border-radius: 8px;';
-            audioControls.innerHTML = `
-                <button id="inspirePlayBtn" onclick="playInspirePlaylist()" style="background: var(--success); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-weight: 600; min-width: 120px;">
-                    ▶ Play All
-                </button>
-                <button id="inspirePauseBtn" onclick="pauseInspireAudio()" style="display: none; background: var(--error); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-weight: 600; min-width: 120px;">
-                    ⏸ Pause
-                </button>
-            `;
-            
-            // Clear and add controls
+            // Clear ayahs
             ayahsDiv.innerHTML = '';
-            ayahsDiv.appendChild(audioControls);
             
             // Populate ayahs
             data.ayahs.forEach((item, index) => {
@@ -2004,9 +2078,7 @@
                 
                 const verseCard = document.createElement('div');
                 verseCard.className = 'verse-card';
-                verseCard.id = `inspire-ayah-${index}`;
                 verseCard.style.marginBottom = '1.5rem';
-                verseCard.style.transition = 'all 0.3s';
                 
                 verseCard.innerHTML = `
                     <div class="verse-info" style="margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border);">
@@ -2021,7 +2093,7 @@
                         </div>
                     ` : ''}
                     <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
-                        <button onclick="playInspireAyah(${index})" style="background: var(--primary); color: white; border: none; font-size: 0.85rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">
+                        <button onclick="playVerseAudio(${item.surah}, ${item.ayah})" style="background: var(--primary); color: white; border: none; font-size: 0.85rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">
                             🔊 Play
                         </button>
                         <button class="bookmark-btn" onclick="toggleBookmark('${verseKey}')" style="background: ${isBookmarked ? 'var(--secondary)' : 'var(--success)'}; color: white; border: none; font-size: 0.85rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">
@@ -2034,96 +2106,11 @@
             });
         }
         
-        function playInspirePlaylist() {
-            inspireCurrentIndex = 0;
-            playInspireAyah(0);
-            
-            // Update buttons
-            document.getElementById('inspirePlayBtn').style.display = 'none';
-            document.getElementById('inspirePauseBtn').style.display = 'block';
-        }
-        
-        function playInspireAyah(index) {
-            if (index >= inspirePlaylist.length) {
-                stopInspireAudio();
-                return;
-            }
-            
-            inspireCurrentIndex = index;
-            inspireIsPlaying = true;
-            
-            const item = inspirePlaylist[index];
-            const paddedSurah = String(item.surah).padStart(3, '0');
-            const paddedAyah = String(item.ayah).padStart(3, '0');
-            const audioUrl = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${paddedSurah}${paddedAyah}.mp3`;
-            
-            // Stop any existing audio
-            if (inspireAudio) {
-                inspireAudio.pause();
-                inspireAudio = null;
-            }
-            
-            // Highlight current ayah
-            document.querySelectorAll('[id^="inspire-ayah-"]').forEach(card => {
-                card.style.background = '';
-                card.style.boxShadow = '';
-            });
-            const currentCard = document.getElementById(`inspire-ayah-${index}`);
-            if (currentCard) {
-                currentCard.style.background = 'var(--bg-light)';
-                currentCard.style.boxShadow = '0 0 0 3px var(--primary)';
-                currentCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            
-            // Play audio
-            inspireAudio = new Audio(audioUrl);
-            inspireAudio.volume = 0.9;
-            
-            inspireAudio.play().catch(error => {
-                console.error('Error playing inspire audio:', error);
-            });
-            
-            // Auto-advance to next ayah
-            inspireAudio.addEventListener('ended', () => {
-                if (inspireIsPlaying) {
-                    playInspireAyah(index + 1);
-                }
-            });
-            
-            // Update buttons
-            document.getElementById('inspirePlayBtn').style.display = 'none';
-            document.getElementById('inspirePauseBtn').style.display = 'block';
-        }
-        
-        function pauseInspireAudio() {
-            inspireIsPlaying = false;
-            if (inspireAudio) {
-                inspireAudio.pause();
-            }
-            
-            // Update buttons
-            document.getElementById('inspirePlayBtn').style.display = 'block';
-            document.getElementById('inspirePauseBtn').style.display = 'none';
-            
-            // Remove highlight
-            document.querySelectorAll('[id^="inspire-ayah-"]').forEach(card => {
-                card.style.background = '';
-                card.style.boxShadow = '';
-            });
-        }
-        
-        function stopInspireAudio() {
-            inspireIsPlaying = false;
-            if (inspireAudio) {
-                inspireAudio.pause();
-                inspireAudio = null;
-            }
-            inspirePlaylist = [];
-            inspireCurrentIndex = 0;
-        }
-        
         function backToCategories() {
-            stopInspireAudio();
+            if (audio) {
+                audio.pause();
+                audio = null;
+            }
             document.getElementById('inspireCategories').style.display = 'grid';
             document.getElementById('inspireContent').style.display = 'none';
         }
@@ -3375,11 +3362,11 @@
         
         // Athan Functions
         const athanUrls = {
-            alafasy: 'https://equran.nos.wjv-1.neo.id/audio-adhan/mishary-rashed-alafasy.mp3',
-            alarabi: 'https://equran.nos.wjv-1.neo.id/audio-adhan/omar-al-kazabri.mp3',
-            makkah: 'https://equran.nos.wjv-1.neo.id/audio-adhan/adhan-makkah-fajr.mp3',
-            madinah: 'https://equran.nos.wjv-1.neo.id/audio-adhan/muhammad-al-muhaisni.mp3',
-            egypt: 'https://equran.nos.wjv-1.neo.id/audio-adhan/abdulbaset-abdulsamad.mp3'
+            alafasy: 'https://cdn.islamic.network/adhan/adhan.mp3',
+            alarabi: 'https://www.islamicfinder.org/prayer-widget/media/adhan_fajr.mp3',
+            makkah: 'https://www.islamicfinder.org/prayer-widget/media/adhan.mp3',
+            madinah: 'https://www.islamicfinder.org/prayer-widget/media/adhan_madinah.mp3',
+            egypt: 'https://www.islamicfinder.org/prayer-widget/media/adhan_egypt.mp3'
         };
         
         function toggleAthan() {
