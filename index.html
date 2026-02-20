@@ -3067,15 +3067,25 @@
         }
         
         function previewAthan() {
-            const athanUrl = athanUrls[athanReciter] || athanUrls.makkah;
+            const previewBtn = document.querySelector('button[onclick="previewAthan()"]');
+            
+            // If already playing, stop it
+            if (athanAudio && !athanAudio.paused) {
+                athanAudio.pause();
+                athanAudio = null;
+                previewBtn.textContent = '🔊 Preview Athan / معاينة الأذان';
+                previewBtn.style.background = 'var(--primary)';
+                console.log('Athan preview stopped');
+                return;
+            }
+            
+            const athanUrl = athanUrls[athanReciter] || athanUrls.alafasy;
             
             console.log(`Previewing Athan - Reciter: ${athanReciter}`);
             
-            // Stop any currently playing athan
-            if (athanAudio) {
-                athanAudio.pause();
-                athanAudio = null;
-            }
+            // Update button to show "Stop"
+            previewBtn.textContent = '⏸️ Stop Athan / إيقاف الأذان';
+            previewBtn.style.background = 'var(--error)';
             
             // Create and play athan
             athanAudio = new Audio(athanUrl);
@@ -3084,11 +3094,15 @@
             athanAudio.play().catch(error => {
                 console.error('Error playing athan preview:', error);
                 alert('Could not play athan. Please check your internet connection or try a different reciter.');
+                previewBtn.textContent = '🔊 Preview Athan / معاينة الأذان';
+                previewBtn.style.background = 'var(--primary)';
             });
             
             // Clean up after athan finishes
             athanAudio.addEventListener('ended', () => {
                 athanAudio = null;
+                previewBtn.textContent = '🔊 Preview Athan / معاينة الأذان';
+                previewBtn.style.background = 'var(--primary)';
             });
         }
         
