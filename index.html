@@ -1200,32 +1200,13 @@
 
                 <!-- MUSHAF VIEW FILTERS (Single Line) -->
                 <div id="mushafFilters" style="display: none;">
-                    <div style="display: grid; grid-template-columns: 2fr 0.5fr 2fr 2fr; gap: 0.75rem; margin-bottom: 1rem; align-items: end;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
                         <!-- Page Number -->
                         <div class="form-group" style="margin-bottom: 0;">
                             <label style="font-size: 0.85rem; margin-bottom: 0.3rem;">Choose Page</label>
-                            <select id="pageFilter" onchange="filterByPage(); document.getElementById('pageSearch').value = '';" style="font-size: 0.9rem;">
+                            <select id="pageFilter" onchange="filterByPage();" style="font-size: 0.9rem;">
                                 <option value="" id="optionSelectPage">Select Page</option>
                             </select>
-                        </div>
-                        
-                        <!-- OR Text -->
-                        <div style="display: flex; align-items: center; justify-content: center; padding-bottom: 0.3rem;">
-                            <span style="font-weight: 600; color: var(--text-light);">OR</span>
-                        </div>
-                        
-                        <!-- Surah Search -->
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.85rem; margin-bottom: 0.3rem;">Type Surah Name</label>
-                            <input 
-                                type="text" 
-                                id="pageSearch" 
-                                placeholder="Search surah..." 
-                                style="font-size: 0.9rem; padding: 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box;" 
-                                oninput="filterPageDropdown()"
-                                onfocus="this.style.borderColor='var(--primary)'"
-                                onblur="this.style.borderColor='var(--border)'"
-                            />
                         </div>
                         
                         <!-- Surah Search/Select (Combined) -->
@@ -1875,68 +1856,101 @@
                 ayahs: [
                     { surah: 2, ayah: 153 },  // يَا أَيُّهَا الَّذِينَ آمَنُوا اسْتَعِينُوا بِالصَّبْرِ
                     { surah: 2, ayah: 155 },  // وَلَنَبْلُوَنَّكُم بِشَيْءٍ مِّنَ الْخَوْفِ
+                    { surah: 2, ayah: 177 },  // وَالصَّابِرِينَ فِي الْبَأْسَاءِ
                     { surah: 3, ayah: 200 },  // يَا أَيُّهَا الَّذِينَ آمَنُوا اصْبِرُوا
+                    { surah: 16, ayah: 127 }, // وَاصْبِرْ وَمَا صَبْرُكَ إِلَّا بِاللَّهِ
                     { surah: 39, ayah: 10 },  // إِنَّمَا يُوَفَّى الصَّابِرُونَ
+                    { surah: 46, ayah: 35 },  // فَاصْبِرْ كَمَا صَبَرَ
+                    { surah: 70, ayah: 5 },   // فَاصْبِرْ صَبْرًا جَمِيلًا
                     { surah: 94, ayah: 5 },   // فَإِنَّ مَعَ الْعُسْرِ يُسْرًا
-                    { surah: 94, ayah: 6 }    // إِنَّ مَعَ الْعُسْرِ يُسْرًا
+                    { surah: 94, ayah: 6 },   // إِنَّ مَعَ الْعُسْرِ يُسْرًا
+                    { surah: 103, ayah: 3 }   // إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ
                 ]
             },
             provision: {
                 title: { en: 'Provision / الرزق', ar: 'الرزق / Provision' },
                 ayahs: [
+                    { surah: 2, ayah: 212 },  // زُيِّنَ لِلَّذِينَ كَفَرُوا الْحَيَاةُ
                     { surah: 11, ayah: 6 },   // وَمَا مِن دَابَّةٍ فِي الْأَرْضِ
-                    { surah: 65, ayah: 3 },   // وَمَن يَتَوَكَّلْ عَلَى اللَّهِ
                     { surah: 29, ayah: 60 },  // وَكَأَيِّن مِن دَابَّةٍ لَّا تَحْمِلُ
+                    { surah: 29, ayah: 62 },  // اللَّهُ يَبْسُطُ الرِّزْقَ
                     { surah: 51, ayah: 22 },  // وَفِي السَّمَاءِ رِزْقُكُمْ
+                    { surah: 51, ayah: 58 },  // إِنَّ اللَّهَ هُوَ الرَّزَّاقُ
+                    { surah: 65, ayah: 2 },   // وَمَن يَتَّقِ اللَّهَ يَجْعَل
+                    { surah: 65, ayah: 3 },   // وَمَن يَتَوَكَّلْ عَلَى اللَّهِ
                     { surah: 67, ayah: 21 },  // أَمَّنْ هَٰذَا الَّذِي يَرْزُقُكُمْ
-                    { surah: 2, ayah: 212 }   // زُيِّنَ لِلَّذِينَ كَفَرُوا الْحَيَاةُ
+                    { surah: 89, ayah: 16 }   // فَيَقُولُ رَبِّي أَكْرَمَنِ
                 ]
             },
             mercy: {
                 title: { en: 'Mercy / الرحمة', ar: 'الرحمة / Mercy' },
                 ayahs: [
+                    { surah: 6, ayah: 54 },   // كَتَبَ رَبُّكُمْ عَلَىٰ نَفْسِهِ الرَّحْمَةَ
                     { surah: 7, ayah: 156 },  // وَرَحْمَتِي وَسِعَتْ كُلَّ شَيْءٍ
+                    { surah: 11, ayah: 90 },  // إِنَّ رَبِّي رَحِيمٌ وَدُودٌ
+                    { surah: 12, ayah: 64 },  // فَاللَّهُ خَيْرٌ حَافِظًا
+                    { surah: 12, ayah: 87 },  // لَا تَيْأَسُوا مِن رَّوْحِ اللَّهِ
                     { surah: 21, ayah: 107 }, // وَمَا أَرْسَلْنَاكَ إِلَّا رَحْمَةً
                     { surah: 39, ayah: 53 },  // قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا
-                    { surah: 6, ayah: 54 },   // كَتَبَ رَبُّكُمْ عَلَىٰ نَفْسِهِ الرَّحْمَةَ
-                    { surah: 12, ayah: 64 },  // فَاللَّهُ خَيْرٌ حَافِظًا
-                    { surah: 12, ayah: 87 }   // لَا تَيْأَسُوا مِن رَّوْحِ اللَّهِ
+                    { surah: 42, ayah: 28 },  // وَهُوَ الْوَلِيُّ الْحَمِيدُ
+                    { surah: 52, ayah: 28 },  // إِنَّهُ هُوَ الْبَرُّ الرَّحِيمُ
+                    { surah: 85, ayah: 14 }   // وَهُوَ الْغَفُورُ الْوَدُودُ
                 ]
             },
             morals: {
                 title: { en: 'Morals / الأخلاق', ar: 'الأخلاق / Morals' },
                 ayahs: [
-                    { surah: 49, ayah: 13 },  // إِنَّ أَكْرَمَكُمْ عِندَ اللَّهِ أَتْقَاكُمْ
+                    { surah: 3, ayah: 134 },  // الَّذِينَ يُنفِقُونَ فِي السَّرَّاءِ وَالضَّرَّاءِ
+                    { surah: 4, ayah: 36 },   // وَاعْبُدُوا اللَّهَ وَلَا تُشْرِكُوا
+                    { surah: 17, ayah: 23 },  // وَقَضَىٰ رَبُّكَ أَلَّا تَعْبُدُوا
                     { surah: 17, ayah: 53 },  // وَقُل لِّعِبَادِي يَقُولُوا الَّتِي هِيَ أَحْسَنُ
                     { surah: 25, ayah: 63 },  // وَإِذَا خَاطَبَهُمُ الْجَاهِلُونَ قَالُوا سَلَامًا
-                    { surah: 68, ayah: 4 },   // وَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍ
+                    { surah: 31, ayah: 18 },  // وَلَا تُصَعِّرْ خَدَّكَ لِلنَّاسِ
                     { surah: 41, ayah: 34 },  // ادْفَعْ بِالَّتِي هِيَ أَحْسَنُ
-                    { surah: 3, ayah: 134 }   // الَّذِينَ يُنفِقُونَ فِي السَّرَّاءِ وَالضَّرَّاءِ
+                    { surah: 49, ayah: 11 },  // لَا يَسْخَرْ قَوْمٌ مِّن قَوْمٍ
+                    { surah: 49, ayah: 13 },  // إِنَّ أَكْرَمَكُمْ عِندَ اللَّهِ أَتْقَاكُمْ
+                    { surah: 68, ayah: 4 },   // وَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍ
+                    { surah: 90, ayah: 17 }   // ثُمَّ كَانَ مِنَ الَّذِينَ آمَنُوا
                 ]
             },
             trials: {
                 title: { en: 'Trials / المحنة', ar: 'المحنة / Trials' },
                 ayahs: [
-                    { surah: 2, ayah: 286 },  // لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا
-                    { surah: 29, ayah: 2 },   // أَحَسِبَ النَّاسُ أَن يُتْرَكُوا
                     { surah: 2, ayah: 214 },  // أَمْ حَسِبْتُمْ أَن تَدْخُلُوا الْجَنَّةَ
-                    { surah: 94, ayah: 5 },   // فَإِنَّ مَعَ الْعُسْرِ يُسْرًا
+                    { surah: 2, ayah: 286 },  // لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا
+                    { surah: 3, ayah: 142 },  // أَمْ حَسِبْتُمْ أَن تَدْخُلُوا الْجَنَّةَ
                     { surah: 8, ayah: 28 },   // وَاعْلَمُوا أَنَّمَا أَمْوَالُكُمْ وَأَوْلَادُكُمْ فِتْنَةٌ
-                    { surah: 64, ayah: 15 }   // إِنَّمَا أَمْوَالُكُمْ وَأَوْلَادُكُمْ فِتْنَةٌ
+                    { surah: 18, ayah: 7 },   // إِنَّا جَعَلْنَا مَا عَلَى الْأَرْضِ زِينَةً
+                    { surah: 29, ayah: 2 },   // أَحَسِبَ النَّاسُ أَن يُتْرَكُوا
+                    { surah: 29, ayah: 3 },   // وَلَقَدْ فَتَنَّا الَّذِينَ
+                    { surah: 64, ayah: 15 },  // إِنَّمَا أَمْوَالُكُمْ وَأَوْلَادُكُمْ فِتْنَةٌ
+                    { surah: 67, ayah: 2 },   // الَّذِي خَلَقَ الْمَوْتَ وَالْحَيَاةَ
+                    { surah: 94, ayah: 5 }    // فَإِنَّ مَعَ الْعُسْرِ يُسْرًا
                 ]
             },
             faith: {
                 title: { en: 'Faith / الإيمان', ar: 'الإيمان / Faith' },
                 ayahs: [
                     { surah: 2, ayah: 186 },  // وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ
-                    { surah: 13, ayah: 28 },  // أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ
+                    { surah: 2, ayah: 257 },  // اللَّهُ وَلِيُّ الَّذِينَ آمَنُوا
                     { surah: 3, ayah: 159 },  // فَاعْفُ عَنْهُمْ وَاسْتَغْفِرْ لَهُمْ
-                    { surah: 16, ayah: 97 },  // مَنْ عَمِلَ صَالِحًا مِّن ذَكَرٍ أَوْ أُنثَىٰ
                     { surah: 3, ayah: 160 },  // إِن يَنصُرْكُمُ اللَّهُ فَلَا غَالِبَ لَكُمْ
-                    { surah: 2, ayah: 257 }   // اللَّهُ وَلِيُّ الَّذِينَ آمَنُوا
+                    { surah: 8, ayah: 2 },    // إِنَّمَا الْمُؤْمِنُونَ الَّذِينَ إِذَا ذُكِرَ اللَّهُ
+                    { surah: 13, ayah: 28 },  // أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ
+                    { surah: 16, ayah: 97 },  // مَنْ عَمِلَ صَالِحًا مِّن ذَكَرٍ أَوْ أُنثَىٰ
+                    { surah: 33, ayah: 35 },  // إِنَّ الْمُسْلِمِينَ وَالْمُسْلِمَاتِ
+                    { surah: 48, ayah: 4 },   // هُوَ الَّذِي أَنزَلَ السَّكِينَةَ
+                    { surah: 49, ayah: 15 },  // إِنَّمَا الْمُؤْمِنُونَ الَّذِينَ آمَنُوا
+                    { surah: 57, ayah: 16 }   // أَلَمْ يَأْنِ لِلَّذِينَ آمَنُوا
                 ]
             }
         };
+        
+        // Inspire audio playback state
+        let inspireAudio = null;
+        let inspirePlaylist = [];
+        let inspireCurrentIndex = 0;
+        let inspireIsPlaying = false;
         
         function showInspireCategory(category) {
             const categoriesDiv = document.getElementById('inspireCategories');
@@ -1947,6 +1961,13 @@
             const data = inspireData[category];
             if (!data) return;
             
+            // Stop any playing audio
+            stopInspireAudio();
+            
+            // Build playlist
+            inspirePlaylist = data.ayahs;
+            inspireCurrentIndex = 0;
+            
             // Hide categories, show content
             categoriesDiv.style.display = 'none';
             contentDiv.style.display = 'block';
@@ -1954,10 +1975,25 @@
             // Set title
             titleEl.textContent = language === 'ar' ? data.title.ar : data.title.en;
             
-            // Clear and populate ayahs
-            ayahsDiv.innerHTML = '';
+            // Add audio controls at top
+            const audioControls = document.createElement('div');
+            audioControls.id = 'inspireAudioControls';
+            audioControls.style.cssText = 'margin-bottom: 1.5rem; display: flex; gap: 0.75rem; justify-content: center; padding: 1rem; background: var(--bg-light); border-radius: 8px;';
+            audioControls.innerHTML = `
+                <button id="inspirePlayBtn" onclick="playInspirePlaylist()" style="background: var(--success); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-weight: 600; min-width: 120px;">
+                    ▶ Play All
+                </button>
+                <button id="inspirePauseBtn" onclick="pauseInspireAudio()" style="display: none; background: var(--error); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-weight: 600; min-width: 120px;">
+                    ⏸ Pause
+                </button>
+            `;
             
-            data.ayahs.forEach(item => {
+            // Clear and add controls
+            ayahsDiv.innerHTML = '';
+            ayahsDiv.appendChild(audioControls);
+            
+            // Populate ayahs
+            data.ayahs.forEach((item, index) => {
                 const verseKey = `${item.surah}:${item.ayah}`;
                 const verseData = quranData.find(v => v.surah === item.surah && v.ayah === item.ayah);
                 
@@ -1968,7 +2004,9 @@
                 
                 const verseCard = document.createElement('div');
                 verseCard.className = 'verse-card';
+                verseCard.id = `inspire-ayah-${index}`;
                 verseCard.style.marginBottom = '1.5rem';
+                verseCard.style.transition = 'all 0.3s';
                 
                 verseCard.innerHTML = `
                     <div class="verse-info" style="margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border);">
@@ -1983,6 +2021,9 @@
                         </div>
                     ` : ''}
                     <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                        <button onclick="playInspireAyah(${index})" style="background: var(--primary); color: white; border: none; font-size: 0.85rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">
+                            🔊 Play
+                        </button>
                         <button class="bookmark-btn" onclick="toggleBookmark('${verseKey}')" style="background: ${isBookmarked ? 'var(--secondary)' : 'var(--success)'}; color: white; border: none; font-size: 0.85rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">
                             ${isBookmarked ? '✓ ' : ''}${translations[language].bookmark}
                         </button>
@@ -1993,7 +2034,96 @@
             });
         }
         
+        function playInspirePlaylist() {
+            inspireCurrentIndex = 0;
+            playInspireAyah(0);
+            
+            // Update buttons
+            document.getElementById('inspirePlayBtn').style.display = 'none';
+            document.getElementById('inspirePauseBtn').style.display = 'block';
+        }
+        
+        function playInspireAyah(index) {
+            if (index >= inspirePlaylist.length) {
+                stopInspireAudio();
+                return;
+            }
+            
+            inspireCurrentIndex = index;
+            inspireIsPlaying = true;
+            
+            const item = inspirePlaylist[index];
+            const paddedSurah = String(item.surah).padStart(3, '0');
+            const paddedAyah = String(item.ayah).padStart(3, '0');
+            const audioUrl = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${paddedSurah}${paddedAyah}.mp3`;
+            
+            // Stop any existing audio
+            if (inspireAudio) {
+                inspireAudio.pause();
+                inspireAudio = null;
+            }
+            
+            // Highlight current ayah
+            document.querySelectorAll('[id^="inspire-ayah-"]').forEach(card => {
+                card.style.background = '';
+                card.style.boxShadow = '';
+            });
+            const currentCard = document.getElementById(`inspire-ayah-${index}`);
+            if (currentCard) {
+                currentCard.style.background = 'var(--bg-light)';
+                currentCard.style.boxShadow = '0 0 0 3px var(--primary)';
+                currentCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            // Play audio
+            inspireAudio = new Audio(audioUrl);
+            inspireAudio.volume = 0.9;
+            
+            inspireAudio.play().catch(error => {
+                console.error('Error playing inspire audio:', error);
+            });
+            
+            // Auto-advance to next ayah
+            inspireAudio.addEventListener('ended', () => {
+                if (inspireIsPlaying) {
+                    playInspireAyah(index + 1);
+                }
+            });
+            
+            // Update buttons
+            document.getElementById('inspirePlayBtn').style.display = 'none';
+            document.getElementById('inspirePauseBtn').style.display = 'block';
+        }
+        
+        function pauseInspireAudio() {
+            inspireIsPlaying = false;
+            if (inspireAudio) {
+                inspireAudio.pause();
+            }
+            
+            // Update buttons
+            document.getElementById('inspirePlayBtn').style.display = 'block';
+            document.getElementById('inspirePauseBtn').style.display = 'none';
+            
+            // Remove highlight
+            document.querySelectorAll('[id^="inspire-ayah-"]').forEach(card => {
+                card.style.background = '';
+                card.style.boxShadow = '';
+            });
+        }
+        
+        function stopInspireAudio() {
+            inspireIsPlaying = false;
+            if (inspireAudio) {
+                inspireAudio.pause();
+                inspireAudio = null;
+            }
+            inspirePlaylist = [];
+            inspireCurrentIndex = 0;
+        }
+        
         function backToCategories() {
+            stopInspireAudio();
             document.getElementById('inspireCategories').style.display = 'grid';
             document.getElementById('inspireContent').style.display = 'none';
         }
@@ -3154,9 +3284,17 @@
             const pageFilter = document.getElementById('pageFilter');
             pageFilter.innerHTML = '<option value="" id="optionSelectPage">Select Page</option>'; // Clear and add default
             for (let i = 1; i <= 604; i++) {
+                // Find the juz for this page
+                const pageData = quranData.find(v => v.page === i);
+                const juzNum = pageData ? pageData.juz : Math.ceil(i / 20); // Fallback calculation
+                
                 const option = document.createElement('option');
                 option.value = i;
-                option.textContent = language === 'ar' ? `صفحة ${i}` : `Page ${i}`;
+                if (language === 'ar') {
+                    option.textContent = `صفحة ${i} - جزء ${juzNum}`;
+                } else {
+                    option.textContent = `Page ${i} - Juz ${juzNum}`;
+                }
                 pageFilter.appendChild(option);
             }
         }
