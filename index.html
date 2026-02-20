@@ -1060,10 +1060,11 @@
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label style="font-size: 0.85rem;">Athan Reciter / المؤذن</label>
                                 <select id="athanReciterSelector" onchange="changeAthanReciter()" style="font-size: 0.9rem;">
+                                    <option value="alafasy">Mishary Al-Afasy / مشاري العفاسي</option>
+                                    <option value="alarabi">Omar Hisham Al-Arabi / عمر هاشم العربي</option>
                                     <option value="makkah">Makkah / مكة</option>
                                     <option value="madinah">Madinah / المدينة</option>
                                     <option value="egypt">Egypt / مصر</option>
-                                    <option value="menshawy">Al-Menshawy / المنشاوي</option>
                                 </select>
                             </div>
                         </div>
@@ -1226,8 +1227,8 @@
 
                 <!-- BY AYAH VIEW FILTERS (Multiple Lines) -->
                 <div id="ayahFilters" style="display: none;">
-                    <!-- First Row: Juz, Surah Search, Surah Dropdown -->
-                    <div style="display: grid; grid-template-columns: 1fr 1.5fr 1.5fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                    <!-- First Row: Juz, Surah (Combined Search/Select) -->
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                         <!-- Juz Filter -->
                         <div class="form-group" style="margin-bottom: 0;">
                             <label id="labelJuz" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Juz</label>
@@ -1236,27 +1237,29 @@
                             </select>
                         </div>
                         
-                        <!-- Surah Search -->
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label id="labelSurah" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Surah Search</label>
-                            <input 
-                                type="text" 
-                                id="surahSearch" 
-                                placeholder="Type to search..." 
-                                style="font-size: 0.9rem; padding: 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box;" 
-                                oninput="filterSurahDropdown()"
-                                onfocus="this.style.borderColor='var(--primary)'"
-                                onblur="this.style.borderColor='var(--border)'"
-                            />
+                        <!-- Surah Search/Select (Combined) -->
+                        <div class="form-group" style="margin-bottom: 0; position: relative;">
+                            <label id="labelSurah" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Surah</label>
+                            <div style="position: relative;">
+                                <input 
+                                    type="text" 
+                                    id="surahSearch" 
+                                    placeholder="Search or select surah..."
+                                    autocomplete="off"
+                                    style="font-size: 0.9rem; padding: 0.5rem 2rem 0.5rem 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box; cursor: pointer;" 
+                                    oninput="filterSurahDropdown()"
+                                    onfocus="showSurahDropdown(); this.style.borderColor='var(--primary)'"
+                                    onblur="setTimeout(() => hideSurahDropdown(), 200); this.style.borderColor='var(--border)'"
+                                />
+                                <span style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-light);">▼</span>
+                            </div>
+                            <div id="surahDropdownList" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid var(--primary); border-top: none; border-radius: 0 0 6px 6px; max-height: 300px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         
-                        <!-- Surah Dropdown -->
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.85rem; margin-bottom: 0.3rem;">Select Surah</label>
-                            <select id="surahFilter" onchange="filterVerses(); document.getElementById('surahSearch').value = '';" style="font-size: 0.9rem;">
-                                <option value="" id="optionAllSurahs">All Surahs</option>
-                            </select>
-                        </div>
+                        <!-- Hidden select for compatibility -->
+                        <select id="surahFilter" style="display: none;">
+                            <option value="" id="optionAllSurahs">All Surahs</option>
+                        </select>
                     </div>
 
                     <!-- Second Row: Ayah Range -->
@@ -1614,7 +1617,7 @@
         let translationMode = 'english'; // 'english', 'arabic', or 'hide'
         let selectedReciter = 'ar.alafasy'; // default reciter
         let athanEnabled = false;
-        let athanReciter = 'makkah';
+        let athanReciter = 'alafasy';
         let athanCheckInterval = null;
         let lastAthanPlayed = {};
         let athanAudio = null;
@@ -2556,8 +2559,37 @@
             return language === 'ar' ? surahNamesArabic[surahNum] : surahNames[surahNum];
         }
         
+        function showSurahDropdown() {
+            const dropdown = document.getElementById('surahDropdownList');
+            dropdown.style.display = 'block';
+            filterSurahDropdown(); // Populate with all surahs initially
+        }
+        
+        function hideSurahDropdown() {
+            const dropdown = document.getElementById('surahDropdownList');
+            dropdown.style.display = 'none';
+        }
+        
+        function selectSurah(surahNum, surahName) {
+            const searchInput = document.getElementById('surahSearch');
+            const surahFilter = document.getElementById('surahFilter');
+            
+            // Update input display
+            searchInput.value = `${surahNum}. ${surahName}`;
+            
+            // Update hidden select
+            surahFilter.value = surahNum;
+            
+            // Hide dropdown
+            hideSurahDropdown();
+            
+            // Trigger filter
+            filterVerses();
+        }
+        
         function filterSurahDropdown() {
             const searchInput = document.getElementById('surahSearch');
+            const dropdown = document.getElementById('surahDropdownList');
             const surahFilter = document.getElementById('surahFilter');
             const searchTerm = searchInput.value.toLowerCase().trim();
             
@@ -2565,12 +2597,8 @@
             const juzFilter = document.getElementById('juzFilter');
             const selectedJuz = juzFilter ? juzFilter.value : null;
             
-            // Store current selection
-            const currentSelection = surahFilter.value;
-            
-            // Clear and repopulate based on search
-            const allSurahsText = language === 'ar' ? 'كل السور' : 'All Surahs';
-            surahFilter.innerHTML = `<option value="">${allSurahsText}</option>`;
+            // Clear dropdown
+            dropdown.innerHTML = '';
             
             let surahsToShow = [];
             if (!selectedJuz) {
@@ -2588,43 +2616,65 @@
             let matchCount = 0;
             let lastMatch = null;
             
-            // Filter by search term
+            // Add "All Surahs" option
+            if (searchTerm === '') {
+                const allOption = document.createElement('div');
+                allOption.style.cssText = 'padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid var(--border);';
+                allOption.textContent = language === 'ar' ? 'كل السور' : 'All Surahs';
+                allOption.onmouseover = () => allOption.style.background = 'var(--bg-light)';
+                allOption.onmouseout = () => allOption.style.background = 'white';
+                allOption.onclick = () => {
+                    searchInput.value = '';
+                    surahFilter.value = '';
+                    hideSurahDropdown();
+                    filterVerses();
+                };
+                dropdown.appendChild(allOption);
+            }
+            
+            // Filter and display surahs
             surahsToShow.forEach(surahNum => {
                 const surahName = getSurahName(surahNum);
                 const surahNameLower = surahName.toLowerCase();
-                // Also search without "Al-", "An-", "At-", "Ar-", "As-", "Ash-" prefix for English
-                const surahNameWithoutPrefix = surahNameLower
-                    .replace(/^al-/, '')
-                    .replace(/^an-/, '')
-                    .replace(/^at-/, '')
-                    .replace(/^ar-/, '')
-                    .replace(/^as-/, '')
-                    .replace(/^ash-/, '')
-                    .replace(/^adh-/, '');
+                // Remove common prefixes and apostrophes for better English search
+                const surahNameClean = surahNameLower
+                    .replace(/^al-/i, '')
+                    .replace(/^an-/i, '')
+                    .replace(/^at-/i, '')
+                    .replace(/^ar-/i, '')
+                    .replace(/^as-/i, '')
+                    .replace(/^ash-/i, '')
+                    .replace(/^adh-/i, '')
+                    .replace(/'/g, '')
+                    .replace(/-/g, '');
                 const surahNumStr = surahNum.toString();
                 
-                // Match if search term is in name (with or without prefix) or number
+                // Clean search term too
+                const searchClean = searchTerm.replace(/'/g, '').replace(/-/g, '');
+                
+                // Match if search term is in name (with or without prefix/punctuation) or number
                 if (searchTerm === '' || 
                     surahNameLower.includes(searchTerm) || 
-                    surahNameWithoutPrefix.includes(searchTerm) ||
+                    surahNameClean.includes(searchClean) ||
                     surahNumStr.includes(searchTerm)) {
-                    const option = document.createElement('option');
-                    option.value = surahNum;
+                    
+                    const option = document.createElement('div');
+                    option.style.cssText = 'padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid var(--border);';
                     option.textContent = `${surahNum}. ${surahName}`;
-                    surahFilter.appendChild(option);
+                    option.onmouseover = () => option.style.background = 'var(--bg-light)';
+                    option.onmouseout = () => option.style.background = 'white';
+                    option.onclick = () => selectSurah(surahNum, surahName);
+                    dropdown.appendChild(option);
+                    
                     matchCount++;
                     lastMatch = surahNum;
                 }
             });
             
-            // Auto-select if only one match (excluding "All Surahs")
+            // Auto-select if only one match
             if (matchCount === 1 && searchTerm !== '') {
-                surahFilter.value = lastMatch;
-                // Auto-trigger filter
-                filterVerses();
-            } else if (currentSelection && surahFilter.querySelector(`option[value="${currentSelection}"]`)) {
-                // Restore previous selection if it still exists
-                surahFilter.value = currentSelection;
+                const surahName = getSurahName(lastMatch);
+                selectSurah(lastMatch, surahName);
             }
         }
         
@@ -2885,10 +2935,11 @@
         
         // Athan Functions
         const athanUrls = {
-            makkah: 'https://www.islamcan.com/audio/adhan/azan1.mp3',
-            madinah: 'https://www.islamcan.com/audio/adhan/azan5.mp3',
-            egypt: 'https://www.islamcan.com/audio/adhan/azan7.mp3',
-            menshawy: 'https://cdn.islamic.network/adhan/azan-al-menshawy.mp3'
+            makkah: 'https://server6.mp3quran.net/thubti/Adhan/001.mp3',
+            madinah: 'https://server8.mp3quran.net/bsfr/Rewayat-Hafs-A-n-Assem/001.mp3',
+            egypt: 'https://server11.mp3quran.net/sds/Rewayat-Hafs-A-n-Assem/001.mp3',
+            alafasy: 'https://server13.mp3quran.net/husr/Azan/azan_001.mp3',
+            alarabi: 'https://download.tvquran.com/download/TvQuran.com__Athan/Athan_Omar_Hashim.mp3'
         };
         
         function toggleAthan() {
