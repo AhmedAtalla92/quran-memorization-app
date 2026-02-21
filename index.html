@@ -1220,7 +1220,7 @@
                                     autocomplete="off"
                                     style="font-size: 0.9rem; padding: 0.5rem 2rem 0.5rem 0.5rem; border: 2px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box; cursor: pointer;" 
                                     oninput="filterMushafSurahDropdown()"
-                                    onfocus="showMushafSurahDropdown(); this.style.borderColor='var(--primary)'"
+                                    onfocus="if(this.value === '') showMushafSurahDropdown(); this.style.borderColor='var(--primary)'"
                                     onblur="setTimeout(() => hideMushafSurahDropdown(), 200); this.style.borderColor='var(--border)'"
                                 />
                                 <span style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-light);">▼</span>
@@ -1381,7 +1381,7 @@
                     </button>
                     
                     <button onclick="showInspireCategory('women')" class="inspire-category-btn" style="background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                        👩<br>النساء<br><span style="font-size: 0.8rem; font-weight: 400;">Women</span>
+                        🧕<br>النساء<br><span style="font-size: 0.8rem; font-weight: 400;">Women</span>
                     </button>
                     
                     <button onclick="showInspireCategory('prophet')" class="inspire-category-btn" style="background: linear-gradient(135deg, #48c6ef 0%, #6f86d6 100%); color: white; border: none; padding: 1.5rem 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
@@ -1986,16 +1986,16 @@
             contentment: {
                 title: { en: 'Contentment / الرضا', ar: 'الرضا / Contentment' },
                 ayahs: [
-                    { surah: 2, ayah: 216 },  // وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ
-                    { surah: 5, ayah: 119 },  // رَّضِيَ اللَّهُ عَنْهُمْ وَرَضُوا عَنْهُ
-                    { surah: 9, ayah: 100 },  // رَّضِيَ اللَّهُ عَنْهُمْ وَرَضُوا عَنْهُ
-                    { surah: 13, ayah: 28 },  // أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ
-                    { surah: 58, ayah: 22 },  // رَضِيَ اللَّهُ عَنْهُمْ وَرَضُوا عَنْهُ
-                    { surah: 89, ayah: 27 },  // يَا أَيَّتُهَا النَّفْسُ الْمُطْمَئِنَّةُ
-                    { surah: 89, ayah: 28 },  // ارْجِعِي إِلَىٰ رَبِّكِ رَاضِيَةً مَّرْضِيَّةً
-                    { surah: 98, ayah: 8 },   // رَّضِيَ اللَّهُ عَنْهُمْ وَرَضُوا عَنْهُ
-                    { surah: 16, ayah: 97 },  // فَلَنُحْيِيَنَّهُ حَيَاةً طَيِّبَةً
-                    { surah: 20, ayah: 124 }  // وَمَنْ أَعْرَضَ عَن ذِكْرِي فَإِنَّ لَهُ مَعِيشَةً ضَنكًا
+                    { surah: 5, ayah: 119 },  // رَّضِيَ اللَّهُ عَنْهُمْ وَرَضُوا عَنْهُ ذَٰلِكَ الْفَوْزُ الْعَظِيمُ - The great triumph
+                    { surah: 9, ayah: 100 },  // وَأَعَدَّ لَهُمْ جَنَّاتٍ تَجْرِي تَحْتَهَا الْأَنْهَارُ - Gardens under which rivers flow
+                    { surah: 58, ayah: 22 },  // أُولَٰئِكَ حِزْبُ اللَّهِ أَلَا إِنَّ حِزْبَ اللَّهِ هُمُ الْمُفْلِحُونَ - The successful ones
+                    { surah: 89, ayah: 27 },  // يَا أَيَّتُهَا النَّفْسُ الْمُطْمَئِنَّةُ - O peaceful soul
+                    { surah: 89, ayah: 28 },  // ارْجِعِي إِلَىٰ رَبِّكِ رَاضِيَةً مَّرْضِيَّةً - Return pleased and pleasing
+                    { surah: 89, ayah: 30 },  // وَادْخُلِي جَنَّتِي - Enter My Paradise
+                    { surah: 98, ayah: 8 },   // جَزَاؤُهُمْ عِندَ رَبِّهِمْ جَنَّاتُ عَدْنٍ - Gardens of perpetual residence
+                    { surah: 16, ayah: 97 },  // فَلَنُحْيِيَنَّهُ حَيَاةً طَيِّبَةً - A good life
+                    { surah: 13, ayah: 29 },  // طُوبَىٰ لَهُمْ وَحُسْنُ مَآبٍ - Blessedness and good return
+                    { surah: 39, ayah: 73 }   // وَقِيلَ ادْخُلُوا أَبْوَابَ جَهَنَّمَ - Enter the gates of Paradise
                 ]
             },
             repentance: {
@@ -2076,31 +2076,31 @@
             women: {
                 title: { en: 'Women / النساء', ar: 'النساء / Women' },
                 ayahs: [
-                    { surah: 2, ayah: 228 },  // وَلَهُنَّ مِثْلُ الَّذِي عَلَيْهِنَّ بِالْمَعْرُوفِ
-                    { surah: 3, ayah: 195 },  // فَاسْتَجَابَ لَهُمْ رَبُّهُمْ أَنِّي لَا أُضِيعُ عَمَلَ عَامِلٍ
-                    { surah: 4, ayah: 1 },    // يَا أَيُّهَا النَّاسُ اتَّقُوا رَبَّكُمُ
-                    { surah: 4, ayah: 19 },   // وَعَاشِرُوهُنَّ بِالْمَعْرُوفِ
-                    { surah: 4, ayah: 32 },   // لِّلرِّجَالِ نَصِيبٌ مِّمَّا اكْتَسَبُوا وَلِلنِّسَاءِ نَصِيبٌ
-                    { surah: 9, ayah: 71 },   // وَالْمُؤْمِنُونَ وَالْمُؤْمِنَاتُ بَعْضُهُمْ أَوْلِيَاءُ بَعْضٍ
-                    { surah: 16, ayah: 97 },  // مَنْ عَمِلَ صَالِحًا مِّن ذَكَرٍ أَوْ أُنثَىٰ وَهُوَ مُؤْمِنٌ
-                    { surah: 33, ayah: 35 },  // إِنَّ الْمُسْلِمِينَ وَالْمُسْلِمَاتِ
-                    { surah: 66, ayah: 11 },  // وَضَرَبَ اللَّهُ مَثَلًا لِّلَّذِينَ آمَنُوا امْرَأَتَ فِرْعَوْنَ
-                    { surah: 66, ayah: 12 }   // وَمَرْيَمَ ابْنَتَ عِمْرَانَ الَّتِي أَحْصَنَتْ فَرْجَهَا
+                    { surah: 4, ayah: 19 },   // وَعَاشِرُوهُنَّ بِالْمَعْرُوفِ - Live with them in kindness
+                    { surah: 4, ayah: 1 },    // وَاتَّقُوا اللَّهَ الَّذِي تَسَاءَلُونَ بِهِ وَالْأَرْحَامَ - Honor wombs
+                    { surah: 2, ayah: 228 },  // وَلَهُنَّ مِثْلُ الَّذِي عَلَيْهِنَّ بِالْمَعْرُوفِ - Equal rights
+                    { surah: 3, ayah: 195 },  // أَنِّي لَا أُضِيعُ عَمَلَ عَامِلٍ مِّنكُم مِّن ذَكَرٍ أَوْ أُنثَىٰ - Equal reward
+                    { surah: 4, ayah: 32 },   // لِّلرِّجَالِ نَصِيبٌ مِّمَّا اكْتَسَبُوا وَلِلنِّسَاءِ نَصِيبٌ - Women's rights
+                    { surah: 9, ayah: 71 },   // وَالْمُؤْمِنُونَ وَالْمُؤْمِنَاتُ بَعْضُهُمْ أَوْلِيَاءُ بَعْضٍ - Partners in faith
+                    { surah: 16, ayah: 97 },  // مَنْ عَمِلَ صَالِحًا مِّن ذَكَرٍ أَوْ أُنثَىٰ - Equal deeds
+                    { surah: 33, ayah: 35 },  // إِنَّ الْمُسْلِمِينَ وَالْمُسْلِمَاتِ - Muslim men and women equal
+                    { surah: 30, ayah: 21 },  // وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً - Love and mercy between spouses
+                    { surah: 2, ayah: 233 }   // وَعَلَى الْمَوْلُودِ لَهُ رِزْقُهُنَّ وَكِسْوَتُهُنَّ - Husband's duties
                 ]
             },
             prophet: {
                 title: { en: 'Prophet Muhammad ﷺ / محمد', ar: 'محمد ﷺ / Prophet Muhammad' },
                 ayahs: [
-                    { surah: 3, ayah: 31 },   // قُلْ إِن كُنتُمْ تُحِبُّونَ اللَّهَ فَاتَّبِعُونِي
-                    { surah: 3, ayah: 32 },   // قُلْ أَطِيعُوا اللَّهَ وَالرَّسُولَ
-                    { surah: 3, ayah: 144 },  // وَمَا مُحَمَّدٌ إِلَّا رَسُولٌ
-                    { surah: 3, ayah: 164 },  // لَقَدْ مَنَّ اللَّهُ عَلَى الْمُؤْمِنِينَ إِذْ بَعَثَ فِيهِمْ رَسُولًا
-                    { surah: 4, ayah: 80 },   // مَّن يُطِعِ الرَّسُولَ فَقَدْ أَطَاعَ اللَّهَ
-                    { surah: 21, ayah: 107 }, // وَمَا أَرْسَلْنَاكَ إِلَّا رَحْمَةً لِّلْعَالَمِينَ
-                    { surah: 33, ayah: 21 },  // لَّقَدْ كَانَ لَكُمْ فِي رَسُولِ اللَّهِ أُسْوَةٌ حَسَنَةٌ
-                    { surah: 33, ayah: 56 },  // إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ
-                    { surah: 48, ayah: 29 },  // مُّحَمَّدٌ رَّسُولُ اللَّهِ
-                    { surah: 68, ayah: 4 }    // وَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍ
+                    { surah: 68, ayah: 4 },   // وَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍ - You are of great character
+                    { surah: 33, ayah: 21 },  // لَّقَدْ كَانَ لَكُمْ فِي رَسُولِ اللَّهِ أُسْوَةٌ حَسَنَةٌ - Excellent example
+                    { surah: 9, ayah: 128 },  // لَقَدْ جَاءَكُمْ رَسُولٌ مِّنْ أَنفُسِكُمْ - Grieved by your suffering, concerned
+                    { surah: 21, ayah: 107 }, // وَمَا أَرْسَلْنَاكَ إِلَّا رَحْمَةً لِّلْعَالَمِينَ - Mercy to worlds
+                    { surah: 3, ayah: 159 },  // فَبِمَا رَحْمَةٍ مِّنَ اللَّهِ لِنتَ لَهُمْ - Gentle and merciful
+                    { surah: 9, ayah: 61 },   // وَرَحْمَةٌ لِّلَّذِينَ آمَنُوا - Mercy to believers
+                    { surah: 7, ayah: 188 },  // قُل لَّا أَمْلِكُ لِنَفْسِي نَفْعًا وَلَا ضَرًّا - Humble before Allah
+                    { surah: 18, ayah: 6 },   // فَلَعَلَّكَ بَاخِعٌ نَّفْسَكَ - Deeply concerned for people
+                    { surah: 15, ayah: 88 },  // وَاخْفِضْ جَنَاحَكَ لِلْمُؤْمِنِينَ - Humble with believers
+                    { surah: 25, ayah: 63 }   // وَإِذَا خَاطَبَهُمُ الْجَاهِلُونَ قَالُوا سَلَامًا - Response to ignorance with peace
                 ]
             },
             parents: {
@@ -3306,7 +3306,6 @@
             if (firstVerse) {
                 const pageNum = firstVerse.page;
                 document.getElementById('pageFilter').value = pageNum;
-                document.getElementById('pageSearch').value = '';
                 filterByPage();
             }
         }
@@ -3549,11 +3548,11 @@
         
         // Athan Functions
         const athanUrls = {
-            alafasy: 'https://server13.mp3quran.net/husr/Azan/azan_001.mp3',
-            alarabi: 'https://download.tvquran.com/download/TvQuran.com__Athan/Athan_Omar_Hashim.mp3',
-            makkah: 'https://server6.mp3quran.net/thubti/Adhan/001.mp3',
-            madinah: 'https://server8.mp3quran.net/bsfr/Adhan/adhan.mp3',
-            egypt: 'https://server11.mp3quran.net/sds/Adhan/adhan.mp3'
+            alafasy: 'https://cdn.islamic.network/adhan/adhan.mp3',
+            alarabi: 'https://cdn.islamic.network/adhan/adhan.mp3',
+            makkah: 'https://cdn.islamic.network/adhan/adhan.mp3',
+            madinah: 'https://cdn.islamic.network/adhan/adhan.mp3',
+            egypt: 'https://cdn.islamic.network/adhan/adhan.mp3'
         };
         
         function toggleAthan() {
