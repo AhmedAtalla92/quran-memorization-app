@@ -4124,12 +4124,20 @@
         }
         
         // Athan Functions
+        // Multiple fallback URLs per reciter (primary + fallback)
         const athanUrls = {
-            alafasy: 'https://www.islamcan.com/audio/adhan/azan1.mp3',    // Mishary Alafasy (Makkah)
-            alarabi: 'https://www.islamcan.com/audio/adhan/azan4.mp3',    // Abdul Basit (Egypt)
-            makkah: 'https://www.islamcan.com/audio/adhan/azan2.mp3',     // Makkah Grand Mosque
-            madinah: 'https://www.islamcan.com/audio/adhan/azan3.mp3',    // Madinah Grand Mosque
-            egypt: 'https://www.islamcan.com/audio/adhan/azan5.mp3'       // Egyptian Adhan
+            alafasy: 'https://archive.org/download/TvQuran.com__Athan/TvQuran.com__01.athan.mp3',   // Mishary Alafasy (Makkah)
+            alarabi: 'https://archive.org/download/TvQuran.com__Athan/TvQuran.com__04.athan.mp3',   // Abdul Basit (Egypt)
+            makkah:  'https://archive.org/download/TvQuran.com__Athan/TvQuran.com__02.athan.mp3',   // Makkah Grand Mosque
+            madinah: 'https://archive.org/download/TvQuran.com__Athan/TvQuran.com__03.athan.mp3',   // Madinah Grand Mosque
+            egypt:   'https://archive.org/download/TvQuran.com__Athan/TvQuran.com__05.athan.mp3'    // Egyptian Adhan
+        };
+        const athanUrlsFallback = {
+            alafasy: 'https://download.tvquran.com/download/TvQuran.com__Athan/TvQuran.com__01.athan.mp3',
+            alarabi: 'https://download.tvquran.com/download/TvQuran.com__Athan/TvQuran.com__04.athan.mp3',
+            makkah:  'https://download.tvquran.com/download/TvQuran.com__Athan/TvQuran.com__02.athan.mp3',
+            madinah: 'https://download.tvquran.com/download/TvQuran.com__Athan/TvQuran.com__03.athan.mp3',
+            egypt:   'https://download.tvquran.com/download/TvQuran.com__Athan/TvQuran.com__05.athan.mp3'
         };
         
         function toggleAthan() {
@@ -4227,7 +4235,8 @@
         }
         
         function playAthan(prayerName) {
-            const athanUrl = athanUrls[athanReciter] || athanUrls.makkah;
+            const primary  = athanUrls[athanReciter]         || athanUrls.alafasy;
+            const fallback = athanUrlsFallback[athanReciter] || athanUrlsFallback.alafasy;
             
             console.log(`Playing Athan for ${prayerName} - Reciter: ${athanReciter}`);
             
@@ -4237,98 +4246,111 @@
                 athanAudio = null;
             }
             
-            // Create and play new athan
-            athanAudio = new Audio(athanUrl);
-            athanAudio.volume = 0.9;
-            
-            athanAudio.play().catch(error => {
-                console.error('Error playing athan:', error);
-                // If auto-play is blocked, show notification
-                showAthanNotification(prayerName);
-            });
-            
-            // Show notification
+            // Show notification immediately
             showAthanNotification(prayerName);
             
-            // Clean up after athan finishes
-            athanAudio.addEventListener('ended', () => {
-                athanAudio = null;
-            });
+            function tryUrl(url, nextUrl) {
+                const audio = new Audio();
+                audio.preload = 'auto';
+                audio.src = url;
+                audio.volume = 0.9;
+                audio.addEventListener('canplaythrough', () => {
+                    athanAudio = audio;
+                    audio.play().catch(err => {
+                        console.error('Athan autoplay blocked:', err);
+                        // Autoplay blocked by browser - notification already shown
+                    });
+                }, { once: true });
+                audio.addEventListener('error', () => {
+                    console.warn('Athan URL failed, trying fallback:', nextUrl);
+                    if (nextUrl) tryUrl(nextUrl, null);
+                }, { once: true });
+                audio.addEventListener('ended', () => { athanAudio = null; }, { once: true });
+                audio.load();
+            }
+            
+            tryUrl(primary, fallback);
         }
         
         function previewAthan() {
             const previewBtn = document.querySelector('button[onclick="previewAthan()"]');
             
-            // If already playing, pause it
+            // If already playing, stop it
             if (athanAudio && !athanAudio.paused) {
                 athanAudio.pause();
                 athanAudio.currentTime = 0;
                 athanAudio = null;
-                previewBtn.textContent = '▶️ Play Athan / تشغيل الأذان';
+                previewBtn.innerHTML = '🔊 Preview Athan / معاينة الأذان';
                 previewBtn.style.background = 'var(--primary)';
-                console.log('Athan paused');
                 return;
             }
             
-            // If paused, resume
+            // If paused mid-way, resume
             if (athanAudio && athanAudio.paused && athanAudio.currentTime > 0) {
                 athanAudio.play().then(() => {
-                    previewBtn.textContent = '⏸️ Pause Athan / إيقاف الأذان';
+                    previewBtn.innerHTML = '⏸️ Stop Athan / إيقاف الأذان';
                     previewBtn.style.background = 'var(--error)';
-                }).catch(error => {
-                    console.error('Error resuming athan:', error);
+                }).catch(err => {
+                    console.error('Error resuming athan:', err);
                     athanAudio = null;
                 });
                 return;
             }
             
-            // Start playing new athan
-            const athanUrl = athanUrls[athanReciter] || athanUrls.alafasy;
-            
-            console.log(`Playing full Athan - Reciter: ${athanReciter}, URL: ${athanUrl}`);
-            
-            // Update button to show "Pause"
-            previewBtn.textContent = '⏸️ Pause Athan / إيقاف الأذان';
-            previewBtn.style.background = 'var(--error)';
-            
-            // Create and play full athan with CORS settings
-            athanAudio = new Audio();
-            athanAudio.crossOrigin = 'anonymous';
-            athanAudio.src = athanUrl;
-            athanAudio.volume = 0.9;
-            
-            // Try to play
-            const playPromise = athanAudio.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    console.log('Athan playing successfully');
-                }).catch(error => {
-                    console.error('Error playing athan:', error);
-                    previewBtn.textContent = '▶️ Play Athan / تشغيل الأذان';
+            // Helper: try playing a URL, fallback to next on error
+            function tryPlayUrl(urls, index) {
+                if (index >= urls.length) {
+                    previewBtn.innerHTML = '🔊 Preview Athan / معاينة الأذان';
                     previewBtn.style.background = 'var(--primary)';
+                    alert('Could not load athan audio. Please check your internet connection and try again.');
+                    return;
+                }
+                const url = urls[index];
+                console.log(`Trying athan URL (${index + 1}/${urls.length}): ${url}`);
+                
+                const audio = new Audio();
+                // Do NOT set crossOrigin - archive.org serves without strict CORS
+                audio.preload = 'auto';
+                audio.src = url;
+                audio.volume = 0.9;
+                
+                audio.addEventListener('canplaythrough', () => {
+                    athanAudio = audio;
+                    audio.play().then(() => {
+                        previewBtn.innerHTML = '⏸️ Stop Athan / إيقاف الأذان';
+                        previewBtn.style.background = 'var(--error)';
+                        console.log('Athan playing from: ' + url);
+                    }).catch(err => {
+                        console.error('Play blocked:', err);
+                        tryPlayUrl(urls, index + 1);
+                    });
+                }, { once: true });
+                
+                audio.addEventListener('error', () => {
+                    console.warn('Failed URL: ' + url + ' — trying fallback...');
+                    tryPlayUrl(urls, index + 1);
+                }, { once: true });
+                
+                audio.addEventListener('ended', () => {
                     athanAudio = null;
-                    
-                    // Show user-friendly message
-                    alert('Could not play athan audio. This may be due to:\n\n1. Network connection issues\n2. Browser autoplay restrictions\n\nPlease try again or check your internet connection.');
-                });
+                    previewBtn.innerHTML = '🔊 Preview Athan / معاينة الأذان';
+                    previewBtn.style.background = 'var(--primary)';
+                }, { once: true });
+                
+                // Start loading
+                audio.load();
             }
             
-            // Reset button when athan finishes
-            athanAudio.addEventListener('ended', () => {
-                athanAudio = null;
-                previewBtn.textContent = '▶️ Play Athan / تشغيل الأذان';
-                previewBtn.style.background = 'var(--primary)';
-                console.log('Athan finished playing');
-            });
+            // Build URL list: primary then fallback
+            const primary = athanUrls[athanReciter] || athanUrls.alafasy;
+            const fallback = athanUrlsFallback[athanReciter] || athanUrlsFallback.alafasy;
+            const urlList = [primary, fallback];
             
-            // Handle errors
-            athanAudio.addEventListener('error', (e) => {
-                console.error('Athan audio error:', e);
-                previewBtn.textContent = '▶️ Play Athan / تشغيل الأذان';
-                previewBtn.style.background = 'var(--primary)';
-                athanAudio = null;
-            });
+            previewBtn.innerHTML = '⏳ Loading...';
+            previewBtn.style.background = 'var(--accent)';
+            
+            console.log(`Preview Athan — reciter: ${athanReciter}`);
+            tryPlayUrl(urlList, 0);
         }
         
         function showAthanNotification(prayerName) {
