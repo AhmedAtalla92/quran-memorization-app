@@ -1109,11 +1109,11 @@
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label style="font-size: 0.85rem;">Athan Reciter / المؤذن</label>
                                 <select id="athanReciterSelector" onchange="changeAthanReciter()" style="font-size: 0.9rem;">
-                                    <option value="alafasy">Mishary Al-Afasy / مشاري العفاسي</option>
-                                    <option value="alarabi">Ahmad Al-Nafees / أحمد النفيس</option>
-                                    <option value="makkah">Mishary (Dubai) / مشاري دبي</option>
-                                    <option value="madinah">Mansour Al-Zahrani / منصور الزهراني</option>
-                                    <option value="egypt">Hafiz Mustafa Özcan / حافظ مصطفى أوزجان</option>
+                                    <option value="alafasy">Mishary Alafasy (Makkah) / مشاري العفاسي</option>
+                                    <option value="alarabi">Abdul Basit (Egypt) / عبد الباسط</option>
+                                    <option value="makkah">Makkah Grand Mosque / المسجد الحرام</option>
+                                    <option value="madinah">Madinah Grand Mosque / المسجد النبوي</option>
+                                    <option value="egypt">Egyptian Adhan / الأذان المصري</option>
                                 </select>
                             </div>
                         </div>
@@ -4125,11 +4125,11 @@
         
         // Athan Functions
         const athanUrls = {
-            alafasy: 'https://www.islamcan.com/audio/adhan/azan1.mp3',      // Mishary Alafasy
-            alarabi: 'https://www.islamcan.com/audio/adhan/azan2.mp3',      // Makkah Adhan
-            makkah: 'https://www.islamcan.com/audio/adhan/azan3.mp3',       // Madinah Adhan
-            madinah: 'https://www.islamcan.com/audio/adhan/azan4.mp3',      // Egyptian Adhan
-            egypt: 'https://www.islamcan.com/audio/adhan/azan5.mp3'         // Another Adhan
+            alafasy: 'https://www.islamcan.com/audio/adhan/azan1.mp3',    // Mishary Alafasy (Makkah)
+            alarabi: 'https://www.islamcan.com/audio/adhan/azan4.mp3',    // Abdul Basit (Egypt)
+            makkah: 'https://www.islamcan.com/audio/adhan/azan2.mp3',     // Makkah Grand Mosque
+            madinah: 'https://www.islamcan.com/audio/adhan/azan3.mp3',    // Madinah Grand Mosque
+            egypt: 'https://www.islamcan.com/audio/adhan/azan5.mp3'       // Egyptian Adhan
         };
         
         function toggleAthan() {
