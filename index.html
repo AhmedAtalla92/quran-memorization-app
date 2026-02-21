@@ -3299,14 +3299,24 @@
         
         function jumpToSurahPage() {
             const surahNum = parseInt(document.getElementById('mushafSurahFilter').value);
-            if (!surahNum) return;
+            console.log('jumpToSurahPage called with surah:', surahNum);
+            
+            if (!surahNum) {
+                console.log('No surah selected, clearing filters');
+                document.getElementById('pageFilter').value = '';
+                filterByPage();
+                return;
+            }
             
             // Find the first page that contains this surah
             const firstVerse = quranData.find(v => v.surah === surahNum);
             if (firstVerse) {
                 const pageNum = firstVerse.page;
+                console.log('Found surah', surahNum, 'starts on page', pageNum);
                 document.getElementById('pageFilter').value = pageNum;
                 filterByPage();
+            } else {
+                console.error('Could not find surah', surahNum, 'in quranData');
             }
         }
         
@@ -3548,11 +3558,11 @@
         
         // Athan Functions
         const athanUrls = {
-            alafasy: 'https://cdn.islamic.network/adhan/adhan.mp3',
-            alarabi: 'https://cdn.islamic.network/adhan/adhan.mp3',
-            makkah: 'https://cdn.islamic.network/adhan/adhan.mp3',
-            madinah: 'https://cdn.islamic.network/adhan/adhan.mp3',
-            egypt: 'https://cdn.islamic.network/adhan/adhan.mp3'
+            alafasy: 'https://www.islamcan.com/audio/adhan/adhan.mp3',
+            alarabi: 'https://www.islamcan.com/audio/adhan/adhan.mp3',
+            makkah: 'https://www.islamcan.com/audio/adhan/adhan.mp3',
+            madinah: 'https://www.islamcan.com/audio/adhan/adhan.mp3',
+            egypt: 'https://www.islamcan.com/audio/adhan/adhan.mp3'
         };
         
         function toggleAthan() {
@@ -3785,8 +3795,12 @@
                 document.getElementById('mushafFilters').style.display = 'block';
                 document.getElementById('ayahFilters').style.display = 'none';
                 
+                // Clear surah filter to avoid conflicts
+                document.getElementById('mushafSurahSearch').value = '';
+                document.getElementById('mushafSurahFilter').value = '';
+                
                 // Restore last page (or default to 1)
-                document.getElementById('pageFilter').value = lastMushafPage;
+                document.getElementById('pageFilter').value = lastMushafPage || 1;
                 
                 // Load the page
                 filterByPage();
