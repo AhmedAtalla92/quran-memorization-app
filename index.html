@@ -944,8 +944,10 @@
 <body>
     <div class="container">
         <header>
-            <h1>حافظ</h1>
-            <div class="subtitle">Master the Noble Quran</div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <img src="/mnt/user-data/uploads/hafez_quran_logo_2.png" alt="Hafez Quran" style="height: 80px; width: auto; object-fit: contain;" id="appLogo">
+                <div class="subtitle" style="font-size: 0.9rem; color: var(--text-light);">Master the Noble Quran</div>
+            </div>
         </header>
 
         <nav>
@@ -2372,12 +2374,125 @@
             document.getElementById('inspireCategories').style.display = 'grid';
             document.getElementById('inspireContent').style.display = 'none';
         }
-            if (audioPlayer) {
-                audioPlayer.pause();
-                audioPlayer = null;
+        
+        // Random Surah Player Functions
+        function toggleRandomSurah() {
+            if (!randomSurahPlaying && !randomSurahData) {
+                // Start new random surah
+                startRandomSurah();
+            } else if (randomSurahPlaying) {
+                // Pause
+                pauseRandomSurah();
+            } else {
+                // Resume
+                resumeRandomSurah();
             }
-            document.getElementById('inspireCategories').style.display = 'grid';
-            document.getElementById('inspireContent').style.display = 'none';
+        }
+        
+        function startRandomSurah() {
+            // Pick random surah (1-114)
+            const randomSurahNum = Math.floor(Math.random() * 114) + 1;
+            
+            // Get all ayahs from this surah
+            randomSurahData = quranData.filter(v => v.surah === randomSurahNum);
+            randomSurahCurrentAyah = 0;
+            
+            if (!randomSurahData || randomSurahData.length === 0) {
+                alert('Could not load surah. Please try again.');
+                return;
+            }
+            
+            const surahName = getSurahName(randomSurahNum);
+            
+            // Update UI
+            document.getElementById('randomSurahName').textContent = `${surahName} (${randomSurahNum})`;
+            document.getElementById('randomSurahTotal').textContent = `${randomSurahData.length} Ayahs`;
+            document.getElementById('randomSurahInfo').style.display = 'block';
+            
+            const btn = document.getElementById('randomSurahBtn');
+            btn.innerHTML = '<span style="font-size: 1.5rem;">⏸️</span><span>Pause / إيقاف</span>';
+            btn.style.background = 'linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)';
+            
+            randomSurahPlaying = true;
+            
+            // Play first ayah
+            playNextRandomAyah();
+        }
+        
+        function playNextRandomAyah() {
+            if (!randomSurahPlaying || randomSurahCurrentAyah >= randomSurahData.length) {
+                // Surah finished
+                stopRandomSurah();
+                return;
+            }
+            
+            const ayah = randomSurahData[randomSurahCurrentAyah];
+            
+            // Update progress
+            document.getElementById('randomSurahProgress').textContent = `Ayah ${randomSurahCurrentAyah + 1}`;
+            
+            // Build audio URL
+            const paddedSurah = String(ayah.surah).padStart(3, '0');
+            const paddedAyah = String(ayah.ayah).padStart(3, '0');
+            const audioUrl = `https://everyayah.com/data/${selectedReciter}/${paddedSurah}${paddedAyah}.mp3`;
+            
+            console.log(`Playing random surah ayah: ${ayah.surah}:${ayah.ayah}`);
+            
+            // Create and play audio
+            randomSurahAudio = new Audio(audioUrl);
+            randomSurahAudio.volume = 0.9;
+            
+            randomSurahAudio.play().catch(error => {
+                console.error('Error playing ayah:', error);
+                // Try next ayah
+                randomSurahCurrentAyah++;
+                setTimeout(() => playNextRandomAyah(), 100);
+            });
+            
+            // When ayah finishes, play next
+            randomSurahAudio.onended = () => {
+                randomSurahCurrentAyah++;
+                setTimeout(() => playNextRandomAyah(), 500); // Small delay between ayahs
+            };
+        }
+        
+        function pauseRandomSurah() {
+            if (randomSurahAudio) {
+                randomSurahAudio.pause();
+            }
+            randomSurahPlaying = false;
+            
+            const btn = document.getElementById('randomSurahBtn');
+            btn.innerHTML = '<span style="font-size: 1.5rem;">▶️</span><span>Resume / استئناف</span>';
+            btn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+        }
+        
+        function resumeRandomSurah() {
+            if (randomSurahAudio) {
+                randomSurahAudio.play();
+            }
+            randomSurahPlaying = true;
+            
+            const btn = document.getElementById('randomSurahBtn');
+            btn.innerHTML = '<span style="font-size: 1.5rem;">⏸️</span><span>Pause / إيقاف</span>';
+            btn.style.background = 'linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)';
+        }
+        
+        function stopRandomSurah() {
+            if (randomSurahAudio) {
+                randomSurahAudio.pause();
+                randomSurahAudio = null;
+            }
+            
+            randomSurahPlaying = false;
+            randomSurahData = null;
+            randomSurahCurrentAyah = 0;
+            
+            document.getElementById('randomSurahInfo').style.display = 'none';
+            
+            const btn = document.getElementById('randomSurahBtn');
+            btn.innerHTML = '<span style="font-size: 1.5rem;">🎲</span><span>Play Random Surah / شغل سورة عشوائية</span>';
+            btn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
         }
         
         function updateUILanguage() {
@@ -3827,6 +3942,8 @@
             // If already playing, pause it
             if (athanAudio && !athanAudio.paused) {
                 athanAudio.pause();
+                athanAudio.currentTime = 0;
+                athanAudio = null;
                 previewBtn.textContent = '▶️ Play Athan / تشغيل الأذان';
                 previewBtn.style.background = 'var(--primary)';
                 console.log('Athan paused');
@@ -3834,11 +3951,14 @@
             }
             
             // If paused, resume
-            if (athanAudio && athanAudio.paused) {
-                athanAudio.play();
-                previewBtn.textContent = '⏸️ Pause Athan / إيقاف الأذان';
-                previewBtn.style.background = 'var(--error)';
-                console.log('Athan resumed');
+            if (athanAudio && athanAudio.paused && athanAudio.currentTime > 0) {
+                athanAudio.play().then(() => {
+                    previewBtn.textContent = '⏸️ Pause Athan / إيقاف الأذان';
+                    previewBtn.style.background = 'var(--error)';
+                }).catch(error => {
+                    console.error('Error resuming athan:', error);
+                    athanAudio = null;
+                });
                 return;
             }
             
@@ -3851,16 +3971,28 @@
             previewBtn.textContent = '⏸️ Pause Athan / إيقاف الأذان';
             previewBtn.style.background = 'var(--error)';
             
-            // Create and play full athan
-            athanAudio = new Audio(athanUrl);
+            // Create and play full athan with CORS settings
+            athanAudio = new Audio();
+            athanAudio.crossOrigin = 'anonymous';
+            athanAudio.src = athanUrl;
             athanAudio.volume = 0.9;
             
-            athanAudio.play().catch(error => {
-                console.error('Error playing athan:', error);
-                alert('Could not play athan. The audio source may be unavailable.');
-                previewBtn.textContent = '▶️ Play Athan / تشغيل الأذان';
-                previewBtn.style.background = 'var(--primary)';
-            });
+            // Try to play
+            const playPromise = athanAudio.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log('Athan playing successfully');
+                }).catch(error => {
+                    console.error('Error playing athan:', error);
+                    previewBtn.textContent = '▶️ Play Athan / تشغيل الأذان';
+                    previewBtn.style.background = 'var(--primary)';
+                    athanAudio = null;
+                    
+                    // Show user-friendly message
+                    alert('Could not play athan audio. This may be due to:\n\n1. Network connection issues\n2. Browser autoplay restrictions\n\nPlease try again or check your internet connection.');
+                });
+            }
             
             // Reset button when athan finishes
             athanAudio.addEventListener('ended', () => {
@@ -3868,6 +4000,14 @@
                 previewBtn.textContent = '▶️ Play Athan / تشغيل الأذان';
                 previewBtn.style.background = 'var(--primary)';
                 console.log('Athan finished playing');
+            });
+            
+            // Handle errors
+            athanAudio.addEventListener('error', (e) => {
+                console.error('Athan audio error:', e);
+                previewBtn.textContent = '▶️ Play Athan / تشغيل الأذان';
+                previewBtn.style.background = 'var(--primary)';
+                athanAudio = null;
             });
         }
         
