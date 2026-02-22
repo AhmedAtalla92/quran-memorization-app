@@ -1379,7 +1379,7 @@
                 </h2>
                 
                 <!-- Play Random Surah Button -->
-                <div style="margin-bottom: 1.5rem;">
+                <div id="randomSurahSection" style="margin-bottom: 1.5rem;">
                     <button id="randomSurahBtn" onclick="toggleRandomSurah()" style="width: 100%; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border: none; padding: 1rem; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                         <span style="font-size: 1.5rem;">🎲</span>
                         <span>Play Random Surah / شغل سورة عشوائية</span>
@@ -1471,7 +1471,7 @@
                     
                     <!-- Play All Category Button -->
                     <button id="playAllCategoryBtn" onclick="togglePlayAllCategory()" style="width: 100%; background: linear-gradient(135deg, #1a4d2e 0%, #2d8653 100%); color: white; border: none; padding: 0.85rem 1rem; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 14px rgba(26,77,46,0.35); transition: all 0.2s;">
-                        <span style="font-size: 1.3rem;">▶️</span>
+                        <span id="playAllCategoryBtnIcon" style="font-size: 1.3rem;">▶️</span>
                         <span id="playAllCategoryBtnText">Play All Ayahs / شغل كل الآيات</span>
                     </button>
                     
@@ -2621,8 +2621,10 @@
                 audioPlayer = null;
             }
             
-            // Hide categories, show content
+            // Hide categories + random surah section, show content
             categoriesDiv.style.display = 'none';
+            const rsSection = document.getElementById('randomSurahSection');
+            if (rsSection) rsSection.style.display = 'none';
             contentDiv.style.display = 'block';
             
             // Set title
@@ -2703,6 +2705,8 @@
             stopPlayAllCategory();
             document.getElementById('inspireCategories').style.display = 'grid';
             document.getElementById('inspireContent').style.display = 'none';
+            const rsSection = document.getElementById('randomSurahSection');
+            if (rsSection) rsSection.style.display = 'block';
         }
 
         // ── Play All Category Ayahs ──────────────────────────────────────────
@@ -2745,7 +2749,7 @@
             const txt = document.getElementById('playAllCategoryBtnText');
             btn.style.background = 'linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)';
             txt.textContent = 'Stop / إيقاف';
-            btn.querySelector('span:first-child').textContent = '⏹️';
+            document.getElementById('playAllCategoryBtnIcon').textContent = '⏹️';
 
             playNextCategoryAyah();
         }
@@ -2818,7 +2822,7 @@
             if (btn && txt) {
                 btn.style.background = 'linear-gradient(135deg, #1a4d2e 0%, #2d8653 100%)';
                 txt.textContent = 'Play All Ayahs / شغل كل الآيات';
-                btn.querySelector('span:first-child').textContent = '▶️';
+                document.getElementById('playAllCategoryBtnIcon').textContent = '▶️';
             }
         }
         
