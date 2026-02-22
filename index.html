@@ -107,6 +107,11 @@
         }
 
         /* Header */
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
+        }
+        
         header {
             text-align: center;
             padding: 1.5rem 0;
@@ -3536,6 +3541,10 @@
             populateFilters();
             populateReciters(); // Populate reciter names based on language
             loadAthanSettings(); // Load athan preferences
+            // Silently load prayer times in background for athan auto-play
+            setTimeout(() => {
+                if (typeof loadPrayerTimes === 'function') loadPrayerTimes();
+            }, 3000);
             await checkSavedUser(); // Wait for user data to load
             updateUILanguage();
             
@@ -4343,7 +4352,7 @@
             // Check every minute
             athanCheckInterval = setInterval(() => {
                 checkAndPlayAthan();
-            }, 60000); // Every 60 seconds
+            }, 30000); // Every 30 seconds (catches prayer time even if first check misses)
             
             // Also check immediately
             checkAndPlayAthan();
@@ -4358,33 +4367,68 @@
             }
             console.log('Athan check stopped');
         }
+
+        // Re-check athan immediately when app comes back from background (iOS PWA)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && athanEnabled) {
+                console.log('App visible again — checking athan...');
+                checkAndPlayAthan();
+                // Restart interval in case it drifted while sleeping
+                if (athanCheckInterval) {
+                    clearInterval(athanCheckInterval);
+                    athanCheckInterval = null;
+                }
+                startAthanCheck();
+            }
+        });
+
+        window.addEventListener('pageshow', (e) => {
+            if (athanEnabled) {
+                console.log('pageshow — checking athan...');
+                checkAndPlayAthan();
+            }
+        });
+
+        window.addEventListener('focus', () => {
+            if (athanEnabled) {
+                checkAndPlayAthan();
+            }
+        });
         
         function checkAndPlayAthan() {
             if (!athanEnabled) return;
-            
+
+            // Use prayerTimesData directly (24hr raw from API) — don't rely on DOM text
+            if (!prayerTimesData || !prayerTimesData.timings) {
+                // Prayer times not loaded yet — try loading them silently
+                if (typeof loadPrayerTimes === 'function') loadPrayerTimes();
+                return;
+            }
+
             const now = new Date();
-            const currentTime = now.toTimeString().substring(0, 5); // HH:MM
+            // Current time as HH:MM in 24hr
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const currentTime = `${hh}:${mm}`;
             const today = now.toDateString();
-            
-            // Get prayer times from the page
-            const prayerElements = {
-                fajr: document.getElementById('fajrTime'),
-                dhuhr: document.getElementById('dhuhrTime'),
-                asr: document.getElementById('asrTime'),
-                maghrib: document.getElementById('maghribTime'),
-                isha: document.getElementById('ishaTime')
+
+            const timings = prayerTimesData.timings;
+            const prayerMap = {
+                fajr:    timings.Fajr    ? timings.Fajr.substring(0, 5)    : null,
+                dhuhr:   timings.Dhuhr   ? timings.Dhuhr.substring(0, 5)   : null,
+                asr:     timings.Asr     ? timings.Asr.substring(0, 5)     : null,
+                maghrib: timings.Maghrib ? timings.Maghrib.substring(0, 5) : null,
+                isha:    timings.Isha    ? timings.Isha.substring(0, 5)    : null
             };
-            
-            for (const [prayer, element] of Object.entries(prayerElements)) {
-                if (!element) continue;
-                
-                const prayerTime = element.textContent.trim();
-                
-                // Check if it's time for this prayer
+
+            console.log(`Athan check: ${currentTime}`, prayerMap);
+
+            for (const [prayer, prayerTime] of Object.entries(prayerMap)) {
+                if (!prayerTime) continue;
                 if (prayerTime === currentTime) {
-                    // Check if we haven't played athan for this prayer today
                     const lastPlayed = lastAthanPlayed[prayer];
                     if (lastPlayed !== today) {
+                        console.log(`🕌 Time for ${prayer} athan! Playing...`);
                         playAthan(prayer);
                         lastAthanPlayed[prayer] = today;
                         localStorage.setItem('last_athan_played', JSON.stringify(lastAthanPlayed));
@@ -4405,7 +4449,8 @@
                 athanAudio = null;
             }
             
-            // Show notification immediately
+            // Show on-screen banner (works even when phone is locked/silent)
+            showAthanBanner(prayerName);
             showAthanNotification(prayerName);
             
             function tryUrl(url, nextUrl) {
@@ -4518,7 +4563,36 @@
             audio.load();
         }
         
-        function showAthanNotification(prayerName) {
+        function showAthanBanner(prayerName) {
+            // Remove any existing banner
+            const existing = document.getElementById('athanBanner');
+            if (existing) existing.remove();
+
+            const prayerNames = {
+                fajr: 'Fajr / الفجر', dhuhr: 'Dhuhr / الظهر',
+                asr: 'Asr / العصر', maghrib: 'Maghrib / المغرب', isha: 'Isha / العشاء'
+            };
+            const name = prayerNames[prayerName] || prayerName;
+
+            const banner = document.createElement('div');
+            banner.id = 'athanBanner';
+            banner.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
+                background: linear-gradient(135deg, #1a4d2e, #2d8653);
+                color: white; text-align: center; padding: 1.2rem;
+                font-size: 1.2rem; font-weight: 700; font-family: 'Amiri', serif;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+                animation: slideDown 0.4s ease;
+            `;
+            banner.innerHTML = `🕌 ${name} — الأذان الآن<br><small style="font-size:0.85rem;font-weight:400;">Tap to dismiss</small>`;
+            banner.onclick = () => banner.remove();
+            document.body.appendChild(banner);
+
+            // Auto-remove after 60 seconds
+            setTimeout(() => { if (banner.parentNode) banner.remove(); }, 60000);
+        }
+
+                function showAthanNotification(prayerName) {
             const prayerNames = {
                 fajr: 'Fajr / الفجر',
                 dhuhr: 'Dhuhr / الظهر',
