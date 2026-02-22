@@ -1109,11 +1109,11 @@
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label style="font-size: 0.85rem;">Athan Reciter / المؤذن</label>
                                 <select id="athanReciterSelector" onchange="changeAthanReciter()" style="font-size: 0.9rem;">
-                                    <option value="alafasy">Mishary Alafasy (Makkah) / مشاري العفاسي</option>
-                                    <option value="alarabi">Abdul Basit (Egypt) / عبد الباسط</option>
-                                    <option value="makkah">Makkah Grand Mosque / المسجد الحرام</option>
-                                    <option value="madinah">Madinah Grand Mosque / المسجد النبوي</option>
-                                    <option value="egypt">Egyptian Adhan / الأذان المصري</option>
+                                    <option value="alafasy">Adhan 1 – Mishary Al-Afasy / مشاري العفاسي</option>
+                                    <option value="makkah">Adhan 2 – Makkah Grand Mosque / المسجد الحرام</option>
+                                    <option value="madinah">Adhan 3 – Madinah Grand Mosque / المسجد النبوي</option>
+                                    <option value="alarabi">Adhan 4 – Abdul Basit / عبد الباسط</option>
+                                    <option value="egypt">Adhan 5 – Egyptian Style / الأذان المصري</option>
                                 </select>
                             </div>
                         </div>
@@ -1462,12 +1462,18 @@
                 
                 <!-- Ayahs Display -->
                 <div id="inspireContent" style="display: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <button onclick="backToCategories()" style="background: var(--text-light); color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer; font-weight: 600;">
                             ← Back
                         </button>
                         <h3 id="inspireCategoryTitle" style="font-size: 1.3rem; font-weight: 700; color: var(--primary); margin: 0;"></h3>
                     </div>
+                    
+                    <!-- Play All Category Button -->
+                    <button id="playAllCategoryBtn" onclick="togglePlayAllCategory()" style="width: 100%; background: linear-gradient(135deg, #1a4d2e 0%, #2d8653 100%); color: white; border: none; padding: 0.85rem 1rem; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 14px rgba(26,77,46,0.35); transition: all 0.2s;">
+                        <span style="font-size: 1.3rem;">▶️</span>
+                        <span id="playAllCategoryBtnText">Play All Ayahs / شغل كل الآيات</span>
+                    </button>
                     
                     <div id="inspireAyahs"></div>
                 </div>
@@ -2667,6 +2673,8 @@
             // Add event listeners to all inspire audio buttons
             document.querySelectorAll('.inspire-audio-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
+                    // Stop play-all if running
+                    if (categoryPlayAllActive) stopPlayAllCategory();
                     const surah = parseInt(this.dataset.surah);
                     const ayah = parseInt(this.dataset.ayah);
                     const verseData = quranData.find(v => v.surah === surah && v.ayah === ayah);
@@ -2691,8 +2699,127 @@
             if (randomSurahPlaying) {
                 stopRandomSurah();
             }
+            // Stop play-all category if playing
+            stopPlayAllCategory();
             document.getElementById('inspireCategories').style.display = 'grid';
             document.getElementById('inspireContent').style.display = 'none';
+        }
+
+        // ── Play All Category Ayahs ──────────────────────────────────────────
+        let categoryPlayAllActive = false;
+        let categoryPlayAllIndex  = 0;
+        let categoryPlayAllAyahs  = [];
+        let categoryPlayAllAudio  = null;
+        let categoryPlayAllNext   = null; // preloaded next
+
+        function buildCategoryAyahUrl(surah, ayah) {
+            return `https://everyayah.com/data/${selectedReciter}/${String(surah).padStart(3,'0')}${String(ayah).padStart(3,'0')}.mp3`;
+        }
+
+        function togglePlayAllCategory() {
+            if (categoryPlayAllActive) {
+                stopPlayAllCategory();
+            } else {
+                startPlayAllCategory();
+            }
+        }
+
+        function startPlayAllCategory() {
+            // Collect all ayah refs from current category cards
+            const btns = document.querySelectorAll('.inspire-audio-btn');
+            categoryPlayAllAyahs = Array.from(btns).map(b => ({
+                surah: parseInt(b.dataset.surah),
+                ayah:  parseInt(b.dataset.ayah)
+            }));
+            if (!categoryPlayAllAyahs.length) return;
+
+            // Stop any individual audio
+            if (audioPlayer) { audioPlayer.pause(); audioPlayer = null; }
+            if (currentPlayingButton) { currentPlayingButton.innerHTML = '▶️ Play'; currentPlayingButton = null; }
+
+            categoryPlayAllActive = true;
+            categoryPlayAllIndex  = 0;
+            categoryPlayAllNext   = null;
+
+            const btn = document.getElementById('playAllCategoryBtn');
+            const txt = document.getElementById('playAllCategoryBtnText');
+            btn.style.background = 'linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)';
+            txt.textContent = 'Stop / إيقاف';
+            btn.querySelector('span:first-child').textContent = '⏹️';
+
+            playNextCategoryAyah();
+        }
+
+        function preloadCategoryNextAyah() {
+            const nextIdx = categoryPlayAllIndex + 1;
+            if (nextIdx < categoryPlayAllAyahs.length) {
+                const n = categoryPlayAllAyahs[nextIdx];
+                categoryPlayAllNext = new Audio(buildCategoryAyahUrl(n.surah, n.ayah));
+                categoryPlayAllNext.preload = 'auto';
+                categoryPlayAllNext.volume = 0.9;
+                categoryPlayAllNext.load();
+            } else {
+                categoryPlayAllNext = null;
+            }
+        }
+
+        function playNextCategoryAyah() {
+            if (!categoryPlayAllActive || categoryPlayAllIndex >= categoryPlayAllAyahs.length) {
+                stopPlayAllCategory();
+                return;
+            }
+
+            const item = categoryPlayAllAyahs[categoryPlayAllIndex];
+            const url  = buildCategoryAyahUrl(item.surah, item.ayah);
+
+            // Highlight current card
+            document.querySelectorAll('.verse-card').forEach((c, i) => {
+                c.style.outline = i === categoryPlayAllIndex ? '2px solid var(--primary)' : '';
+                if (i === categoryPlayAllIndex) c.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+
+            // Use preloaded audio if available
+            const filename = url.split('/').pop();
+            if (categoryPlayAllNext && categoryPlayAllNext.src.endsWith(filename)) {
+                categoryPlayAllAudio = categoryPlayAllNext;
+                categoryPlayAllNext  = null;
+            } else {
+                categoryPlayAllAudio = new Audio(url);
+                categoryPlayAllAudio.preload = 'auto';
+                categoryPlayAllAudio.volume  = 0.9;
+            }
+
+            // Preload next while this plays
+            preloadCategoryNextAyah();
+
+            categoryPlayAllAudio.play().catch(() => {
+                categoryPlayAllIndex++;
+                playNextCategoryAyah();
+            });
+
+            categoryPlayAllAudio.onended = () => {
+                categoryPlayAllIndex++;
+                playNextCategoryAyah();
+            };
+        }
+
+        function stopPlayAllCategory() {
+            categoryPlayAllActive = false;
+            categoryPlayAllIndex  = 0;
+            categoryPlayAllAyahs  = [];
+            if (categoryPlayAllAudio) { categoryPlayAllAudio.pause(); categoryPlayAllAudio = null; }
+            if (categoryPlayAllNext)  { categoryPlayAllNext  = null; }
+
+            // Remove card highlights
+            document.querySelectorAll('.verse-card').forEach(c => c.style.outline = '');
+
+            const btn = document.getElementById('playAllCategoryBtn');
+            const txt = document.getElementById('playAllCategoryBtnText');
+            if (btn && txt) {
+                btn.style.background = 'linear-gradient(135deg, #1a4d2e 0%, #2d8653 100%)';
+                txt.textContent = 'Play All Ayahs / شغل كل الآيات';
+                btn.querySelector('span:first-child').textContent = '▶️';
+            }
         }
         
         // Random Surah Player Functions
@@ -2739,40 +2866,58 @@
             playNextRandomAyah();
         }
         
+        let randomSurahNextAudio = null; // preloaded next ayah
+
+        function buildAyahUrl(ayah) {
+            const paddedSurah = String(ayah.surah).padStart(3, '0');
+            const paddedAyah  = String(ayah.ayah).padStart(3, '0');
+            return `https://everyayah.com/data/${selectedReciter}/${paddedSurah}${paddedAyah}.mp3`;
+        }
+
+        function preloadNextAyah() {
+            const nextIndex = randomSurahCurrentAyah + 1;
+            if (nextIndex < randomSurahData.length) {
+                const nextAyah = randomSurahData[nextIndex];
+                randomSurahNextAudio = new Audio(buildAyahUrl(nextAyah));
+                randomSurahNextAudio.preload = 'auto';
+                randomSurahNextAudio.volume = 0.9;
+                randomSurahNextAudio.load();
+            } else {
+                randomSurahNextAudio = null;
+            }
+        }
+
         function playNextRandomAyah() {
             if (!randomSurahPlaying || randomSurahCurrentAyah >= randomSurahData.length) {
-                // Surah finished
                 stopRandomSurah();
                 return;
             }
-            
+
             const ayah = randomSurahData[randomSurahCurrentAyah];
-            
-            // Update progress
             document.getElementById('randomSurahProgress').textContent = `Ayah ${randomSurahCurrentAyah + 1}`;
-            
-            // Build audio URL
-            const paddedSurah = String(ayah.surah).padStart(3, '0');
-            const paddedAyah = String(ayah.ayah).padStart(3, '0');
-            const audioUrl = `https://everyayah.com/data/${selectedReciter}/${paddedSurah}${paddedAyah}.mp3`;
-            
-            console.log(`Playing random surah ayah: ${ayah.surah}:${ayah.ayah}`);
-            
-            // Create and play audio
-            randomSurahAudio = new Audio(audioUrl);
-            randomSurahAudio.volume = 0.9;
-            
+
+            // Use preloaded audio if ready, otherwise create fresh
+            if (randomSurahNextAudio && randomSurahNextAudio.src.includes(buildAyahUrl(ayah).split('/').pop())) {
+                randomSurahAudio = randomSurahNextAudio;
+                randomSurahNextAudio = null;
+            } else {
+                randomSurahAudio = new Audio(buildAyahUrl(ayah));
+                randomSurahAudio.preload = 'auto';
+                randomSurahAudio.volume = 0.9;
+            }
+
+            // Start preloading the NEXT ayah while this one plays
+            preloadNextAyah();
+
             randomSurahAudio.play().catch(error => {
                 console.error('Error playing ayah:', error);
-                // Try next ayah
                 randomSurahCurrentAyah++;
-                setTimeout(() => playNextRandomAyah(), 100);
+                playNextRandomAyah();
             });
-            
-            // When ayah finishes, play next
+
             randomSurahAudio.onended = () => {
                 randomSurahCurrentAyah++;
-                setTimeout(() => playNextRandomAyah(), 500); // Small delay between ayahs
+                playNextRandomAyah(); // no setTimeout delay — next is preloaded
             };
         }
         
