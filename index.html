@@ -2535,23 +2535,23 @@
             console.log('Surah:', surah, 'Ayah:', ayah);
             console.log('Button element:', buttonElement);
             console.log('Current audioPlayer:', audioPlayer);
-            console.log('Current playing button:', currentPlayingButton);
+            console.log('Current playing button:', currentlyPlayingButton);
             
-            const isCurrentlyPlaying = audioPlayer && !audioPlayer.paused && currentPlayingButton === buttonElement;
+            const isCurrentlyPlaying = audioPlayer && !audioPlayer.paused && currentlyPlayingButton === buttonElement;
             
             // If clicking the same playing button, pause it
             if (isCurrentlyPlaying) {
                 console.log('Pausing currently playing audio');
                 audioPlayer.pause();
                 buttonElement.innerHTML = '▶️ Play';
-                currentPlayingButton = null;
+                currentlyPlayingButton = null;
                 return;
             }
             
             // Reset previous button if exists
-            if (currentPlayingButton) {
+            if (currentlyPlayingButton) {
                 console.log('Resetting previous button');
-                currentPlayingButton.innerHTML = '▶️ Play';
+                currentlyPlayingButton.innerHTML = '▶️ Play';
             }
             
             // Stop any currently playing audio
@@ -2572,7 +2572,7 @@
             
             // Update button to pause icon
             buttonElement.innerHTML = '⏸️ Pause';
-            currentPlayingButton = buttonElement;
+            currentlyPlayingButton = buttonElement;
             
             // Create and play audio
             audioPlayer = new Audio(audioUrl);
@@ -2584,21 +2584,21 @@
             }).catch(error => {
                 console.error('Error playing audio:', error);
                 buttonElement.innerHTML = '▶️ Play';
-                currentPlayingButton = null;
+                currentlyPlayingButton = null;
                 alert('Could not play audio. Error: ' + error.message);
             });
             
             audioPlayer.onended = () => {
                 console.log('Audio playback completed');
                 buttonElement.innerHTML = '▶️ Play';
-                currentPlayingButton = null;
+                currentlyPlayingButton = null;
             };
             
             audioPlayer.onerror = (error) => {
                 console.error('Audio error:', error);
                 console.error('Failed URL:', audioUrl);
                 buttonElement.innerHTML = '▶️ Play';
-                currentPlayingButton = null;
+                currentlyPlayingButton = null;
                 alert('Error loading audio. URL: ' + audioUrl);
             };
         }
@@ -2693,9 +2693,9 @@
                 audioPlayer.pause();
                 audioPlayer = null;
             }
-            if (currentPlayingButton) {
-                currentPlayingButton.innerHTML = '▶️ Play';
-                currentPlayingButton = null;
+            if (currentlyPlayingButton) {
+                currentlyPlayingButton.innerHTML = '▶️ Play';
+                currentlyPlayingButton = null;
             }
             // Stop random surah if playing
             if (randomSurahPlaying) {
@@ -2739,7 +2739,7 @@
 
             // Stop any individual audio
             if (audioPlayer) { audioPlayer.pause(); audioPlayer = null; }
-            if (currentPlayingButton) { currentPlayingButton.innerHTML = '▶️ Play'; currentPlayingButton = null; }
+            if (currentlyPlayingButton) { currentlyPlayingButton.innerHTML = '▶️ Play'; currentlyPlayingButton = null; }
 
             categoryPlayAllActive = true;
             categoryPlayAllIndex  = 0;
