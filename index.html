@@ -123,23 +123,7 @@
         }
         
         header {
-            text-align: center;
-            padding: 1.5rem 0 1.25rem;
-            border-bottom: 1.5px solid var(--border);
-            margin-bottom: 1.5rem;
-            position: relative;
-        }
-
-        header::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
-            border-radius: var(--radius-pill);
+            display: none;
         }
 
         h1 {
@@ -162,8 +146,23 @@
             display: flex;
             gap: 0.75rem;
             justify-content: center;
+            align-items: center;
             margin: 1rem 0;
             flex-wrap: wrap;
+            border-bottom: 1.5px solid var(--border);
+            padding-bottom: 1rem;
+            position: relative;
+        }
+        nav::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+            border-radius: var(--radius-pill);
         }
 
         .nav-btn {
@@ -703,13 +702,62 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Logo wrapper - always visible in nav */
+        #mobileNavLogoWrapper {
+            flex-shrink: 0;
+            margin-right: 0.5rem;
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 1.5px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        #mobileNavLogo {
+            width: 58px;
+            height: 58px;
+            object-fit: contain;
+        }
+
         @media (max-width: 768px) {
-            /* Compact header */
-            h1 { font-size: 1.8rem; margin: 0.5rem 0; }
-            .subtitle { font-size: 0.8rem; }
-            
-            /* Compact navigation */
-            .nav-btn { padding: 0.5rem 1rem; font-size: 0.85rem; }
+            /* Nav already handles everything - header is globally hidden */
+            header { display: none !important; }
+
+            /* Mobile nav row: logo + buttons on one line */
+            nav {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 0.35rem !important;
+                padding: 0.5rem !important;
+                flex-wrap: nowrap !important;
+            }
+
+            #mobileNavLogoWrapper {
+                width: 48px !important;
+                height: 48px !important;
+                border-radius: 12px !important;
+                margin-right: 0.25rem !important;
+            }
+
+            #mobileNavLogo {
+                width: 42px !important;
+                height: 42px !important;
+            }
+
+            /* Compact navigation buttons */
+            .nav-btn {
+                padding: 0.4rem 0.5rem !important;
+                font-size: 0.72rem !important;
+                flex: 1 !important;
+                min-width: 0 !important;
+                white-space: nowrap !important;
+            }
             
             /* DEFAULT (Surah view) - BIGGER font for mobile */
             .verse-arabic { 
@@ -1008,6 +1056,7 @@
         </header>
 
         <nav>
+            <div id="mobileNavLogoWrapper"><img id="mobileNavLogo" alt="Hafez"></div>
             <button class="nav-btn active" onclick="showPage('account')" data-page="account">
                 <span>Account</span>
             </button>
@@ -6997,6 +7046,13 @@
 
         // Add event listeners and initialize after DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
+            // Copy logo to mobile nav
+            const appLogo = document.getElementById('appLogo');
+            const mobileNavLogo = document.getElementById('mobileNavLogo');
+            if (appLogo && mobileNavLogo) {
+                mobileNavLogo.src = appLogo.src;
+            }
+
             console.log('=== DOM CONTENT LOADED ===');
             console.log('Initializing Quran App...');
             
