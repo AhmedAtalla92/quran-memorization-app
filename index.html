@@ -750,13 +750,15 @@
             /* Mobile nav: logo above, buttons in a row below */
             nav {
                 display: flex !important;
-                flex-direction: column !important;
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
                 align-items: center !important;
-                gap: 0.5rem !important;
+                justify-content: center !important;
+                gap: 0.4rem !important;
                 padding: 0.65rem 0.5rem !important;
             }
 
-            /* Logo wrapper - centered at top */
+            /* Logo wrapper - centered at top, takes full width */
             #mobileNavLogoWrapper {
                 width: 50px !important;
                 height: 50px !important;
@@ -765,6 +767,7 @@
                 align-items: center !important;
                 justify-content: center !important;
                 margin-bottom: 0.25rem !important;
+                flex-basis: 100% !important; /* Takes full width to force buttons to next row */
             }
 
             #mobileNavLogo {
@@ -773,20 +776,14 @@
                 object-fit: contain !important;
             }
 
-            /* Navigation buttons container - horizontal row */
-            nav > :not(#mobileNavLogoWrapper) {
-                width: 100% !important;
-                display: flex !important;
-                flex-direction: row !important;
-                gap: 0.4rem !important;
-                justify-content: space-between !important;
-            }
-
-            /* Navigation buttons - equal width side by side */
+            /* Navigation buttons - equal width side by side in a row */
             .nav-btn {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
                 padding: 0.55rem 0.3rem !important;
                 font-size: 0.7rem !important;
-                flex: 1 !important;
+                flex: 1 1 calc(25% - 0.4rem) !important; /* ~25% width for 4 buttons */
                 min-width: 0 !important;
                 white-space: nowrap !important;
                 overflow: hidden !important;
