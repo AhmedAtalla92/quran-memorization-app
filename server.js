@@ -232,7 +232,7 @@ app.post('/save-progress', async (req, res) => {
 
         if (userResult.rows.length === 0) {
             const result = await pool.query(
-                'INSERT INTO users (email, language, reciter, last_view_mode, last_verse_index) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+                'INSERT INTO users (email, language, reciter, last_view_mode, last_verse_index, last_active) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP) RETURNING id',
                 [email, language || 'en', reciter || 'ar.alafasy', lastViewMode || 'surah', lastVerseIndex || 0]
             );
             userId = result.rows[0].id;
@@ -369,9 +369,13 @@ app.post('/log-activity', async (req, res) => {
             [email, activityType, JSON.stringify(metadata || {}), timestamp || new Date().toISOString()]
         );
 
-        // Update user's last_active
+        // Update or create user's last_active
+        // Use INSERT ... ON CONFLICT to handle case where user doesn't exist yet
         await pool.query(
-            'UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE email = $1',
+            `INSERT INTO users (email, last_active) 
+             VALUES ($1, CURRENT_TIMESTAMP)
+             ON CONFLICT (email) 
+             DO UPDATE SET last_active = CURRENT_TIMESTAMP`,
             [email]
         );
 
