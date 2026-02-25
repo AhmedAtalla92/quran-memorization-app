@@ -1,11 +1,24 @@
 <!DOCTYPE html>
 <!--
     Hafez Quran App
-    Version: 1.3
-    Build Date: February 21, 2026
+    Version: 1.4.1
+    Build Date: February 25, 2026
     
     Version History:
-    - v1.2 (Feb 21, 2026): Random Surah Player & Athan fixes
+    - v1.4.1 (Feb 25, 2026): Mobile UI improvements
+      * IMPROVED: Logo now centered above navigation buttons on mobile
+      * IMPROVED: Navigation button text fits properly without truncation
+      * ENHANCED: Better spacing and layout for mobile navigation
+      * FIXED: Mobile navigation structure optimized for readability
+    
+    - v1.4 (Feb 25, 2026): Qibla fix & Code organization
+      * FIXED: Qibla compass now works on iOS - motion permission must be requested from user gesture
+      * FIXED: Changed permission request flow - now requests motion permission BEFORE location
+      * IMPROVED: Added comprehensive code documentation and block organization
+      * ENHANCED: All major sections now have clear headers for easier maintenance
+      * NOTE: DeviceOrientationEvent.requestPermission() must be called directly from button click on iOS
+    
+    - v1.3 (Feb 21, 2026): Random Surah Player & Athan fixes
       * ADDED: Play Random Surah feature with play/pause/stop controls
       * ADDED: Real-time ayah progress tracker during random surah playback
       * FIXED: Updated athan reciter labels to match new audio sources
@@ -728,35 +741,50 @@
             /* Nav already handles everything - header is globally hidden */
             header { display: none !important; }
 
-            /* Mobile nav row: logo + buttons on one line */
+            /* Mobile nav: logo above, buttons below */
             nav {
                 display: flex !important;
-                flex-direction: row !important;
+                flex-direction: column !important;
                 align-items: center !important;
-                gap: 0.35rem !important;
-                padding: 0.5rem !important;
-                flex-wrap: nowrap !important;
+                gap: 0.5rem !important;
+                padding: 0.65rem 0.5rem !important;
             }
 
+            /* Logo wrapper - centered at top */
             #mobileNavLogoWrapper {
-                width: 48px !important;
-                height: 48px !important;
+                width: 50px !important;
+                height: 50px !important;
                 border-radius: 12px !important;
-                margin-right: 0.25rem !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                margin-bottom: 0.25rem !important;
             }
 
             #mobileNavLogo {
-                width: 42px !important;
-                height: 42px !important;
+                width: 46px !important;
+                height: 46px !important;
+                object-fit: contain !important;
             }
 
-            /* Compact navigation buttons */
+            /* Navigation buttons container */
+            nav > :not(#mobileNavLogoWrapper) {
+                width: 100% !important;
+                display: flex !important;
+                gap: 0.4rem !important;
+            }
+
+            /* Navigation buttons - equal width with full text visible */
             .nav-btn {
-                padding: 0.4rem 0.5rem !important;
-                font-size: 0.72rem !important;
+                padding: 0.55rem 0.3rem !important;
+                font-size: 0.7rem !important;
                 flex: 1 !important;
                 min-width: 0 !important;
                 white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                line-height: 1.2 !important;
+                font-weight: 600 !important;
             }
             
             /* DEFAULT (Surah view) - BIGGER font for mobile */
@@ -1823,43 +1851,64 @@
     </div>
 
     <script>
+        // ══════════════════════════════════════════════════════════════
+        // HAFEZ QURAN APP - MAIN JAVASCRIPT
+        // Version 1.3 - February 2026
+        // ══════════════════════════════════════════════════════════════
+        
         console.log('=== QURAN APP SCRIPT LOADED ===');
         
-        // App State
+        // ══════════════════════════════════════════════════════════════
+        // GLOBAL STATE VARIABLES
+        // ══════════════════════════════════════════════════════════════
+        
+        // ─── User & App State ───
         let currentUser = null;
         let deferredPrompt = null; // For PWA install prompt
+        let language = 'en'; // 'en' or 'ar'
+        
+        // ─── Quran Data & Progress ───
         let quranData = [];
         let memorizedVerses = new Set();
         let reviewedVerses = new Set();
         let recitedPages = new Set(); // Tracks page numbers 1-604
         let bookmarkedVerses = new Set(); // Tracks bookmarked ayahs
-        let currentVerse = null;
-        let quizScore = 0;
-        let quizTotal = 0;
         let filteredVerses = [];
+        let currentVerse = null;
         let currentVerseIndex = 0;
         let versesPerPage = 1;
+        
+        // ─── Quiz State ───
+        let quizScore = 0;
+        let quizTotal = 0;
         let currentQuizVerses = [];
         let currentQuizIndex = 0;
+        
+        // ─── Audio & Playback ───
         let audioPlayer = null;
         let currentlyPlayingButton = null;
+        let selectedReciter = 'ar.alafasy'; // default reciter
         
-        // Random Surah Player
+        // ─── Random Surah Player ───
         let randomSurahPlaying = false;
         let randomSurahAudio = null;
         let randomSurahData = null;
         let randomSurahCurrentAyah = 0;
+        
+        // ─── View & Display Settings ───
         let viewMode = 'surah'; // 'surah' or 'page'
-        let language = 'en'; // 'en' or 'ar'
         let translationMode = 'english'; // 'english', 'arabic', or 'hide'
-        let selectedReciter = 'ar.alafasy'; // default reciter
+        
+        // ─── Prayer Times & Athan ───
         let athanEnabled = false;
         let athanReciter = 'alafasy';
         let athanCheckInterval = null;
         let lastAthanPlayed = {};
         let athanAudio = null;
         
-        // Translations
+        // ══════════════════════════════════════════════════════════════
+        // TRANSLATIONS / LOCALIZATION
+        // ══════════════════════════════════════════════════════════════
         const translations = {
             en: {
                 // Navigation
@@ -2011,6 +2060,13 @@
             }
         };
         
+        // ══════════════════════════════════════════════════════════════
+        // LANGUAGE & UI FUNCTIONS
+        // ══════════════════════════════════════════════════════════════
+        
+        /**
+         * Change App Language (English/Arabic)
+         */
         function changeLanguage() {
             language = document.getElementById('languageSelector').value;
             localStorage.setItem('quran_language', language);
@@ -2592,6 +2648,16 @@
             }
         };
         
+        // ══════════════════════════════════════════════════════════════
+        // AUDIO PLAYBACK FUNCTIONS
+        // ══════════════════════════════════════════════════════════════
+        
+        /**
+         * Play individual verse audio
+         * @param {number} surah - Surah number
+         * @param {number} ayah - Ayah number
+         * @param {HTMLElement} buttonElement - The play button element
+         */
         function playVerseAudio(surah, ayah, buttonElement) {
             console.log('=== playVerseAudio called ===');
             console.log('Surah:', surah, 'Ayah:', ayah);
@@ -2665,6 +2731,14 @@
             };
         }
         
+        // ══════════════════════════════════════════════════════════════
+        // INSPIRE CATEGORIES FUNCTIONS
+        // ══════════════════════════════════════════════════════════════
+        
+        /**
+         * Show ayahs for a specific Inspire category
+         * @param {string} category - Category name
+         */
         function showInspireCategory(category) {
             const categoriesDiv = document.getElementById('inspireCategories');
             const contentDiv = document.getElementById('inspireContent');
@@ -3232,6 +3306,13 @@
         let otpExpiry = null;
 
         // OTP Functions
+        // ══════════════════════════════════════════════════════════════
+        // AUTHENTICATION & LOGIN FUNCTIONS
+        // ══════════════════════════════════════════════════════════════
+        
+        /**
+         * Generate a 6-digit OTP code
+         */
         function generateOTP() {
             return Math.floor(100000 + Math.random() * 900000).toString();
         }
@@ -3620,6 +3701,13 @@
         }
 
         // Load Quran Data from API
+        // ══════════════════════════════════════════════════════════════
+        // QURAN DATA LOADING & INITIALIZATION
+        // ══════════════════════════════════════════════════════════════
+        
+        /**
+         * Load Quran data from API
+         */
         async function loadQuranData() {
             console.log('Loading Quran data...');
             const container = document.getElementById('verseDisplay');
@@ -4227,6 +4315,13 @@
             }
         }
 
+        // ══════════════════════════════════════════════════════════════
+        // FILTER & NAVIGATION FUNCTIONS
+        // ══════════════════════════════════════════════════════════════
+        
+        /**
+         * Populate all filter dropdowns (Surah, Juz, Page)
+         */
         function populateFilters() {
             // Populate Juz (1-30)
             const juzFilter = document.getElementById('juzFilter');
@@ -6593,13 +6688,20 @@
         }
 
         // Navigation
+        // ══════════════════════════════════════════════════════════════
+        // PRAYER TIMES & ATHAN
+        // ══════════════════════════════════════════════════════════════
         // Prayer Times
         let prayerTimesData = null;
         let prayerTimesInterval = null;
 
-        // ── Qibla ────────────────────────────────────────────────────
+        // ══════════════════════════════════════════════════════════════
+        // QIBLA COMPASS FUNCTIONALITY
+        // ══════════════════════════════════════════════════════════════
+        // State variables for qibla compass
         let qiblaOrientationBound = null;
         let qiblaBearing = null; // computed from user's GPS location
+        let qiblaPermissionGranted = false; // track if permission was granted
 
         /** Great-circle bearing from (lat1,lon1) to (lat2,lon2) in degrees 0-360 */
         function calcBearing(lat1, lon1, lat2, lon2) {
@@ -6783,123 +6885,210 @@
             }
         }
 
-        function startQibla() {
+        /**
+         * Start Qibla Compass - Entry point from user button click
+         * CRITICAL: On iOS, DeviceOrientationEvent.requestPermission() MUST be called
+         * directly from a user gesture (button click), not from an async callback.
+         * So we request motion permission FIRST, then get location.
+         */
+        async function startQibla() {
+            // Check if geolocation is supported
             if (!navigator.geolocation) {
                 showQiblaError('Geolocation is not supported by your browser.');
                 return;
             }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    qiblaBearing = calcBearing(
-                        pos.coords.latitude, pos.coords.longitude,
-                        KAABA_LAT, KAABA_LON
-                    );
-                    document.getElementById('qiblaBearingVal').textContent = Math.round(qiblaBearing) + '°';
-                    document.getElementById('qiblaIdle').style.display = 'none';
-                    document.getElementById('qiblaActive').style.display = 'block';
-                    document.getElementById('qiblaError').style.display = 'none';
-                    activateQiblaCompass();
-                },
-                (err) => {
-                    showQiblaError('Could not get your location. Please allow location access and try again.');
-                },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
-        }
 
-        function activateQiblaCompass() {
-            if (typeof DeviceOrientationEvent !== 'undefined' &&
-                typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(state => {
-                        if (state === 'granted') listenOrientation();
-                        else showQiblaError('Motion sensor permission denied. Please allow it in Settings → Safari.');
-                    }).catch(() => showQiblaError('Could not request motion permission.'));
-            } else {
-                listenOrientation();
+            try {
+                // STEP 1: Request motion sensor permission FIRST (iOS requirement)
+                // This MUST happen directly in the user gesture context
+                await requestMotionPermission();
+                
+                // STEP 2: Now get the user's location
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        // Calculate bearing to Kaaba from user's location
+                        qiblaBearing = calcBearing(
+                            pos.coords.latitude, pos.coords.longitude,
+                            KAABA_LAT, KAABA_LON
+                        );
+                        
+                        // Update UI
+                        document.getElementById('qiblaBearingVal').textContent = Math.round(qiblaBearing) + '°';
+                        document.getElementById('qiblaIdle').style.display = 'none';
+                        document.getElementById('qiblaActive').style.display = 'block';
+                        document.getElementById('qiblaError').style.display = 'none';
+                        
+                        // Start listening to device orientation
+                        listenOrientation();
+                    },
+                    (err) => {
+                        console.error('Geolocation error:', err);
+                        showQiblaError('Could not get your location. Please allow location access and try again.');
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } catch (error) {
+                console.error('Motion permission error:', error);
+                showQiblaError('Motion sensor permission is required. Please allow it and try again.');
             }
         }
 
+        /**
+         * Request Motion Sensor Permission (iOS)
+         * Returns a promise that resolves when permission is granted or not needed
+         */
+        function requestMotionPermission() {
+            return new Promise((resolve, reject) => {
+                // Check if permission request is needed (iOS 13+)
+                if (typeof DeviceOrientationEvent !== 'undefined' &&
+                    typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    
+                    DeviceOrientationEvent.requestPermission()
+                        .then(state => {
+                            if (state === 'granted') {
+                                qiblaPermissionGranted = true;
+                                resolve();
+                            } else {
+                                reject(new Error('Motion sensor permission denied. Please allow it in Settings → Safari.'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Permission request failed:', error);
+                            reject(new Error('Could not request motion permission. Please try again.'));
+                        });
+                } else {
+                    // Non-iOS or older iOS - permission not required
+                    qiblaPermissionGranted = true;
+                    resolve();
+                }
+            });
+        }
+
+        /**
+         * Start listening to device orientation events
+         * Called after both permissions are granted and location is obtained
+         */
         function listenOrientation() {
             qiblaOrientationBound = handleQiblaOrientation;
             window.addEventListener('deviceorientationabsolute', qiblaOrientationBound, true);
             window.addEventListener('deviceorientation', qiblaOrientationBound, true);
         }
 
+        /**
+         * Handle device orientation changes
+         * Calculates compass heading and rotates the Qibla arrow accordingly
+         */
+
         function handleQiblaOrientation(event) {
             if (qiblaBearing === null) return;
 
-            // Get compass heading: iOS uses webkitCompassHeading (already magnetic north = 0)
-            // Android deviceorientationabsolute uses alpha (0 = North when absolute)
+            // ─── Get Compass Heading ───
+            // iOS uses webkitCompassHeading (already points to magnetic north = 0°)
+            // Android deviceorientationabsolute uses alpha (0° = North when absolute)
             let heading = null;
+            
             if (event.webkitCompassHeading != null) {
-                heading = event.webkitCompassHeading; // iOS: 0–360, 0=North
+                // iOS: 0–360, where 0° = North
+                heading = event.webkitCompassHeading;
             } else if (event.absolute && event.alpha != null) {
-                heading = (360 - event.alpha) % 360; // Android absolute: invert alpha
+                // Android absolute orientation: invert alpha to get heading
+                heading = (360 - event.alpha) % 360;
             } else if (event.alpha != null) {
-                heading = (360 - event.alpha) % 360; // fallback
+                // Fallback for non-absolute orientation
+                heading = (360 - event.alpha) % 360;
             }
 
             if (heading === null) return;
 
+            // Normalize heading to 0-360 range
             heading = (heading + 360) % 360;
             document.getElementById('qiblaHeadingVal').textContent = Math.round(heading) + '°';
 
-            // Rotation to apply to the arrow so it points at Qibla
-            // Arrow default = points up (North). We need it to point at qiblaBearing.
-            // Arrow must rotate to: qiblaBearing - heading
+            // ─── Calculate Arrow Rotation ───
+            // The arrow SVG points up (North) by default
+            // We need to rotate it to point at the Qibla bearing
+            // Rotation angle = (Qibla bearing - Current heading)
             const rotation = (qiblaBearing - heading + 360) % 360;
 
+            // Apply rotation to arrow and Kaaba icon
             document.getElementById('qiblaArrowWrap').style.transform = `rotate(${rotation}deg)`;
             document.getElementById('qiblaKaaba').style.transform  = `rotate(${rotation}deg)`;
 
-            // Status badge
+            // ─── Update Status Badge ───
+            // Calculate how far off we are from facing Qibla
             let diff = Math.abs(rotation <= 180 ? rotation : 360 - rotation);
             const badge = document.getElementById('qiblaStatusBadge');
+            
             if (diff < 5) {
+                // Facing Qibla (within 5 degrees)
                 badge.textContent = '✅ Facing Qibla';
                 badge.style.background = 'rgba(46,125,50,0.15)';
                 badge.style.color = 'var(--success)';
             } else if (diff < 20) {
+                // Almost there (within 20 degrees)
                 badge.textContent = '🟡 Almost there';
                 badge.style.background = 'rgba(255,193,7,0.15)';
                 badge.style.color = '#b8860b';
             } else {
+                // Need to rotate more
                 badge.textContent = 'Rotate to align ↑';
                 badge.style.background = 'var(--bg-light)';
                 badge.style.color = 'var(--text-primary)';
             }
         }
 
+        /**
+         * Stop Qibla Compass
+         * Removes event listeners and resets UI
+         */
+
         function stopQibla() {
+            // Remove orientation event listeners
             if (qiblaOrientationBound) {
                 window.removeEventListener('deviceorientationabsolute', qiblaOrientationBound, true);
                 window.removeEventListener('deviceorientation', qiblaOrientationBound, true);
                 qiblaOrientationBound = null;
             }
+            
+            // Reset state
             qiblaBearing = null;
+            
+            // Reset UI
             document.getElementById('qiblaActive').style.display = 'none';
             document.getElementById('qiblaIdle').style.display = 'block';
             document.getElementById('qiblaHeadingVal').textContent = '—';
             document.getElementById('qiblaBearingVal').textContent = '—';
+            
             const badge = document.getElementById('qiblaStatusBadge');
             badge.textContent = 'Calibrating…';
             badge.style.background = 'var(--bg-light)';
             badge.style.color = 'var(--text-primary)';
         }
 
+        /**
+         * Show Qibla Error Message
+         * Displays error with a "Try Again" button
+         */
         function showQiblaError(msg) {
             document.getElementById('qiblaIdle').style.display = 'none';
             document.getElementById('qiblaActive').style.display = 'none';
+            
             const errEl = document.getElementById('qiblaError');
             errEl.style.display = 'block';
             errEl.innerHTML = '⚠️ ' + msg + '<br><br><button onclick="resetQibla()" style="margin-top:0.5rem;padding:0.5rem 1rem;background:var(--primary);color:white;border-radius:8px;font-size:0.9rem;">Try Again</button>';
         }
 
+        /**
+         * Reset Qibla UI
+         * Returns to idle state after error
+         */
         function resetQibla() {
             document.getElementById('qiblaError').style.display = 'none';
             document.getElementById('qiblaIdle').style.display = 'block';
         }
+        // ══════════════════════════════════════════════════════════════
+        // END OF QIBLA COMPASS
+        // ══════════════════════════════════════════════════════════════
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => {
