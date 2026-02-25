@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <!--
     Hafez Quran App
-    Version: 1.4.1
+    Version: 1.4.2
     Build Date: February 25, 2026
     
     Version History:
+    - v1.4.2 (Feb 25, 2026): Page recitation tracking & bookmark fixes
+      * ADDED: Checkmarks (✓) now appear next to recited pages in page dropdown
+      * FIXED: Bookmark highlighting now properly toggles on/off on mobile
+      * IMPROVED: Page dropdown refreshes when recitation status changes
+      * ENHANCED: Better state management for bookmark toggles
+    
     - v1.4.1 (Feb 25, 2026): Mobile UI improvements
       * IMPROVED: Logo now centered above navigation buttons on mobile
       * IMPROVED: Navigation button text fits properly without truncation
@@ -741,7 +747,7 @@
             /* Nav already handles everything - header is globally hidden */
             header { display: none !important; }
 
-            /* Mobile nav: logo above, buttons below */
+            /* Mobile nav: logo above, buttons in a row below */
             nav {
                 display: flex !important;
                 flex-direction: column !important;
@@ -767,14 +773,16 @@
                 object-fit: contain !important;
             }
 
-            /* Navigation buttons container */
+            /* Navigation buttons container - horizontal row */
             nav > :not(#mobileNavLogoWrapper) {
                 width: 100% !important;
                 display: flex !important;
+                flex-direction: row !important;
                 gap: 0.4rem !important;
+                justify-content: space-between !important;
             }
 
-            /* Navigation buttons - equal width with full text visible */
+            /* Navigation buttons - equal width side by side */
             .nav-btn {
                 padding: 0.55rem 0.3rem !important;
                 font-size: 0.7rem !important;
@@ -4340,7 +4348,7 @@
             
             // Leave surah filter at "All Surahs" (no default selection)
             
-            // Populate Pages (1-604)
+            // Populate Pages (1-604) with checkmarks for recited pages
             const pageFilter = document.getElementById('pageFilter');
             pageFilter.innerHTML = '<option value="" id="optionSelectPage">Select Page</option>'; // Clear and add default
             for (let i = 1; i <= 604; i++) {
@@ -4348,12 +4356,16 @@
                 const pageData = quranData.find(v => v.page === i);
                 const juzNum = pageData ? pageData.juz : Math.ceil(i / 20); // Fallback calculation
                 
+                // Check if page is recited
+                const isRecited = recitedPages.has(i);
+                const checkmark = isRecited ? '✓ ' : '';
+                
                 const option = document.createElement('option');
                 option.value = i;
                 if (language === 'ar') {
-                    option.textContent = `صفحة ${i} - جزء ${juzNum}`;
+                    option.textContent = `${checkmark}صفحة ${i} - جزء ${juzNum}`;
                 } else {
-                    option.textContent = `Page ${i} - Juz ${juzNum}`;
+                    option.textContent = `${checkmark}Page ${i} - Juz ${juzNum}`;
                 }
                 pageFilter.appendChild(option);
             }
@@ -5321,6 +5333,10 @@
 
             const pageNumber = verses[0].page;
             
+            // Store current selection
+            const pageFilter = document.getElementById('pageFilter');
+            const currentSelection = pageFilter.value;
+            
             if (recitedPages.has(pageNumber)) {
                 recitedPages.delete(pageNumber);
             } else {
@@ -5329,6 +5345,15 @@
 
             saveUserData();
             updateAccountStats();
+            
+            // Refresh the page filter dropdown to show updated checkmarks
+            populateFilters();
+            
+            // Restore the selection
+            if (currentSelection) {
+                pageFilter.value = currentSelection;
+            }
+            
             displayVerseWithNavigation(currentVerseIndex);
         }
         
@@ -5650,17 +5675,22 @@
                 return;
             }
 
+            // Toggle bookmark state
             if (bookmarkedVerses.has(verseKey)) {
                 bookmarkedVerses.delete(verseKey);
             } else {
                 bookmarkedVerses.add(verseKey);
             }
 
+            // Save data
             saveUserData();
             updateAccountStats();
             
-            // Refresh the current page display
-            displayVerseWithNavigation(currentVerseIndex);
+            // Force a complete refresh of the current page display
+            // Use setTimeout to ensure state updates are complete
+            setTimeout(() => {
+                displayVerseWithNavigation(currentVerseIndex);
+            }, 10);
         }
 
 
