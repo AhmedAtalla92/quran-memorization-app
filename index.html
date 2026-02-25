@@ -1744,113 +1744,69 @@
                         <h3 style="text-align: center; font-family: 'Amiri', serif; font-size: 1.3rem; color: var(--primary); margin-bottom: 1.5rem;">
                             Qibla Direction | اتجاه القبلة
                         </h3>
-                        
-                        <!-- Static Qibla Info -->
-                        <div id="qiblaStatic">
-                            <div style="position: relative; width: 280px; height: 280px; margin: 0 auto 1.5rem;">
-                                <!-- Compass background -->
-                                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);"></div>
-                                
-                                <!-- Cardinal directions -->
-                                <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-weight: 700; font-size: 1.1rem; color: var(--error);">N</div>
-                                <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-weight: 700; font-size: 1.1rem;">S</div>
-                                <div style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); font-weight: 700; font-size: 1.1rem;">E</div>
-                                <div style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); font-weight: 700; font-size: 1.1rem;">W</div>
-                                
-                                <!-- Compass needle (points to Qibla - 135° for Cairo) -->
-                                <div style="position: absolute; top: 50%; left: 50%; width: 4px; height: 120px; background: linear-gradient(to bottom, var(--success) 0%, var(--success) 50%, #ccc 50%, #ccc 100%); transform-origin: 50% 50%; transform: translate(-50%, -50%) rotate(135deg); border-radius: 2px;"></div>
-                                
-                                <!-- Center dot -->
-                                <div style="position: absolute; top: 50%; left: 50%; width: 16px; height: 16px; background: white; border: 3px solid var(--primary); border-radius: 50%; transform: translate(-50%, -50%); z-index: 10;"></div>
-                                
-                                <!-- Kaaba icon at the Qibla direction -->
-                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) translateY(-75px) rotate(-135deg); font-size: 2rem;">🕋</div>
-                            </div>
-                            
-                            <div style="text-align: center; background: var(--bg-light); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
-                                <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.25rem;">Qibla Direction from Cairo</div>
-                                <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary); font-family: 'Courier New', monospace;">135°</div>
-                                <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;">Southeast Direction</div>
-                            </div>
-                            
-                            <button onclick="startDeviceCompass()" style="width: 100%; background: var(--success); font-size: 1rem; padding: 0.85rem; margin-bottom: 1rem;">
-                                🧭 Use Device Compass
+
+                        <!-- Idle state: ask for location -->
+                        <div id="qiblaIdle" style="text-align: center;">
+                            <div style="font-size: 5rem; margin-bottom: 1rem;">🕋</div>
+                            <p style="color: var(--text-light); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                                Point your phone toward the Kaaba in Makkah
+                            </p>
+                            <button onclick="startQibla()" style="width: 100%; background: var(--success); font-size: 1rem; padding: 0.85rem;">
+                                🧭 Find Qibla Direction
                             </button>
-                            
-                            <div style="padding: 1rem; background: rgba(46, 125, 50, 0.1); border-radius: 8px; border-left: 4px solid var(--success);">
-                                <div style="font-size: 0.9rem; color: var(--text-primary);">
-                                    📍 <strong>From Cairo to Makkah:</strong> The Qibla direction is approximately <strong>135° (Southeast)</strong>
-                                </div>
-                                <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem;">
-                                    💡 Click "Use Device Compass" to align your device with the Qibla direction in real-time
-                                </div>
-                            </div>
                         </div>
-                        
-                        <!-- Live Device Compass -->
-                        <div id="qiblaDeviceCompass" style="display: none;">
-                            <!-- Big visual feedback at top -->
-                            <div id="qiblaVisualFeedback" style="text-align: center; padding: 2rem; border-radius: 12px; margin-bottom: 1.5rem; transition: all 0.3s ease; background: var(--bg-light);">
-                                <div style="font-size: 4rem; margin-bottom: 0.5rem;" id="qiblaDirectionArrow">⬆️</div>
-                                <div style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;" id="qiblaStatusText">Searching for North...</div>
-                                <div style="font-size: 1rem; color: var(--text-light);" id="qiblaInstructionText">Hold device flat and move in figure-8</div>
-                            </div>
-                            
-                            <!-- Compass display -->
-                            <div style="position: relative; width: 280px; height: 280px; margin: 0 auto 1.5rem;">
-                                <!-- Fixed compass background -->
-                                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);">
-                                    <!-- Cardinal directions (fixed) -->
-                                    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-weight: 700; font-size: 1.1rem; color: var(--error);">N</div>
-                                    <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-weight: 700; font-size: 1.1rem;">S</div>
-                                    <div style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); font-weight: 700; font-size: 1.1rem;">E</div>
-                                    <div style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); font-weight: 700; font-size: 1.1rem;">W</div>
+
+                        <!-- Active compass state -->
+                        <div id="qiblaActive" style="display: none; text-align: center;">
+
+                            <!-- Big rotating arrow -->
+                            <div style="position: relative; width: 220px; height: 220px; margin: 0 auto 1.5rem;">
+                                <!-- Outer ring -->
+                                <div style="position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--border); background: var(--bg-light);"></div>
+                                <!-- N marker -->
+                                <div style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 0.85rem; font-weight: 800; color: var(--error); letter-spacing: 1px;">N</div>
+                                <!-- Arrow SVG - rotates to point at Qibla -->
+                                <div id="qiblaArrowWrap" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease-out;">
+                                    <svg width="80" height="160" viewBox="0 0 80 160">
+                                        <!-- Arrowhead pointing up = toward Qibla -->
+                                        <polygon points="40,4 68,80 40,64 12,80" fill="#1a4d2e"/>
+                                        <!-- Tail -->
+                                        <rect x="34" y="64" width="12" height="88" rx="6" fill="#1a4d2e" opacity="0.35"/>
+                                    </svg>
                                 </div>
-                                
-                                <!-- Your current direction (red pointer - always points up) -->
-                                <div style="position: absolute; top: 30px; left: 50%; width: 3px; height: 80px; background: var(--error); transform: translateX(-50%); border-radius: 2px; box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);"></div>
-                                <div style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); font-size: 1.8rem;">📍</div>
-                                <div style="position: absolute; top: 110px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; color: var(--error); background: white; padding: 0.2rem 0.4rem; border-radius: 4px; white-space: nowrap;">You</div>
-                                
-                                <!-- Rotating Qibla arrow (shows where Qibla is) -->
-                                <div class="qibla-arrow-container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: transform 0.2s ease-out;">
-                                    <div style="width: 6px; height: 110px; background: var(--success); margin-left: -3px; margin-top: -55px; border-radius: 3px; box-shadow: 0 0 15px rgba(46, 125, 50, 0.7);"></div>
-                                    <div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 2.5rem;">🕋</div>
-                                    <div style="position: absolute; top: 100px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; color: var(--success); background: white; padding: 0.2rem 0.4rem; border-radius: 4px; white-space: nowrap;">Qibla</div>
+                                <!-- Kaaba emoji at tip direction -->
+                                <div id="qiblaKaaba" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease-out; pointer-events: none;">
+                                    <div style="margin-top: -110px; font-size: 1.6rem;">🕋</div>
                                 </div>
-                                
                                 <!-- Center dot -->
-                                <div style="position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; background: white; border: 4px solid var(--primary); border-radius: 50%; transform: translate(-50%, -50%); z-index: 10;"></div>
+                                <div style="position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; background: white; border: 3px solid var(--primary); border-radius: 50%; transform: translate(-50%, -50%); z-index: 10;"></div>
                             </div>
-                            
-                            <!-- Technical details -->
-                            <div style="text-align: center; background: var(--bg-light); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
-                                <div style="display: flex; justify-content: space-around; align-items: center;">
-                                    <div>
-                                        <div style="font-size: 0.8rem; color: var(--text-light);">Your Heading</div>
-                                        <div style="font-size: 1.4rem; font-weight: 700; color: var(--error); font-family: 'Courier New', monospace;" id="deviceHeading">0°</div>
-                                    </div>
-                                    <div style="font-size: 2rem; color: var(--text-light);">→</div>
-                                    <div>
-                                        <div style="font-size: 0.8rem; color: var(--text-light);">Qibla Direction</div>
-                                        <div style="font-size: 1.4rem; font-weight: 700; color: var(--success); font-family: 'Courier New', monospace;">135°</div>
-                                    </div>
+
+                            <!-- Status badge -->
+                            <div id="qiblaStatusBadge" style="display: inline-block; padding: 0.5rem 1.2rem; border-radius: 999px; font-size: 1rem; font-weight: 700; margin-bottom: 1rem; background: var(--bg-light); color: var(--text-primary); transition: all 0.3s;">
+                                Calibrating…
+                            </div>
+
+                            <!-- Bearing info -->
+                            <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: var(--text-light); margin-bottom: 0.2rem;">Your heading</div>
+                                    <div id="qiblaHeadingVal" style="font-size: 1.3rem; font-weight: 700; font-family: monospace; color: var(--text-primary);">—</div>
+                                </div>
+                                <div style="width: 1px; background: var(--border);"></div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: var(--text-light); margin-bottom: 0.2rem;">Qibla bearing</div>
+                                    <div id="qiblaBearingVal" style="font-size: 1.3rem; font-weight: 700; font-family: monospace; color: var(--success);">—</div>
                                 </div>
                             </div>
-                            
-                            <button onclick="stopDeviceCompass()" style="width: 100%; background: var(--error); font-size: 1rem; padding: 0.85rem; margin-bottom: 1rem;">
-                                ⏹ Stop Compass
+
+                            <button onclick="stopQibla()" style="width: 100%; background: var(--error); font-size: 1rem; padding: 0.75rem;">
+                                ✕ Stop
                             </button>
-                            
-                            <div style="padding: 1rem; background: rgba(33, 150, 243, 0.1); border-radius: 8px; border-left: 4px solid #2196F3;">
-                                <div style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.5;">
-                                    <strong>📖 How to use:</strong><br>
-                                    1️⃣ Hold phone <strong>flat</strong> (screen up)<br>
-                                    2️⃣ Move in figure-8 to calibrate<br>
-                                    3️⃣ Rotate your body until arrows <strong>align</strong><br>
-                                    4️⃣ When both arrows point <strong>up</strong> → You're facing Qibla! ✅
-                                </div>
-                            </div>
+                        </div>
+
+                        <!-- Error state -->
+                        <div id="qiblaError" style="display: none; text-align: center; padding: 1rem; background: rgba(244,67,54,0.08); border-radius: 10px; color: var(--error);" id="qiblaErrorMsg">
                         </div>
                     </div>
                 </div>
@@ -6640,8 +6596,25 @@
         // Prayer Times
         let prayerTimesData = null;
         let prayerTimesInterval = null;
-        let compassWatchId = null;
-        const QIBLA_ANGLE_CAIRO = 135; // Qibla direction from Cairo in degrees
+
+        // ── Qibla ────────────────────────────────────────────────────
+        let qiblaOrientationBound = null;
+        let qiblaBearing = null; // computed from user's GPS location
+
+        /** Great-circle bearing from (lat1,lon1) to (lat2,lon2) in degrees 0-360 */
+        function calcBearing(lat1, lon1, lat2, lon2) {
+            const toRad = d => d * Math.PI / 180;
+            const toDeg = r => r * 180 / Math.PI;
+            const dLon = toRad(lon2 - lon1);
+            const φ1 = toRad(lat1), φ2 = toRad(lat2);
+            const y = Math.sin(dLon) * Math.cos(φ2);
+            const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(dLon);
+            return (toDeg(Math.atan2(y, x)) + 360) % 360;
+        }
+
+        // Kaaba coordinates
+        const KAABA_LAT = 21.4225;
+        const KAABA_LON = 39.8262;
 
         async function loadPrayerTimes(retryCount = 0) {
             const container = document.getElementById('prayerTimesContainer');
@@ -6810,127 +6783,122 @@
             }
         }
 
-        function startDeviceCompass() {
-            // Check if device orientation is supported
-            if (!window.DeviceOrientationEvent) {
-                alert('Device orientation is not supported on this device.');
+        function startQibla() {
+            if (!navigator.geolocation) {
+                showQiblaError('Geolocation is not supported by your browser.');
                 return;
             }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    qiblaBearing = calcBearing(
+                        pos.coords.latitude, pos.coords.longitude,
+                        KAABA_LAT, KAABA_LON
+                    );
+                    document.getElementById('qiblaBearingVal').textContent = Math.round(qiblaBearing) + '°';
+                    document.getElementById('qiblaIdle').style.display = 'none';
+                    document.getElementById('qiblaActive').style.display = 'block';
+                    document.getElementById('qiblaError').style.display = 'none';
+                    activateQiblaCompass();
+                },
+                (err) => {
+                    showQiblaError('Could not get your location. Please allow location access and try again.');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
 
-            // Request permission for iOS 13+
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        function activateQiblaCompass() {
+            if (typeof DeviceOrientationEvent !== 'undefined' &&
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            activateCompass();
-                        } else {
-                            alert('Permission denied. Please enable motion sensors in your browser settings.');
-                        }
-                    })
-                    .catch(console.error);
+                    .then(state => {
+                        if (state === 'granted') listenOrientation();
+                        else showQiblaError('Motion sensor permission denied. Please allow it in Settings → Safari.');
+                    }).catch(() => showQiblaError('Could not request motion permission.'));
             } else {
-                // Non-iOS devices or older iOS versions
-                activateCompass();
+                listenOrientation();
             }
         }
 
-        function activateCompass() {
-            // Hide static compass, show device compass
-            document.getElementById('qiblaStatic').style.display = 'none';
-            document.getElementById('qiblaDeviceCompass').style.display = 'block';
-
-            // Listen to device orientation
-            window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-            window.addEventListener('deviceorientation', handleOrientation, true);
+        function listenOrientation() {
+            qiblaOrientationBound = handleQiblaOrientation;
+            window.addEventListener('deviceorientationabsolute', qiblaOrientationBound, true);
+            window.addEventListener('deviceorientation', qiblaOrientationBound, true);
         }
 
-        function handleOrientation(event) {
-            let heading = event.alpha; // Compass heading (0-360)
-            
-            if (heading === null) {
-                // If alpha is not available, try webkitCompassHeading (iOS)
-                heading = event.webkitCompassHeading;
+        function handleQiblaOrientation(event) {
+            if (qiblaBearing === null) return;
+
+            // Get compass heading: iOS uses webkitCompassHeading (already magnetic north = 0)
+            // Android deviceorientationabsolute uses alpha (0 = North when absolute)
+            let heading = null;
+            if (event.webkitCompassHeading != null) {
+                heading = event.webkitCompassHeading; // iOS: 0–360, 0=North
+            } else if (event.absolute && event.alpha != null) {
+                heading = (360 - event.alpha) % 360; // Android absolute: invert alpha
+            } else if (event.alpha != null) {
+                heading = (360 - event.alpha) % 360; // fallback
             }
 
-            if (heading !== null && heading !== undefined) {
-                // Normalize heading to 0-360
-                heading = Math.round(heading);
-                
-                // Calculate the rotation for the Qibla arrow
-                // The arrow should point to Qibla (135°) relative to North
-                // So we rotate it by (Qibla angle - current heading)
-                const qiblaRotation = QIBLA_ANGLE_CAIRO - heading;
-                
-                // Rotate the Qibla arrow (NOT the compass ring)
-                const compassRing = document.getElementById('deviceCompassRing');
-                if (compassRing) {
-                    // Keep compass ring fixed, rotate the arrow inside it
-                    const qiblaArrow = compassRing.parentElement.querySelector('.qibla-arrow-container');
-                    if (qiblaArrow) {
-                        qiblaArrow.style.transform = `translate(-50%, -50%) rotate(${qiblaRotation}deg)`;
-                    }
-                }
-                
-                // Update heading display
-                document.getElementById('deviceHeading').textContent = `${heading}°`;
-                
-                // Calculate difference from Qibla direction
-                let diff = Math.abs(heading - QIBLA_ANGLE_CAIRO);
-                if (diff > 180) diff = 360 - diff;
-                
-                // Update visual feedback
-                const arrow = document.getElementById('qiblaDirectionArrow');
-                const statusText = document.getElementById('qiblaStatusText');
-                const instructionText = document.getElementById('qiblaInstructionText');
-                const feedback = document.getElementById('qiblaVisualFeedback');
-                
-                if (diff < 5) {
-                    feedback.style.background = 'linear-gradient(135deg, rgba(46, 125, 50, 0.2), rgba(76, 175, 80, 0.3))';
-                    arrow.textContent = '✅';
-                    arrow.style.fontSize = '5rem';
-                    statusText.textContent = 'Perfect! Facing Qibla';
-                    statusText.style.color = 'var(--success)';
-                    instructionText.textContent = 'You are aligned with the Kaaba direction';
-                } else if (diff < 15) {
-                    feedback.style.background = 'linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.3))';
-                    arrow.textContent = '⚠️';
-                    arrow.style.fontSize = '4.5rem';
-                    statusText.textContent = 'Almost there!';
-                    statusText.style.color = '#F57C00';
-                    instructionText.textContent = `Rotate ${diff.toFixed(0)}° more`;
-                } else if (diff < 45) {
-                    feedback.style.background = 'rgba(33, 150, 243, 0.15)';
-                    arrow.textContent = '↻';
-                    arrow.style.fontSize = '4rem';
-                    statusText.textContent = 'Keep rotating';
-                    statusText.style.color = '#2196F3';
-                    instructionText.textContent = `${diff.toFixed(0)}° away from Qibla`;
-                } else {
-                    feedback.style.background = 'var(--bg-light)';
-                    
-                    // Show directional arrow based on which way to turn
-                    if (qiblaRotation > 0 && qiblaRotation < 180) {
-                        arrow.textContent = '↪️';
-                        instructionText.textContent = 'Turn clockwise (right)';
-                    } else {
-                        arrow.textContent = '↩️';
-                        instructionText.textContent = 'Turn counter-clockwise (left)';
-                    }
-                    arrow.style.fontSize = '4rem';
-                    statusText.textContent = 'Rotate your body';
-                    statusText.style.color = 'var(--text-primary)';
-                }
+            if (heading === null) return;
+
+            heading = (heading + 360) % 360;
+            document.getElementById('qiblaHeadingVal').textContent = Math.round(heading) + '°';
+
+            // Rotation to apply to the arrow so it points at Qibla
+            // Arrow default = points up (North). We need it to point at qiblaBearing.
+            // Arrow must rotate to: qiblaBearing - heading
+            const rotation = (qiblaBearing - heading + 360) % 360;
+
+            document.getElementById('qiblaArrowWrap').style.transform = `rotate(${rotation}deg)`;
+            document.getElementById('qiblaKaaba').style.transform  = `rotate(${rotation}deg)`;
+
+            // Status badge
+            let diff = Math.abs(rotation <= 180 ? rotation : 360 - rotation);
+            const badge = document.getElementById('qiblaStatusBadge');
+            if (diff < 5) {
+                badge.textContent = '✅ Facing Qibla';
+                badge.style.background = 'rgba(46,125,50,0.15)';
+                badge.style.color = 'var(--success)';
+            } else if (diff < 20) {
+                badge.textContent = '🟡 Almost there';
+                badge.style.background = 'rgba(255,193,7,0.15)';
+                badge.style.color = '#b8860b';
+            } else {
+                badge.textContent = 'Rotate to align ↑';
+                badge.style.background = 'var(--bg-light)';
+                badge.style.color = 'var(--text-primary)';
             }
         }
 
-        function stopDeviceCompass() {
-            // Remove event listeners
-            window.removeEventListener('deviceorientationabsolute', handleOrientation, true);
-            window.removeEventListener('deviceorientation', handleOrientation, true);
-            
-            // Show static compass, hide device compass
-            document.getElementById('qiblaStatic').style.display = 'block';
-            document.getElementById('qiblaDeviceCompass').style.display = 'none';
+        function stopQibla() {
+            if (qiblaOrientationBound) {
+                window.removeEventListener('deviceorientationabsolute', qiblaOrientationBound, true);
+                window.removeEventListener('deviceorientation', qiblaOrientationBound, true);
+                qiblaOrientationBound = null;
+            }
+            qiblaBearing = null;
+            document.getElementById('qiblaActive').style.display = 'none';
+            document.getElementById('qiblaIdle').style.display = 'block';
+            document.getElementById('qiblaHeadingVal').textContent = '—';
+            document.getElementById('qiblaBearingVal').textContent = '—';
+            const badge = document.getElementById('qiblaStatusBadge');
+            badge.textContent = 'Calibrating…';
+            badge.style.background = 'var(--bg-light)';
+            badge.style.color = 'var(--text-primary)';
+        }
+
+        function showQiblaError(msg) {
+            document.getElementById('qiblaIdle').style.display = 'none';
+            document.getElementById('qiblaActive').style.display = 'none';
+            const errEl = document.getElementById('qiblaError');
+            errEl.style.display = 'block';
+            errEl.innerHTML = '⚠️ ' + msg + '<br><br><button onclick="resetQibla()" style="margin-top:0.5rem;padding:0.5rem 1rem;background:var(--primary);color:white;border-radius:8px;font-size:0.9rem;">Try Again</button>';
+        }
+
+        function resetQibla() {
+            document.getElementById('qiblaError').style.display = 'none';
+            document.getElementById('qiblaIdle').style.display = 'block';
         }
 
         function showPage(pageId) {
