@@ -392,34 +392,54 @@ app.get('/analytics', async (req, res) => {
     try {
         const { timeframe } = req.query;
 
-        // Calculate date range
+        // Calculate date range for filters
         let dateFilter = '';
+        let dateCondition = '';
         
         if (timeframe === 'today') {
             dateFilter = "AND timestamp >= CURRENT_DATE";
+            dateCondition = "WHERE timestamp >= CURRENT_DATE";
         } else if (timeframe === 'week') {
             dateFilter = "AND timestamp >= CURRENT_DATE - INTERVAL '7 days'";
+            dateCondition = "WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'";
         } else if (timeframe === 'month') {
             dateFilter = "AND timestamp >= CURRENT_DATE - INTERVAL '30 days'";
+            dateCondition = "WHERE timestamp >= CURRENT_DATE - INTERVAL '30 days'";
         }
 
-        // Total users
+        // Total users (always shows all users)
         const totalUsersResult = await pool.query('SELECT COUNT(DISTINCT email) as count FROM users');
         const totalUsers = parseInt(totalUsersResult.rows[0].count);
 
-        // Active today
+        // Active in selected timeframe (dynamic based on filter)
+        let activeInTimeframe = 0;
+        if (timeframe === 'all') {
+            // For 'all', show active today
+            const activeTodayResult = await pool.query(
+                'SELECT COUNT(DISTINCT email) as count FROM activity_logs WHERE timestamp >= CURRENT_DATE'
+            );
+            activeInTimeframe = parseInt(activeTodayResult.rows[0].count);
+        } else {
+            // For other timeframes, show active in that period
+            const activeResult = await pool.query(
+                `SELECT COUNT(DISTINCT email) as count FROM activity_logs ${dateCondition}`
+            );
+            activeInTimeframe = parseInt(activeResult.rows[0].count);
+        }
+
+        // Active today (always)
         const activeTodayResult = await pool.query(
             'SELECT COUNT(DISTINCT email) as count FROM activity_logs WHERE timestamp >= CURRENT_DATE'
         );
         const activeToday = parseInt(activeTodayResult.rows[0].count);
 
-        // Active this week
+        // Active this week (always)
         const activeWeekResult = await pool.query(
             "SELECT COUNT(DISTINCT email) as count FROM activity_logs WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'"
         );
         const activeWeek = parseInt(activeWeekResult.rows[0].count);
 
-        // Recent activity
+        // Recent activity (filtered by timeframe)
         const recentActivityQuery = `
             SELECT email, activity_type, metadata, timestamp 
             FROM activity_logs 
@@ -458,13 +478,15 @@ app.get('/analytics', async (req, res) => {
             lastActive: row.last_active
         }));
 
-        console.log('📊 Analytics loaded - Total users:', totalUsers, 'Active today:', activeToday);
+        console.log('📊 Analytics loaded - Timeframe:', timeframe, 'Total users:', totalUsers, 'Active:', activeInTimeframe);
 
         res.json({
             success: true,
             totalUsers,
             activeToday,
             activeWeek,
+            activeInTimeframe,
+            timeframe,
             recentActivity,
             userProgress
         });

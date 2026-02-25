@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <!--
     Hafez Quran App
-    Version: 1.5.2
+    Version: 1.5.3
     Build Date: February 25, 2026
     
     Version History:
+    - v1.5.3 (Feb 25, 2026): Analytics Filters Working
+      * FIXED: Analytics timeframe filters now work correctly (Today/Week/Month/All)
+      * FIXED: Active user stats now update based on selected timeframe
+      * ADDED: Visual highlighting for active filter button
+      * IMPROVED: Dynamic stat card labels change with filter selection
+    
     - v1.5.2 (Feb 25, 2026): Mushaf View Enhancement
       * ADDED: Traditional Quran separator (✦) between surahs on same page
       * IMPROVED: Visual clarity when multiple surahs appear on one page
@@ -363,6 +369,12 @@
         button:active {
             transform: translateY(0);
             box-shadow: none;
+        }
+        
+        /* Filter button active state */
+        .filter-btn.active {
+            background: var(--secondary) !important;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
         }
         
         /* Better mobile button behavior */
@@ -1409,7 +1421,7 @@
                     <!-- Version Number -->
                     <div style="text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 2px solid var(--border); color: var(--text-light); font-size: 0.85rem;">
                         <div style="font-weight: 600;">Hafez Quran App</div>
-                        <div style="margin-top: 0.25rem;">Version 1.5.2</div>
+                        <div style="margin-top: 0.25rem;">Version 1.5.3</div>
                         <div style="font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.7;">Build: February 2026</div>
                         
                         <!-- Analytics Button (Only for admin) -->
@@ -1931,8 +1943,8 @@
                         <div class="stat-value" id="totalUsers" style="color: white;">-</div>
                     </div>
                     <div class="stat-card" style="background: linear-gradient(135deg, var(--secondary), #b8860b); color: white;">
-                        <h3 style="color: white;">Active Today</h3>
-                        <div class="stat-value" id="activeToday" style="color: white;">-</div>
+                        <h3 style="color: white;" id="activeLabel">Active Today</h3>
+                        <div class="stat-value" id="activeInTimeframe" style="color: white;">-</div>
                     </div>
                     <div class="stat-card" style="background: linear-gradient(135deg, var(--accent), #6b4423); color: white;">
                         <h3 style="color: white;">This Week</h3>
@@ -1942,10 +1954,10 @@
                 
                 <!-- Filter Options -->
                 <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-                    <button onclick="loadAnalytics('today')">Today</button>
-                    <button onclick="loadAnalytics('week')">This Week</button>
-                    <button onclick="loadAnalytics('month')">This Month</button>
-                    <button onclick="loadAnalytics('all')">All Time</button>
+                    <button id="filterToday" onclick="loadAnalytics('today')" class="filter-btn">Today</button>
+                    <button id="filterWeek" onclick="loadAnalytics('week')" class="filter-btn">This Week</button>
+                    <button id="filterMonth" onclick="loadAnalytics('month')" class="filter-btn">This Month</button>
+                    <button id="filterAll" onclick="loadAnalytics('all')" class="filter-btn active">All Time</button>
                     <button onclick="refreshAnalytics()" style="margin-left: auto;">🔄 Refresh</button>
                 </div>
                 
@@ -3797,8 +3809,25 @@
                 if (data.success) {
                     // Update quick stats
                     document.getElementById('totalUsers').textContent = data.totalUsers || 0;
-                    document.getElementById('activeToday').textContent = data.activeToday || 0;
+                    document.getElementById('activeInTimeframe').textContent = data.activeInTimeframe || 0;
                     document.getElementById('activeWeek').textContent = data.activeWeek || 0;
+                    
+                    // Update the middle stat card label based on timeframe
+                    const activeLabel = document.getElementById('activeLabel');
+                    const labelMap = {
+                        'today': 'Active Today',
+                        'week': 'Active This Week',
+                        'month': 'Active This Month',
+                        'all': 'Active Today'
+                    };
+                    activeLabel.textContent = labelMap[timeframe] || 'Active';
+                    
+                    // Update filter button states
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                    const activeBtn = document.getElementById(`filter${timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}`);
+                    if (activeBtn) {
+                        activeBtn.classList.add('active');
+                    }
                     
                     // Update recent activity
                     displayRecentActivity(data.recentActivity || []);
