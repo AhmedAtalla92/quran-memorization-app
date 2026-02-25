@@ -1,10 +1,19 @@
 <!DOCTYPE html>
 <!--
     Hafez Quran App
-    Version: 1.4.2
+    Version: 1.4.3
     Build Date: February 25, 2026
     
     Version History:
+    - v1.4.3 (Feb 25, 2026): Mobile UI fixes & Athan improvements
+      * FIXED: Mobile navigation buttons now display text properly without cutoff
+      * FIXED: Dropdown selects on mobile now show full text
+      * FIXED: "Memorize/Recite" and other long button text displays correctly
+      * IMPROVED: Athan check restarts when Pray page is opened
+      * IMPROVED: Better logging for athan debugging
+      * IMPROVED: Notification permission requested on athan enable
+      * ENHANCED: Form elements properly sized for mobile screens
+    
     - v1.4.2 (Feb 25, 2026): Page recitation tracking & bookmark fixes
       * ADDED: Checkmarks (✓) now appear next to recited pages in page dropdown
       * FIXED: Bookmark highlighting now properly toggles on/off on mobile
@@ -754,14 +763,14 @@
                 flex-wrap: wrap !important;
                 align-items: center !important;
                 justify-content: center !important;
-                gap: 0.4rem !important;
-                padding: 0.65rem 0.5rem !important;
+                gap: 0.35rem !important;
+                padding: 0.6rem 0.4rem !important;
             }
 
             /* Logo wrapper - centered at top, takes full width */
             #mobileNavLogoWrapper {
-                width: 50px !important;
-                height: 50px !important;
+                width: 45px !important;
+                height: 45px !important;
                 border-radius: 12px !important;
                 display: flex !important;
                 align-items: center !important;
@@ -771,8 +780,8 @@
             }
 
             #mobileNavLogo {
-                width: 46px !important;
-                height: 46px !important;
+                width: 42px !important;
+                height: 42px !important;
                 object-fit: contain !important;
             }
 
@@ -781,15 +790,21 @@
                 display: inline-flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                padding: 0.55rem 0.3rem !important;
-                font-size: 0.7rem !important;
-                flex: 1 1 calc(25% - 0.4rem) !important; /* ~25% width for 4 buttons */
+                padding: 0.5rem 0.25rem !important;
+                font-size: 0.65rem !important;
+                flex: 1 1 calc(25% - 0.35rem) !important; /* ~25% width for 4 buttons */
                 min-width: 0 !important;
-                white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
-                line-height: 1.2 !important;
+                white-space: normal !important; /* Allow text to wrap if needed */
+                overflow: visible !important;
+                text-overflow: clip !important;
+                line-height: 1.1 !important;
                 font-weight: 600 !important;
+                text-align: center !important;
+            }
+            
+            .nav-btn span {
+                display: block !important;
+                width: 100% !important;
             }
             
             /* DEFAULT (Surah view) - BIGGER font for mobile */
@@ -858,6 +873,27 @@
             
             .form-group {
                 margin-bottom: 0.5rem;
+            }
+            
+            /* Fix mobile select/input text overflow */
+            select, input {
+                font-size: 0.85rem !important;
+                padding: 0.6rem 0.7rem !important;
+                text-overflow: ellipsis !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+            }
+            
+            /* Ensure dropdown options are readable */
+            select option {
+                font-size: 0.9rem !important;
+                padding: 0.5rem !important;
+            }
+            
+            /* Fix form group labels on mobile */
+            .form-group label {
+                font-size: 0.85rem !important;
+                margin-bottom: 0.3rem !important;
             }
             
             /* Compact stats cards on mobile */
@@ -4780,6 +4816,8 @@
             const savedAthanReciter = localStorage.getItem('athan_reciter');
             const savedLastPlayed = localStorage.getItem('last_athan_played');
             
+            console.log('Loading athan settings:', { savedAthanEnabled, savedAthanReciter });
+            
             if (savedAthanEnabled === 'true') {
                 athanEnabled = true;
                 const toggle = document.getElementById('athanToggle');
@@ -4789,7 +4827,11 @@
                     status.textContent = 'On';
                     status.style.color = 'var(--success)';
                 }
+                console.log('Athan is enabled, starting athan check...');
                 startAthanCheck();
+                requestNotificationPermission();
+            } else {
+                console.log('Athan is disabled');
             }
             
             if (savedAthanReciter) {
@@ -7131,6 +7173,10 @@
             // Load prayer times when Pray page is opened
             if (pageId === 'pray') {
                 loadPrayerTimes();
+                // If athan is enabled, ensure the check is running
+                if (athanEnabled && !athanCheckInterval) {
+                    startAthanCheck();
+                }
             }
             
             // Display bookmarks when Bookmarks page is opened
