@@ -38,6 +38,7 @@ async function initDB() {
                 reciter VARCHAR(100) DEFAULT 'ar.alafasy',
                 last_view_mode VARCHAR(20) DEFAULT 'surah',
                 last_verse_index INTEGER DEFAULT 0,
+                last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -61,8 +62,20 @@ async function initDB() {
                 UNIQUE(user_id, page_number)
             );
 
+            CREATE TABLE IF NOT EXISTS activity_logs (
+                id SERIAL PRIMARY KEY,
+                email VARCHAR(255) NOT NULL,
+                activity_type VARCHAR(50) NOT NULL,
+                metadata JSONB,
+                timestamp TIMESTAMP NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
             CREATE INDEX IF NOT EXISTS idx_user_progress_user_id ON user_progress(user_id);
             CREATE INDEX IF NOT EXISTS idx_user_recited_pages_user_id ON user_recited_pages(user_id);
+            CREATE INDEX IF NOT EXISTS idx_activity_logs_email ON activity_logs(email);
+            CREATE INDEX IF NOT EXISTS idx_activity_logs_timestamp ON activity_logs(timestamp);
+            CREATE INDEX IF NOT EXISTS idx_activity_logs_type ON activity_logs(activity_type);
         `);
         
         // Add new columns for existing databases
@@ -90,13 +103,18 @@ async function initDB() {
                 END IF;
                 
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name='users' AND column_name='last_active') THEN
+                    ALTER TABLE users ADD COLUMN last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+                END IF;
+                
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                               WHERE table_name='user_progress' AND column_name='is_bookmarked') THEN
                     ALTER TABLE user_progress ADD COLUMN is_bookmarked BOOLEAN DEFAULT false;
                 END IF;
             END $$;
         `);
         
-        console.log('✅ Database initialized with all fields');
+        console.log('✅ Database initialized with all fields including activity_logs');
     } catch (error) {
         console.error('❌ Database initialization error:', error);
     }
@@ -221,7 +239,7 @@ app.post('/save-progress', async (req, res) => {
         } else {
             userId = userResult.rows[0].id;
             await pool.query(
-                'UPDATE users SET language=$1, reciter=$2, last_view_mode=$3, last_verse_index=$4, updated_at=CURRENT_TIMESTAMP WHERE id=$5',
+                'UPDATE users SET language=$1, reciter=$2, last_view_mode=$3, last_verse_index=$4, last_active=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE id=$5',
                 [language || 'en', reciter || 'ar.alafasy', lastViewMode || 'surah', lastVerseIndex || 0, userId]
             );
         }
@@ -328,6 +346,126 @@ app.get('/load-progress/:email', async (req, res) => {
         });
     } catch (error) {
         console.error('❌ Load error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ══════════════════════════════════════════════════════════════
+// ANALYTICS ENDPOINTS
+// ══════════════════════════════════════════════════════════════
+
+// Log user activity
+app.post('/log-activity', async (req, res) => {
+    try {
+        const { email, activityType, metadata, timestamp } = req.body;
+
+        if (!email || !activityType) {
+            return res.status(400).json({ success: false, error: 'Email and activityType required' });
+        }
+
+        // Insert activity log
+        await pool.query(
+            'INSERT INTO activity_logs (email, activity_type, metadata, timestamp) VALUES ($1, $2, $3, $4)',
+            [email, activityType, JSON.stringify(metadata || {}), timestamp || new Date().toISOString()]
+        );
+
+        // Update user's last_active
+        await pool.query(
+            'UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE email = $1',
+            [email]
+        );
+
+        console.log('📊 Activity logged:', email, '-', activityType);
+        res.json({ success: true, message: 'Activity logged' });
+    } catch (error) {
+        console.error('❌ Log activity error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get analytics data
+app.get('/analytics', async (req, res) => {
+    try {
+        const { timeframe } = req.query;
+
+        // Calculate date range
+        let dateFilter = '';
+        
+        if (timeframe === 'today') {
+            dateFilter = "AND timestamp >= CURRENT_DATE";
+        } else if (timeframe === 'week') {
+            dateFilter = "AND timestamp >= CURRENT_DATE - INTERVAL '7 days'";
+        } else if (timeframe === 'month') {
+            dateFilter = "AND timestamp >= CURRENT_DATE - INTERVAL '30 days'";
+        }
+
+        // Total users
+        const totalUsersResult = await pool.query('SELECT COUNT(DISTINCT email) as count FROM users');
+        const totalUsers = parseInt(totalUsersResult.rows[0].count);
+
+        // Active today
+        const activeTodayResult = await pool.query(
+            'SELECT COUNT(DISTINCT email) as count FROM activity_logs WHERE timestamp >= CURRENT_DATE'
+        );
+        const activeToday = parseInt(activeTodayResult.rows[0].count);
+
+        // Active this week
+        const activeWeekResult = await pool.query(
+            "SELECT COUNT(DISTINCT email) as count FROM activity_logs WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'"
+        );
+        const activeWeek = parseInt(activeWeekResult.rows[0].count);
+
+        // Recent activity
+        const recentActivityQuery = `
+            SELECT email, activity_type, metadata, timestamp 
+            FROM activity_logs 
+            WHERE 1=1 ${dateFilter}
+            ORDER BY timestamp DESC 
+            LIMIT 50
+        `;
+        const recentActivityResult = await pool.query(recentActivityQuery);
+        const recentActivity = recentActivityResult.rows.map(row => ({
+            email: row.email,
+            activityType: row.activity_type,
+            metadata: row.metadata,
+            timestamp: row.timestamp
+        }));
+
+        // User progress summary
+        const userProgressQuery = `
+            SELECT 
+                u.email,
+                u.last_active,
+                COUNT(DISTINCT CASE WHEN up.is_memorized THEN up.verse_key END) as memorized,
+                COUNT(DISTINCT urp.page_number) as recited_pages,
+                COUNT(DISTINCT CASE WHEN up.is_bookmarked THEN up.verse_key END) as bookmarks
+            FROM users u
+            LEFT JOIN user_progress up ON u.id = up.user_id
+            LEFT JOIN user_recited_pages urp ON u.id = urp.user_id
+            GROUP BY u.email, u.last_active
+            ORDER BY u.last_active DESC NULLS LAST
+        `;
+        const userProgressResult = await pool.query(userProgressQuery);
+        const userProgress = userProgressResult.rows.map(row => ({
+            email: row.email,
+            memorized: parseInt(row.memorized) || 0,
+            recitedPages: parseInt(row.recited_pages) || 0,
+            bookmarks: parseInt(row.bookmarks) || 0,
+            lastActive: row.last_active
+        }));
+
+        console.log('📊 Analytics loaded - Total users:', totalUsers, 'Active today:', activeToday);
+
+        res.json({
+            success: true,
+            totalUsers,
+            activeToday,
+            activeWeek,
+            recentActivity,
+            userProgress
+        });
+    } catch (error) {
+        console.error('❌ Analytics error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
