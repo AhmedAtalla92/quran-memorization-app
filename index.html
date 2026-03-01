@@ -1,10 +1,25 @@
 <!DOCTYPE html>
 <!--
     Hafez Quran App
-    Version: 1.7.3
+    Version: 1.7.5
     Build Date: February 25, 2026
     
     Version History:
+    - v1.7.5 (Feb 25, 2026): Bigger Circle Icon & Checkmarks Fixed
+      * REDESIGNED: Larger circle (40x40px) containing both "i" and ayah number
+      * LAYOUT: "i" at top, divider line, ayah number at bottom - all inside circle
+      * FIXED: Recited page checkmarks now visible in Mushaf page dropdown
+      * FIXED: populateFilters() now called after loading user data
+      * IMPROVED: Checkmarks refresh properly when user logs in
+      * VISUAL: Clean, organized icon design with better spacing
+    
+    - v1.7.4 (Feb 25, 2026): Reliable Audio Provider Switch
+      * SWITCHED: Full Surah Player now uses QuranicAudio.com (highly reliable)
+      * FIXED: All 12 reciters now working with verified URLs
+      * IMPROVED: Better error messages if surah unavailable
+      * IMPROVED: Enhanced console logging for debugging audio issues
+      * SOURCE: download.quranicaudio.com - trusted Islamic audio provider
+    
     - v1.7.3 (Feb 25, 2026): UI Polish & Fixes
       * REDESIGNED: Info icon now shows only "i" inside circle, ayah number outside
       * FIXED: Recited page checkmarks (✓) now appear properly in Mushaf page dropdown
@@ -1477,7 +1492,7 @@
                     <!-- Version Number -->
                     <div style="text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 2px solid var(--border); color: var(--text-light); font-size: 0.85rem;">
                         <div style="font-weight: 600;">Hafez Quran App</div>
-                        <div style="margin-top: 0.25rem;">Version 1.7.3</div>
+                        <div style="margin-top: 0.25rem;">Version 1.7.5</div>
                         <div style="font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.7;">Build: February 2026</div>
                         
                         <!-- Analytics Button (Only for admin) -->
@@ -3383,18 +3398,18 @@
         
         // Full Surah audio URLs (continuous recitation, not by ayah)
         const fullSurahReciters = {
-            'ar.alafasy': 'https://server8.mp3quran.net/afs',
-            'Abdul_Basit_Murattal_192kbps': 'https://server7.mp3quran.net/basit',
-            'Ghamadi_40kbps': 'https://server7.mp3quran.net/s_gmd',
-            'Abdul_Basit_Mujawwad_128kbps': 'https://server13.mp3quran.net/basit/Mujawwad',
-            'Husary_128kbps': 'https://server8.mp3quran.net/s_hussary',
-            'Minshawi_Murattal_128kbps': 'https://server10.mp3quran.net/minsh',
-            'Minshawi_Mujawwad_128kbps': 'https://server12.mp3quran.net/mnshjw',
-            'ahmed_ibn_ali_al_ajamy_128kbps': 'https://server10.mp3quran.net/ajm',
-            'Maher_AlMuaiqly_64kbps': 'https://server12.mp3quran.net/maher',
-            'Rewayat_Warsh_128kbps': 'https://server13.mp3quran.net/rayan',
-            'Abdurrahmaan_As-Sudais_192kbps': 'https://server11.mp3quran.net/sds',
-            'Saood_ash-Shuraym_64kbps': 'https://server8.mp3quran.net/shur'
+            'ar.alafasy': 'https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaasee',
+            'Abdul_Basit_Murattal_192kbps': 'https://download.quranicaudio.com/quran/abdulbaset_mujawwad',
+            'Ghamadi_40kbps': 'https://download.quranicaudio.com/quran/sa3d_al-ghaamidi',
+            'Abdul_Basit_Mujawwad_128kbps': 'https://download.quranicaudio.com/quran/abdulbaset_mujawwad',
+            'Husary_128kbps': 'https://download.quranicaudio.com/quran/mahmood_khaleel_al-husaree',
+            'Minshawi_Murattal_128kbps': 'https://download.quranicaudio.com/quran/muhammad_siddeeq_al-minshaawee',
+            'Minshawi_Mujawwad_128kbps': 'https://download.quranicaudio.com/quran/muhammad_siddeeq_al-minshaawee_mojawwad',
+            'ahmed_ibn_ali_al_ajamy_128kbps': 'https://download.quranicaudio.com/quran/ahmed_ibn_3ali_al-3ajamy',
+            'Maher_AlMuaiqly_64kbps': 'https://download.quranicaudio.com/quran/maher_almuaiqly',
+            'Rewayat_Warsh_128kbps': 'https://download.quranicaudio.com/quran/warsh/yasir_al-dawsari_warsh',
+            'Abdurrahmaan_As-Sudais_192kbps': 'https://download.quranicaudio.com/quran/abdurrahmaan_as-sudays',
+            'Saood_ash-Shuraym_64kbps': 'https://download.quranicaudio.com/quran/sa3ood_al-shuraym'
         };
         
         function populateFullSurahSelector() {
@@ -3466,10 +3481,13 @@
             
             // Build URL for full surah
             const baseUrl = fullSurahReciters[fullSurahReciter];
+            // quranicaudio.com uses 3-digit zero-padded format: 001.mp3, 002.mp3, etc.
             const surahNumPadded = String(fullSurahNumber).padStart(3, '0');
             const audioUrl = `${baseUrl}/${surahNumPadded}.mp3`;
             
             console.log('Playing full surah:', audioUrl);
+            console.log('Reciter:', fullSurahReciter);
+            console.log('Surah:', fullSurahNumber, '-', getSurahName(fullSurahNumber));
             
             // Create and play audio
             fullSurahAudio = new Audio(audioUrl);
@@ -3477,7 +3495,8 @@
             
             fullSurahAudio.play().catch(error => {
                 console.error('Error playing full surah:', error);
-                alert('Failed to play surah. Please try again.');
+                console.error('Failed URL:', audioUrl);
+                alert('Failed to play surah. The reciter may not have this surah available. Please try a different reciter.');
             });
             
             // Update UI
@@ -5821,83 +5840,82 @@
                 
                 arabicContainer.appendChild(verseSpan);
                 
-                // Add decorative info icon with ayah number outside
+                // Add decorative circle with "i" and ayah number inside together
                 const ayahMarkerContainer = document.createElement('span');
                 ayahMarkerContainer.style.cssText = `
                     display: inline-flex;
                     align-items: center;
-                    gap: 0.25rem;
-                    margin: 0 0.3rem;
-                `;
-                
-                // Create the ornamental info icon (only "i" inside)
-                const infoIcon = document.createElement('span');
-                infoIcon.style.cssText = `
-                    position: relative;
+                    justify-content: center;
+                    margin: 0 0.4rem;
                     cursor: pointer;
-                    display: inline-block;
-                    transition: transform 0.2s ease;
+                    position: relative;
                 `;
                 
-                infoIcon.innerHTML = `
-                    <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;">
-                        <!-- Decorative circle border -->
-                        <circle cx="12" cy="12" r="9" 
+                ayahMarkerContainer.innerHTML = `
+                    <svg width="40" height="40" viewBox="0 0 40 40" style="display: block;">
+                        <!-- Large decorative circle -->
+                        <circle cx="20" cy="20" r="16" 
                                 fill="none" 
                                 stroke="${isBookmarked ? 'var(--secondary)' : 'rgba(26, 77, 46, 0.6)'}" 
-                                stroke-width="1.5"/>
-                        <!-- Info "i" icon -->
-                        <text x="12" y="17" 
+                                stroke-width="2"/>
+                        
+                        <!-- Info "i" icon at top -->
+                        <text x="20" y="15" 
                               text-anchor="middle" 
-                              font-size="14" 
+                              font-size="9" 
+                              font-weight="700"
+                              fill="${isBookmarked ? 'var(--secondary)' : 'rgba(26, 77, 46, 0.7)'}"
+                              style="pointer-events: none; user-select: none;">
+                            i
+                        </text>
+                        
+                        <!-- Small horizontal line separator -->
+                        <line x1="12" y1="20" x2="28" y2="20" 
+                              stroke="${isBookmarked ? 'var(--secondary)' : 'rgba(26, 77, 46, 0.4)'}" 
+                              stroke-width="1"/>
+                        
+                        <!-- Ayah number at bottom -->
+                        <text x="20" y="30" 
+                              text-anchor="middle" 
+                              font-size="13" 
                               font-weight="700"
                               fill="${isBookmarked ? 'var(--secondary)' : 'var(--primary)'}"
                               style="pointer-events: none; user-select: none;">
-                            i
+                            ${verse.ayah}
                         </text>
                     </svg>
                 `;
                 
-                infoIcon.title = 'Click for translation/tafseer';
-                infoIcon.onclick = (e) => {
+                ayahMarkerContainer.title = 'Click for translation/tafseer';
+                ayahMarkerContainer.onclick = (e) => {
                     e.stopPropagation();
                     showAyahInfo(verse);
                 };
                 
-                // Ayah number (outside the icon)
-                const ayahNumber = document.createElement('span');
-                ayahNumber.textContent = verse.ayah;
-                ayahNumber.style.cssText = `
-                    font-size: 1.1rem;
-                    font-weight: 600;
-                    color: ${isBookmarked ? 'var(--secondary)' : 'var(--primary)'};
-                    pointer-events: none;
-                    user-select: none;
-                `;
-                
-                // Hover effect for the icon
-                infoIcon.onmouseenter = () => {
-                    infoIcon.style.transform = 'scale(1.2)';
-                    const svg = infoIcon.querySelector('svg');
+                // Hover effect
+                ayahMarkerContainer.onmouseenter = () => {
+                    ayahMarkerContainer.style.transform = 'scale(1.15)';
+                    ayahMarkerContainer.style.transition = 'transform 0.2s ease';
+                    const svg = ayahMarkerContainer.querySelector('svg');
                     const circle = svg.querySelector('circle');
-                    const text = svg.querySelector('text');
+                    const line = svg.querySelector('line');
+                    const texts = svg.querySelectorAll('text');
                     circle.setAttribute('stroke', 'var(--secondary)');
-                    text.setAttribute('fill', 'var(--secondary)');
-                    ayahNumber.style.color = 'var(--secondary)';
+                    line.setAttribute('stroke', 'var(--secondary)');
+                    texts[0].setAttribute('fill', 'var(--secondary)');
+                    texts[1].setAttribute('fill', 'var(--secondary)');
                 };
-                infoIcon.onmouseleave = () => {
-                    infoIcon.style.transform = 'scale(1)';
-                    const svg = infoIcon.querySelector('svg');
+                ayahMarkerContainer.onmouseleave = () => {
+                    ayahMarkerContainer.style.transform = 'scale(1)';
+                    const svg = ayahMarkerContainer.querySelector('svg');
                     const circle = svg.querySelector('circle');
-                    const text = svg.querySelector('text');
+                    const line = svg.querySelector('line');
+                    const texts = svg.querySelectorAll('text');
                     circle.setAttribute('stroke', isBookmarked ? 'var(--secondary)' : 'rgba(26, 77, 46, 0.6)');
-                    text.setAttribute('fill', isBookmarked ? 'var(--secondary)' : 'var(--primary)');
-                    ayahNumber.style.color = isBookmarked ? 'var(--secondary)' : 'var(--primary)';
+                    line.setAttribute('stroke', isBookmarked ? 'var(--secondary)' : 'rgba(26, 77, 46, 0.4)');
+                    texts[0].setAttribute('fill', isBookmarked ? 'var(--secondary)' : 'rgba(26, 77, 46, 0.7)');
+                    texts[1].setAttribute('fill', isBookmarked ? 'var(--secondary)' : 'var(--primary)');
                 };
-                
-                ayahMarkerContainer.appendChild(infoIcon);
-                ayahMarkerContainer.appendChild(ayahNumber);
-                ayahMarkerContainer.appendChild(document.createTextNode(' '));
                 
                 arabicContainer.appendChild(ayahMarkerContainer);
             });
@@ -6960,6 +6978,9 @@
                     // Update stats after loading
                     updateAccountStats();
                     
+                    // Refresh filters to show recited page checkmarks
+                    populateFilters();
+                    
                     // Refresh display to last position
                     if (filteredVerses.length > 0) {
                         displayVerseWithNavigation(currentVerseIndex);
@@ -7040,6 +7061,9 @@
                 
                 // Update stats after loading
                 updateAccountStats();
+                
+                // Refresh filters to show recited page checkmarks
+                populateFilters();
                 
                 // Refresh display to last position
                 if (filteredVerses.length > 0) {
