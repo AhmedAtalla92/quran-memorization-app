@@ -1,10 +1,25 @@
 <!DOCTYPE html>
 <!--
     Hafez Quran App
-    Version: 1.7.1
+    Version: 1.7.3
     Build Date: February 25, 2026
     
     Version History:
+    - v1.7.3 (Feb 25, 2026): UI Polish & Fixes
+      * REDESIGNED: Info icon now shows only "i" inside circle, ayah number outside
+      * FIXED: Recited page checkmarks (✓) now appear properly in Mushaf page dropdown
+      * ADDED: Arabic surah names in Inspire screen (English / العربية format)
+      * IMPROVED: Cleaner ayah marker design - circular "i" icon + number
+      * IMPROVED: setTimeout ensures dropdown refreshes after page recitation toggle
+    
+    - v1.7.2 (Feb 25, 2026): Reciter URLs Fixed & Minshawi Mujawwad Added
+      * FIXED: Ghamadi URL (server7/s_gmd)
+      * FIXED: Husary URL (server8/s_hussary)
+      * FIXED: Adel Rayan URL (server13/rayan)
+      * FIXED: Al-Shuraim URL (server8/shur)
+      * ADDED: Minshawi Mujawwad / المنشاوي مجود
+      * TOTAL: 12 working reciters now available
+    
     - v1.7.1 (Feb 25, 2026): Enhanced Ayah Markers & Reciter Fixes
       * REDESIGNED: Info icon now inside decorative ayah marker (beautiful ornamental frame)
       * IMPROVED: "i" appears above ayah number in the same clickable ornament
@@ -1462,7 +1477,7 @@
                     <!-- Version Number -->
                     <div style="text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 2px solid var(--border); color: var(--text-light); font-size: 0.85rem;">
                         <div style="font-weight: 600;">Hafez Quran App</div>
-                        <div style="margin-top: 0.25rem;">Version 1.7.1</div>
+                        <div style="margin-top: 0.25rem;">Version 1.7.3</div>
                         <div style="font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.7;">Build: February 2026</div>
                         
                         <!-- Analytics Button (Only for admin) -->
@@ -1663,9 +1678,10 @@
                                 <option value="ar.alafasy">Mishary Alafasy / مشاري العفاسي</option>
                                 <option value="Abdul_Basit_Murattal_192kbps">Abdul Basit / عبد الباسط</option>
                                 <option value="Ghamadi_40kbps">Ghamadi / الغامدي</option>
-                                <option value="Abdul_Basit_Mujawwad_128kbps">Abdul Basit Mujawwad / مجود</option>
+                                <option value="Abdul_Basit_Mujawwad_128kbps">Abdul Basit Mujawwad / عبد الباسط مجود</option>
                                 <option value="Husary_128kbps">Husary / الحصري</option>
-                                <option value="Minshawi_Murattal_128kbps">Minshawi / المنشاوي</option>
+                                <option value="Minshawi_Murattal_128kbps">Minshawi Murattal / المنشاوي مرتل</option>
+                                <option value="Minshawi_Mujawwad_128kbps">Minshawi Mujawwad / المنشاوي مجود</option>
                                 <option value="ahmed_ibn_ali_al_ajamy_128kbps">Ahmed Al Ajmy / أحمد العجمي</option>
                                 <option value="Maher_AlMuaiqly_64kbps">Maher Al Mueaqly / ماهر المعيقلي</option>
                                 <option value="Rewayat_Warsh_128kbps">Adel Rayan / عادل ريان</option>
@@ -3031,6 +3047,7 @@
                 if (!verseData) return;
                 
                 const surahName = getSurahName(item.surah);
+                const surahNameArabic = surahNamesArabic[item.surah];
                 const isBookmarked = bookmarkedVerses.has(verseKey);
                 
                 const verseCard = document.createElement('div');
@@ -3039,7 +3056,9 @@
                 
                 verseCard.innerHTML = `
                     <div class="verse-info" style="margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border);">
-                        <span style="font-weight: 700; color: var(--primary);">${surahName}</span> - Surah ${item.surah}, Ayah ${item.ayah}
+                        <span style="font-weight: 700; color: var(--primary);">${surahName} / ${surahNameArabic}</span>
+                        <br>
+                        <span style="font-size: 0.9rem; color: var(--text-light);">Surah ${item.surah}, Ayah ${item.ayah}</span>
                     </div>
                     <div class="verse-text" style="font-family: 'Amiri', serif; font-size: 1.8rem; line-height: 2.5; direction: rtl; text-align: right; margin-bottom: 1rem;">
                         ${verseData.arab}
@@ -3366,15 +3385,16 @@
         const fullSurahReciters = {
             'ar.alafasy': 'https://server8.mp3quran.net/afs',
             'Abdul_Basit_Murattal_192kbps': 'https://server7.mp3quran.net/basit',
-            'Ghamadi_40kbps': 'https://server11.mp3quran.net/gmd',
+            'Ghamadi_40kbps': 'https://server7.mp3quran.net/s_gmd',
             'Abdul_Basit_Mujawwad_128kbps': 'https://server13.mp3quran.net/basit/Mujawwad',
-            'Husary_128kbps': 'https://server6.mp3quran.net/husary',
+            'Husary_128kbps': 'https://server8.mp3quran.net/s_hussary',
             'Minshawi_Murattal_128kbps': 'https://server10.mp3quran.net/minsh',
+            'Minshawi_Mujawwad_128kbps': 'https://server12.mp3quran.net/mnshjw',
             'ahmed_ibn_ali_al_ajamy_128kbps': 'https://server10.mp3quran.net/ajm',
             'Maher_AlMuaiqly_64kbps': 'https://server12.mp3quran.net/maher',
-            'Rewayat_Warsh_128kbps': 'https://server11.mp3quran.net/rayan',
+            'Rewayat_Warsh_128kbps': 'https://server13.mp3quran.net/rayan',
             'Abdurrahmaan_As-Sudais_192kbps': 'https://server11.mp3quran.net/sds',
-            'Saood_ash-Shuraym_64kbps': 'https://server12.mp3quran.net/shur'
+            'Saood_ash-Shuraym_64kbps': 'https://server8.mp3quran.net/shur'
         };
         
         function populateFullSurahSelector() {
@@ -5801,72 +5821,83 @@
                 
                 arabicContainer.appendChild(verseSpan);
                 
-                // Add decorative ayah marker with info icon inside
+                // Add decorative info icon with ayah number outside
                 const ayahMarkerContainer = document.createElement('span');
                 ayahMarkerContainer.style.cssText = `
                     display: inline-flex;
                     align-items: center;
-                    justify-content: center;
-                    position: relative;
+                    gap: 0.25rem;
                     margin: 0 0.3rem;
-                    cursor: pointer;
                 `;
                 
-                // Create the ornamental frame with info icon
-                ayahMarkerContainer.innerHTML = `
-                    <svg width="50" height="30" viewBox="0 0 50 30" style="display: block;">
-                        <!-- Decorative border -->
-                        <path d="M 5,15 Q 5,8 12,8 L 20,8 Q 25,8 25,3 Q 25,8 30,8 L 38,8 Q 45,8 45,15 Q 45,22 38,22 L 30,22 Q 25,22 25,27 Q 25,22 20,22 L 12,22 Q 5,22 5,15 Z" 
-                              fill="none" 
-                              stroke="${isBookmarked ? 'var(--secondary)' : 'rgba(26, 77, 46, 0.6)'}" 
-                              stroke-width="1.5"/>
-                        <!-- Ayah number -->
-                        <text x="25" y="19" 
+                // Create the ornamental info icon (only "i" inside)
+                const infoIcon = document.createElement('span');
+                infoIcon.style.cssText = `
+                    position: relative;
+                    cursor: pointer;
+                    display: inline-block;
+                    transition: transform 0.2s ease;
+                `;
+                
+                infoIcon.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;">
+                        <!-- Decorative circle border -->
+                        <circle cx="12" cy="12" r="9" 
+                                fill="none" 
+                                stroke="${isBookmarked ? 'var(--secondary)' : 'rgba(26, 77, 46, 0.6)'}" 
+                                stroke-width="1.5"/>
+                        <!-- Info "i" icon -->
+                        <text x="12" y="17" 
                               text-anchor="middle" 
-                              font-size="11" 
-                              font-weight="600"
-                              fill="${isBookmarked ? 'var(--secondary)' : 'var(--primary)'}"
-                              style="pointer-events: none; user-select: none;">
-                            ${verse.ayah}
-                        </text>
-                        <!-- Info icon (i) - slightly smaller and positioned above number -->
-                        <text x="25" y="11" 
-                              text-anchor="middle" 
-                              font-size="7" 
+                              font-size="14" 
                               font-weight="700"
-                              fill="rgba(26, 77, 46, 0.5)"
+                              fill="${isBookmarked ? 'var(--secondary)' : 'var(--primary)'}"
                               style="pointer-events: none; user-select: none;">
                             i
                         </text>
                     </svg>
                 `;
                 
-                ayahMarkerContainer.title = 'Click for translation/tafseer';
-                ayahMarkerContainer.onclick = (e) => {
+                infoIcon.title = 'Click for translation/tafseer';
+                infoIcon.onclick = (e) => {
                     e.stopPropagation();
                     showAyahInfo(verse);
                 };
                 
-                // Hover effect for the entire marker
-                ayahMarkerContainer.onmouseenter = () => {
-                    ayahMarkerContainer.style.transform = 'scale(1.15)';
-                    ayahMarkerContainer.style.transition = 'transform 0.2s ease';
-                    const svg = ayahMarkerContainer.querySelector('svg');
-                    const path = svg.querySelector('path');
-                    const texts = svg.querySelectorAll('text');
-                    path.setAttribute('stroke', 'var(--secondary)');
-                    texts[0].setAttribute('fill', 'var(--secondary)');
-                    texts[1].setAttribute('fill', 'var(--secondary)');
+                // Ayah number (outside the icon)
+                const ayahNumber = document.createElement('span');
+                ayahNumber.textContent = verse.ayah;
+                ayahNumber.style.cssText = `
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    color: ${isBookmarked ? 'var(--secondary)' : 'var(--primary)'};
+                    pointer-events: none;
+                    user-select: none;
+                `;
+                
+                // Hover effect for the icon
+                infoIcon.onmouseenter = () => {
+                    infoIcon.style.transform = 'scale(1.2)';
+                    const svg = infoIcon.querySelector('svg');
+                    const circle = svg.querySelector('circle');
+                    const text = svg.querySelector('text');
+                    circle.setAttribute('stroke', 'var(--secondary)');
+                    text.setAttribute('fill', 'var(--secondary)');
+                    ayahNumber.style.color = 'var(--secondary)';
                 };
-                ayahMarkerContainer.onmouseleave = () => {
-                    ayahMarkerContainer.style.transform = 'scale(1)';
-                    const svg = ayahMarkerContainer.querySelector('svg');
-                    const path = svg.querySelector('path');
-                    const texts = svg.querySelectorAll('text');
-                    path.setAttribute('stroke', isBookmarked ? 'var(--secondary)' : 'rgba(26, 77, 46, 0.6)');
-                    texts[0].setAttribute('fill', isBookmarked ? 'var(--secondary)' : 'var(--primary)');
-                    texts[1].setAttribute('fill', 'rgba(26, 77, 46, 0.5)');
+                infoIcon.onmouseleave = () => {
+                    infoIcon.style.transform = 'scale(1)';
+                    const svg = infoIcon.querySelector('svg');
+                    const circle = svg.querySelector('circle');
+                    const text = svg.querySelector('text');
+                    circle.setAttribute('stroke', isBookmarked ? 'var(--secondary)' : 'rgba(26, 77, 46, 0.6)');
+                    text.setAttribute('fill', isBookmarked ? 'var(--secondary)' : 'var(--primary)');
+                    ayahNumber.style.color = isBookmarked ? 'var(--secondary)' : 'var(--primary)';
                 };
+                
+                ayahMarkerContainer.appendChild(infoIcon);
+                ayahMarkerContainer.appendChild(ayahNumber);
+                ayahMarkerContainer.appendChild(document.createTextNode(' '));
                 
                 arabicContainer.appendChild(ayahMarkerContainer);
             });
@@ -6099,12 +6130,15 @@
             updateAccountStats();
             
             // Refresh the page filter dropdown to show updated checkmarks
-            populateFilters();
-            
-            // Restore the selection
-            if (currentSelection) {
-                pageFilter.value = currentSelection;
-            }
+            // Use setTimeout to ensure state updates are complete
+            setTimeout(() => {
+                populateFilters();
+                
+                // Restore the selection
+                if (currentSelection) {
+                    pageFilter.value = currentSelection;
+                }
+            }, 10);
             
             displayVerseWithNavigation(currentVerseIndex);
         }
