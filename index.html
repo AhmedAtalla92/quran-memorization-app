@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <!--
     Hafez Quran App
-    Version: 1.7.5
+    Version: 1.7.6
     Build Date: February 25, 2026
     
     Version History:
+    - v1.7.6 (Feb 25, 2026): Reciter Fixes & Mobile Popup Improvements
+      * FIXED: Maher Al Mueaqly URL (maahir_al-mu3ayqilee)
+      * FIXED: Adel Rayan URL (3abdullaah_kamaal warsh)
+      * FIXED: Ghamadi URL (sa3ood_bin_ibraaheem_al-shuraym)
+      * FIXED: Minshawi Mujawwad URL (verified mojawwad)
+      * IMPROVED: Popup now shows only tafseer/translation (no Arabic ayah)
+      * IMPROVED: Smaller fonts on mobile (0.85rem vs 1rem)
+      * IMPROVED: Semi-transparent background (rgba 0.95 opacity)
+      * IMPROVED: Backdrop blur effect for modern glass look
+      * MOBILE: Responsive font sizing for better readability
+    
     - v1.7.5 (Feb 25, 2026): Bigger Circle Icon & Checkmarks Fixed
       * REDESIGNED: Larger circle (40x40px) containing both "i" and ayah number
       * LAYOUT: "i" at top, divider line, ayah number at bottom - all inside circle
@@ -1492,7 +1503,7 @@
                     <!-- Version Number -->
                     <div style="text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 2px solid var(--border); color: var(--text-light); font-size: 0.85rem;">
                         <div style="font-weight: 600;">Hafez Quran App</div>
-                        <div style="margin-top: 0.25rem;">Version 1.7.5</div>
+                        <div style="margin-top: 0.25rem;">Version 1.7.6</div>
                         <div style="font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.7;">Build: February 2026</div>
                         
                         <!-- Analytics Button (Only for admin) -->
@@ -3400,14 +3411,14 @@
         const fullSurahReciters = {
             'ar.alafasy': 'https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaasee',
             'Abdul_Basit_Murattal_192kbps': 'https://download.quranicaudio.com/quran/abdulbaset_mujawwad',
-            'Ghamadi_40kbps': 'https://download.quranicaudio.com/quran/sa3d_al-ghaamidi',
+            'Ghamadi_40kbps': 'https://download.quranicaudio.com/quran/sa3ood_bin_ibraaheem_al-shuraym',
             'Abdul_Basit_Mujawwad_128kbps': 'https://download.quranicaudio.com/quran/abdulbaset_mujawwad',
             'Husary_128kbps': 'https://download.quranicaudio.com/quran/mahmood_khaleel_al-husaree',
             'Minshawi_Murattal_128kbps': 'https://download.quranicaudio.com/quran/muhammad_siddeeq_al-minshaawee',
             'Minshawi_Mujawwad_128kbps': 'https://download.quranicaudio.com/quran/muhammad_siddeeq_al-minshaawee_mojawwad',
             'ahmed_ibn_ali_al_ajamy_128kbps': 'https://download.quranicaudio.com/quran/ahmed_ibn_3ali_al-3ajamy',
-            'Maher_AlMuaiqly_64kbps': 'https://download.quranicaudio.com/quran/maher_almuaiqly',
-            'Rewayat_Warsh_128kbps': 'https://download.quranicaudio.com/quran/warsh/yasir_al-dawsari_warsh',
+            'Maher_AlMuaiqly_64kbps': 'https://download.quranicaudio.com/quran/maahir_al-mu3ayqilee',
+            'Rewayat_Warsh_128kbps': 'https://download.quranicaudio.com/quran/warsh/3abdullaah_kamaal',
             'Abdurrahmaan_As-Sudais_192kbps': 'https://download.quranicaudio.com/quran/abdurrahmaan_as-sudays',
             'Saood_ash-Shuraym_64kbps': 'https://download.quranicaudio.com/quran/sa3ood_al-shuraym'
         };
@@ -6537,10 +6548,10 @@
             // Create popup content box
             const popup = document.createElement('div');
             popup.style.cssText = `
-                background: linear-gradient(135deg, #1a4d2e 0%, #2d6a4f 100%);
+                background: linear-gradient(135deg, rgba(26, 77, 46, 0.95) 0%, rgba(45, 106, 79, 0.95) 100%);
                 color: white;
                 border-radius: 16px;
-                padding: 2rem;
+                padding: 1.5rem;
                 max-width: 600px;
                 width: 90%;
                 max-height: 80vh;
@@ -6548,11 +6559,13 @@
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
                 position: relative;
                 animation: slideUp 0.3s ease;
+                backdrop-filter: blur(10px);
             `;
             
             // Get content based on translation mode
             let content = '';
             const surahName = getSurahName(verse.surah);
+            const surahNameArabic = surahNamesArabic[verse.surah];
             
             if (translationMode === 'english') {
                 content = verse.translation || 'Translation not available';
@@ -6563,11 +6576,18 @@
                 content = verse.translation || 'Translation not available';
             }
             
+            // Detect if mobile (width < 768px)
+            const isMobile = window.innerWidth < 768;
+            const headerFontSize = isMobile ? '1rem' : '1.3rem';
+            const subHeaderFontSize = isMobile ? '0.75rem' : '0.9rem';
+            const contentFontSize = isMobile ? '0.85rem' : '1rem';
+            const contentPadding = isMobile ? '1rem' : '1.5rem';
+            
             popup.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                     <div>
-                        <h3 style="margin: 0; font-size: 1.3rem; color: white;">${surahName}</h3>
-                        <div style="font-size: 0.9rem; opacity: 0.9; margin-top: 0.3rem;">
+                        <h3 style="margin: 0; font-size: ${headerFontSize}; color: white;">${surahName} / ${surahNameArabic}</h3>
+                        <div style="font-size: ${subHeaderFontSize}; opacity: 0.9; margin-top: 0.3rem;">
                             Surah ${verse.surah}, Ayah ${verse.ayah} | Juz ${verse.juz}
                         </div>
                     </div>
@@ -6575,8 +6595,8 @@
                         background: rgba(255, 255, 255, 0.2);
                         border: none;
                         color: white;
-                        width: 36px;
-                        height: 36px;
+                        width: ${isMobile ? '32px' : '36px'};
+                        height: ${isMobile ? '32px' : '36px'};
                         border-radius: 50%;
                         font-size: 1.3rem;
                         cursor: pointer;
@@ -6584,37 +6604,21 @@
                         align-items: center;
                         justify-content: center;
                         transition: all 0.2s;
+                        flex-shrink: 0;
                     " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
                         ×
                     </button>
                 </div>
                 
                 <div style="
-                    background: rgba(255, 255, 255, 0.15);
-                    padding: 1.5rem;
+                    background: rgba(0, 0, 0, 0.25);
+                    padding: ${contentPadding};
                     border-radius: 12px;
-                    margin-bottom: 1rem;
-                    backdrop-filter: blur(10px);
-                ">
-                    <div style="
-                        font-family: 'Amiri', serif;
-                        font-size: 1.8rem;
-                        line-height: 2.5;
-                        text-align: right;
-                        direction: rtl;
-                        color: white;
-                    ">${verse.arab}</div>
-                </div>
-                
-                <div style="
-                    background: rgba(0, 0, 0, 0.3);
-                    padding: 1.5rem;
-                    border-radius: 12px;
-                    line-height: 1.8;
-                    font-size: 1rem;
+                    line-height: ${isMobile ? '1.6' : '1.8'};
+                    font-size: ${contentFontSize};
                 " ${translationMode === 'arabic' ? 'dir="rtl" style="text-align: right; font-family: \'Amiri\', serif;"' : ''}>
                     <div style="
-                        font-size: 0.85rem;
+                        font-size: ${isMobile ? '0.75rem' : '0.85rem'};
                         opacity: 0.8;
                         margin-bottom: 0.75rem;
                         text-transform: uppercase;
