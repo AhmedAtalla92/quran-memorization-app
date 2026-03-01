@@ -1,10 +1,30 @@
 <!DOCTYPE html>
 <!--
     Hafez Quran App
-    Version: 1.5.3
+    Version: 1.6.2
     Build Date: February 25, 2026
     
     Version History:
+    - v1.6.2 (Feb 25, 2026): Imams of Haram Added
+      * ADDED: Abdul Rahman Al-Sudais / عبد الرحمن السديس
+      * ADDED: Saud Al-Shuraim / سعود الشريم
+      * TOTAL: 11 reciters now available in Full Surah Player
+    
+    - v1.6.1 (Feb 25, 2026): More Reciters Added
+      * ADDED: Ahmed Al Ajmy / أحمد العجمي
+      * ADDED: Maher Al Mueaqly / ماهر المعيقلي
+      * ADDED: Adel Rayan / عادل ريان
+      * TOTAL: 9 reciters now available in Full Surah Player
+    
+    - v1.6.0 (Feb 25, 2026): Full Surah Player
+      * ADDED: Complete Surah player with continuous flow recitation
+      * ADDED: 6 reciter options (Alafasy, Abdul Basit, Ghamadi, Husary, Minshawi, etc.)
+      * ADDED: All 114 Surahs available for selection
+      * ADDED: Play/Pause/Stop controls with visual feedback
+      * ADDED: "Now Playing" display showing current Surah and reciter
+      * IMPROVED: Horizontal layout for clean, compact controls
+      * FEATURE: Full continuous recitation (not ayah-by-ayah)
+    
     - v1.5.3 (Feb 25, 2026): Analytics Filters Working
       * FIXED: Analytics timeframe filters now work correctly (Today/Week/Month/All)
       * FIXED: Active user stats now update based on selected timeframe
@@ -1421,7 +1441,7 @@
                     <!-- Version Number -->
                     <div style="text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 2px solid var(--border); color: var(--text-light); font-size: 0.85rem;">
                         <div style="font-weight: 600;">Hafez Quran App</div>
-                        <div style="margin-top: 0.25rem;">Version 1.5.3</div>
+                        <div style="margin-top: 0.25rem;">Version 1.6.2</div>
                         <div style="font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.7;">Build: February 2026</div>
                         
                         <!-- Analytics Button (Only for admin) -->
@@ -1602,6 +1622,71 @@
                         <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">
                             <span id="randomSurahProgress">Ayah 1</span> • <span id="randomSurahTotal"></span>
                         </div>
+                    </div>
+                </div>
+                
+                <!-- Full Surah Player -->
+                <div id="fullSurahPlayerSection" style="margin-bottom: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 15%); border-radius: 12px; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);">
+                    <h3 style="color: white; margin: 0 0 1rem 0; text-align: center; font-size: 1.2rem;">
+                        🎧 Full Surah Player / مشغل السورة كاملة
+                    </h3>
+                    
+                    <!-- Reciter and Surah Selection (Horizontal) -->
+                    <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <!-- Reciter Selection -->
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; color: white; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem;">
+                                Reciter / القارئ
+                            </label>
+                            <select id="fullSurahReciter" onchange="updateFullSurahReciter()" style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.95); font-size: 0.95rem; font-weight: 600;">
+                                <option value="ar.alafasy">Mishary Alafasy / مشاري العفاسي</option>
+                                <option value="Abdul_Basit_Murattal_192kbps">Abdul Basit / عبد الباسط</option>
+                                <option value="Ghamadi_40kbps">Ghamadi / الغامدي</option>
+                                <option value="Abdul_Basit_Mujawwad_128kbps">Abdul Basit Mujawwad / مجود</option>
+                                <option value="Husary_128kbps">Husary / الحصري</option>
+                                <option value="Minshawi_Murattal_128kbps">Minshawi / المنشاوي</option>
+                                <option value="ahmed_ibn_ali_al_ajamy_128kbps">Ahmed Al Ajmy / أحمد العجمي</option>
+                                <option value="Maher_AlMuaiqly_64kbps">Maher Al Mueaqly / ماهر المعيقلي</option>
+                                <option value="Rewayat_Warsh_128kbps">Adel Rayan / عادل ريان</option>
+                                <option value="Abdurrahmaan_As-Sudais_192kbps">Abdul Rahman Al-Sudais / عبد الرحمن السديس</option>
+                                <option value="Saood_ash-Shuraym_64kbps">Saud Al-Shuraim / سعود الشريم</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Surah Selection -->
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; color: white; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem;">
+                                Surah / السورة
+                            </label>
+                            <select id="fullSurahSelector" onchange="updateFullSurahSelection()" style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.95); font-size: 0.95rem; font-weight: 600;">
+                                <option value="">Select Surah / اختر سورة</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Playback Controls (Horizontal) -->
+                    <div style="display: flex; gap: 0.75rem; align-items: center; justify-content: center;">
+                        <button id="fullSurahPlayBtn" onclick="playFullSurah()" disabled style="flex: 1; max-width: 150px; background: #28a745; color: white; border: none; padding: 0.85rem 1.2rem; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; opacity: 0.5;">
+                            <span style="font-size: 1.2rem;">▶</span>
+                            <span>Play</span>
+                        </button>
+                        
+                        <button id="fullSurahPauseBtn" onclick="pauseFullSurah()" disabled style="flex: 1; max-width: 150px; background: #ffc107; color: white; border: none; padding: 0.85rem 1.2rem; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; opacity: 0.5;">
+                            <span style="font-size: 1.2rem;">⏸</span>
+                            <span>Pause</span>
+                        </button>
+                        
+                        <button id="fullSurahStopBtn" onclick="stopFullSurah()" disabled style="flex: 1; max-width: 150px; background: #dc3545; color: white; border: none; padding: 0.85rem 1.2rem; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; opacity: 0.5;">
+                            <span style="font-size: 1.2rem;">⏹</span>
+                            <span>Stop</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Now Playing Info -->
+                    <div id="fullSurahNowPlaying" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.15); border-radius: 8px; backdrop-filter: blur(10px); text-align: center;">
+                        <div style="color: white; font-size: 0.85rem; margin-bottom: 0.3rem; opacity: 0.9;">Now Playing</div>
+                        <div id="fullSurahCurrentName" style="color: white; font-size: 1.1rem; font-weight: 700;"></div>
+                        <div id="fullSurahCurrentReciter" style="color: white; font-size: 0.9rem; margin-top: 0.3rem; opacity: 0.85;"></div>
                     </div>
                 </div>
                 
@@ -3248,6 +3333,192 @@
             btn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
         }
         
+        // ══════════════════════════════════════════════════════════════
+        // FULL SURAH PLAYER (Continuous Flow Recitation)
+        // ══════════════════════════════════════════════════════════════
+        
+        let fullSurahAudio = null;
+        let fullSurahReciter = 'ar.alafasy';
+        let fullSurahNumber = null;
+        
+        // Full Surah audio URLs (continuous recitation, not by ayah)
+        const fullSurahReciters = {
+            'ar.alafasy': 'https://server8.mp3quran.net/afs',
+            'Abdul_Basit_Murattal_192kbps': 'https://server7.mp3quran.net/basit',
+            'Ghamadi_40kbps': 'https://server11.mp3quran.net/gmd',
+            'Abdul_Basit_Mujawwad_128kbps': 'https://server13.mp3quran.net/basit/Mujawwad',
+            'Husary_128kbps': 'https://server6.mp3quran.net/husary',
+            'Minshawi_Murattal_128kbps': 'https://server10.mp3quran.net/minsh',
+            'ahmed_ibn_ali_al_ajamy_128kbps': 'https://server12.mp3quran.net/ajm',
+            'Maher_AlMuaiqly_64kbps': 'https://server12.mp3quran.net/maher',
+            'Rewayat_Warsh_128kbps': 'https://server11.mp3quran.net/rayan',
+            'Abdurrahmaan_As-Sudais_192kbps': 'https://server11.mp3quran.net/sds',
+            'Saood_ash-Shuraym_64kbps': 'https://server12.mp3quran.net/shr'
+        };
+        
+        function populateFullSurahSelector() {
+            const selector = document.getElementById('fullSurahSelector');
+            selector.innerHTML = '<option value="">Select Surah / اختر سورة</option>';
+            
+            for (let i = 1; i <= 114; i++) {
+                const surahName = getSurahName(i);
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i}. ${surahName}`;
+                selector.appendChild(option);
+            }
+        }
+        
+        function updateFullSurahReciter() {
+            fullSurahReciter = document.getElementById('fullSurahReciter').value;
+            console.log('Full Surah reciter changed to:', fullSurahReciter);
+            
+            // Stop current playback if any
+            if (fullSurahAudio) {
+                stopFullSurah();
+            }
+        }
+        
+        function updateFullSurahSelection() {
+            const selector = document.getElementById('fullSurahSelector');
+            fullSurahNumber = parseInt(selector.value);
+            
+            // Enable/disable buttons based on selection
+            const playBtn = document.getElementById('fullSurahPlayBtn');
+            const pauseBtn = document.getElementById('fullSurahPauseBtn');
+            const stopBtn = document.getElementById('fullSurahStopBtn');
+            
+            if (fullSurahNumber) {
+                playBtn.disabled = false;
+                playBtn.style.opacity = '1';
+                playBtn.style.cursor = 'pointer';
+            } else {
+                playBtn.disabled = true;
+                playBtn.style.opacity = '0.5';
+                playBtn.style.cursor = 'not-allowed';
+                pauseBtn.disabled = true;
+                pauseBtn.style.opacity = '0.5';
+                pauseBtn.style.cursor = 'not-allowed';
+                stopBtn.disabled = true;
+                stopBtn.style.opacity = '0.5';
+                stopBtn.style.cursor = 'not-allowed';
+            }
+            
+            console.log('Full Surah selected:', fullSurahNumber, getSurahName(fullSurahNumber));
+        }
+        
+        function playFullSurah() {
+            if (!fullSurahNumber) {
+                alert('Please select a Surah first');
+                return;
+            }
+            
+            // Stop random surah if playing
+            if (randomSurahPlaying) {
+                stopRandomSurah();
+            }
+            
+            // Stop any current audio
+            if (fullSurahAudio) {
+                fullSurahAudio.pause();
+            }
+            
+            // Build URL for full surah
+            const baseUrl = fullSurahReciters[fullSurahReciter];
+            const surahNumPadded = String(fullSurahNumber).padStart(3, '0');
+            const audioUrl = `${baseUrl}/${surahNumPadded}.mp3`;
+            
+            console.log('Playing full surah:', audioUrl);
+            
+            // Create and play audio
+            fullSurahAudio = new Audio(audioUrl);
+            fullSurahAudio.volume = 0.9;
+            
+            fullSurahAudio.play().catch(error => {
+                console.error('Error playing full surah:', error);
+                alert('Failed to play surah. Please try again.');
+            });
+            
+            // Update UI
+            const playBtn = document.getElementById('fullSurahPlayBtn');
+            const pauseBtn = document.getElementById('fullSurahPauseBtn');
+            const stopBtn = document.getElementById('fullSurahStopBtn');
+            
+            playBtn.disabled = true;
+            playBtn.style.opacity = '0.5';
+            pauseBtn.disabled = false;
+            pauseBtn.style.opacity = '1';
+            pauseBtn.style.cursor = 'pointer';
+            stopBtn.disabled = false;
+            stopBtn.style.opacity = '1';
+            stopBtn.style.cursor = 'pointer';
+            
+            // Show now playing info
+            const nowPlaying = document.getElementById('fullSurahNowPlaying');
+            const currentName = document.getElementById('fullSurahCurrentName');
+            const currentReciter = document.getElementById('fullSurahCurrentReciter');
+            
+            nowPlaying.style.display = 'block';
+            currentName.textContent = getSurahName(fullSurahNumber);
+            
+            // Get reciter display name
+            const reciterSelect = document.getElementById('fullSurahReciter');
+            const reciterDisplayName = reciterSelect.options[reciterSelect.selectedIndex].text;
+            currentReciter.textContent = reciterDisplayName;
+            
+            // Handle audio end
+            fullSurahAudio.onended = () => {
+                stopFullSurah();
+            };
+        }
+        
+        function pauseFullSurah() {
+            if (fullSurahAudio) {
+                fullSurahAudio.pause();
+                
+                // Update button states
+                const playBtn = document.getElementById('fullSurahPlayBtn');
+                const pauseBtn = document.getElementById('fullSurahPauseBtn');
+                
+                playBtn.disabled = false;
+                playBtn.style.opacity = '1';
+                playBtn.style.cursor = 'pointer';
+                playBtn.innerHTML = '<span style="font-size: 1.2rem;">▶</span><span>Resume</span>';
+                
+                pauseBtn.disabled = true;
+                pauseBtn.style.opacity = '0.5';
+                pauseBtn.style.cursor = 'not-allowed';
+            }
+        }
+        
+        function stopFullSurah() {
+            if (fullSurahAudio) {
+                fullSurahAudio.pause();
+                fullSurahAudio = null;
+            }
+            
+            // Reset UI
+            const playBtn = document.getElementById('fullSurahPlayBtn');
+            const pauseBtn = document.getElementById('fullSurahPauseBtn');
+            const stopBtn = document.getElementById('fullSurahStopBtn');
+            const nowPlaying = document.getElementById('fullSurahNowPlaying');
+            
+            playBtn.disabled = false;
+            playBtn.style.opacity = '1';
+            playBtn.style.cursor = 'pointer';
+            playBtn.innerHTML = '<span style="font-size: 1.2rem;">▶</span><span>Play</span>';
+            
+            pauseBtn.disabled = true;
+            pauseBtn.style.opacity = '0.5';
+            pauseBtn.style.cursor = 'not-allowed';
+            
+            stopBtn.disabled = true;
+            stopBtn.style.opacity = '0.5';
+            stopBtn.style.cursor = 'not-allowed';
+            
+            nowPlaying.style.display = 'none';
+        }
+        
         function updateUILanguage() {
             const t = translations[language];
             
@@ -4060,6 +4331,7 @@
             await loadQuranData();
             populateFilters();
             populateReciters(); // Populate reciter names based on language
+            populateFullSurahSelector(); // Populate full surah player selector
             loadAthanSettings(); // Load athan preferences
             // Silently load prayer times in background for athan auto-play
             setTimeout(() => {
