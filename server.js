@@ -496,6 +496,153 @@ app.get('/analytics', async (req, res) => {
     }
 });
 
+
+// ==================== PIN CODE ENDPOINTS ====================
+
+const crypto = require('crypto');
+
+// Hash PIN with SHA-256
+function hashPin(pin) {
+    return crypto.createHash('sha256').update(pin).digest('hex');
+}
+
+// Save PIN
+app.post('/save-pin', async (req, res) => {
+    try {
+        const { email, pin } = req.body;
+        
+        if (!email || !pin) {
+            return res.status(400).json({ success: false, error: 'Email and PIN required' });
+        }
+        
+        // Validate PIN format
+        if (!/^\d{6}$/.test(pin)) {
+            return res.status(400).json({ success: false, error: 'PIN must be 6 digits' });
+        }
+        
+        // Hash the PIN
+        const hashedPin = hashPin(pin);
+        
+        // Update user's PIN
+        const result = await pool.query(
+            'UPDATE users SET pin_code = $1, updated_at = CURRENT_TIMESTAMP WHERE email = $2',
+            [hashedPin, email]
+        );
+        
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+        
+        console.log('✅ PIN saved for:', email);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ Save PIN error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Remove PIN
+app.post('/remove-pin', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ success: false, error: 'Email required' });
+        }
+        
+        // Remove PIN from user
+        const result = await pool.query(
+            'UPDATE users SET pin_code = NULL, updated_at = CURRENT_TIMESTAMP WHERE email = $1',
+            [email]
+        );
+        
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+        
+        console.log('✅ PIN removed for:', email);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ Remove PIN error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Check if user has PIN
+app.get('/check-pin/:email', async (req, res) => {
+    try {
+        const { email } = req.params;
+        
+        if (!email) {
+            return res.status(400).json({ success: false, error: 'Email required' });
+        }
+        
+        const result = await pool.query(
+            'SELECT pin_code FROM users WHERE email = $1',
+            [email]
+        );
+        
+        const hasPin = result.rows.length > 0 && result.rows[0].pin_code !== null;
+        
+        res.json({ success: true, hasPin });
+    } catch (error) {
+        console.error('❌ Check PIN error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Verify PIN for login
+app.post('/verify-pin', async (req, res) => {
+    try {
+        const { email, pin } = req.body;
+        
+        if (!email || !pin) {
+            return res.status(400).json({ success: false, error: 'Email and PIN required' });
+        }
+        
+        // Validate PIN format
+        if (!/^\d{6}$/.test(pin)) {
+            return res.status(400).json({ success: false, error: 'Invalid PIN format' });
+        }
+        
+        // Hash the provided PIN
+        const hashedPin = hashPin(pin);
+        
+        // Check against stored PIN
+        const result = await pool.query(
+            'SELECT pin_code FROM users WHERE email = $1',
+            [email]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+        
+        const storedPin = result.rows[0].pin_code;
+        
+        if (!storedPin) {
+            return res.status(400).json({ success: false, error: 'No PIN set for this user' });
+        }
+        
+        if (storedPin === hashedPin) {
+            // Update last active
+            await pool.query(
+                'UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE email = $1',
+                [email]
+            );
+            
+            console.log('✅ PIN login successful:', email);
+            res.json({ success: true });
+        } else {
+            console.log('❌ Invalid PIN for:', email);
+            res.json({ success: false, error: 'Invalid PIN' });
+        }
+    } catch (error) {
+        console.error('❌ Verify PIN error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
