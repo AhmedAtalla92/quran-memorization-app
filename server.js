@@ -108,6 +108,11 @@ async function initDB() {
                 END IF;
                 
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name='users' AND column_name='pin_code') THEN
+                    ALTER TABLE users ADD COLUMN pin_code VARCHAR(64);
+                END IF;
+                
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                               WHERE table_name='user_progress' AND column_name='is_bookmarked') THEN
                     ALTER TABLE user_progress ADD COLUMN is_bookmarked BOOLEAN DEFAULT false;
                 END IF;
