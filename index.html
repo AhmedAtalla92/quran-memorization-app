@@ -1953,15 +1953,50 @@
                                 <span id="fullSurahCurrentTime" style="color: white; font-size: 0.85rem; opacity: 0.9;">0:00</span>
                                 <span id="fullSurahDuration" style="color: white; font-size: 0.85rem; opacity: 0.9;">0:00</span>
                             </div>
-                            <div 
-                                style="width: 100%; height: 10px; background: rgba(255,255,255,0.2); border-radius: 10px; cursor: pointer; transition: height 0.2s; position: relative;" 
+                            <!-- HTML5 Range Slider for seeking -->
+                            <input 
+                                type="range" 
                                 id="fullSurahProgressBar" 
-                                onclick="seekFullSurah(event)" 
-                                onmouseover="this.style.height='14px'; this.style.background='rgba(255,255,255,0.3)'" 
-                                onmouseout="this.style.height='10px'; this.style.background='rgba(255,255,255,0.2)'"
-                                title="Click anywhere to jump to that position">
-                                <div id="fullSurahProgress" style="height: 100%; width: 0%; background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); border-radius: 10px; transition: width 0.1s; pointer-events: none;"></div>
-                            </div>
+                                min="0" 
+                                max="100" 
+                                value="0" 
+                                step="0.1"
+                                style="width: 100%; height: 10px; cursor: pointer; -webkit-appearance: none; appearance: none; background: rgba(255,255,255,0.2); border-radius: 10px; outline: none;"
+                                oninput="seekFullSurahSlider(this.value)"
+                                onmouseover="this.style.height='14px'"
+                                onmouseout="this.style.height='10px'">
+                            <style>
+                                /* Custom slider thumb */
+                                #fullSurahProgressBar::-webkit-slider-thumb {
+                                    -webkit-appearance: none;
+                                    appearance: none;
+                                    width: 16px;
+                                    height: 16px;
+                                    border-radius: 50%;
+                                    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+                                    cursor: pointer;
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                                }
+                                #fullSurahProgressBar::-moz-range-thumb {
+                                    width: 16px;
+                                    height: 16px;
+                                    border-radius: 50%;
+                                    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+                                    cursor: pointer;
+                                    border: none;
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                                }
+                                /* Track fill */
+                                #fullSurahProgressBar::-webkit-slider-runnable-track {
+                                    height: 10px;
+                                    border-radius: 10px;
+                                    background: linear-gradient(to right, 
+                                        #4facfe 0%, 
+                                        #00f2fe var(--progress-width, 0%), 
+                                        rgba(255,255,255,0.2) var(--progress-width, 0%), 
+                                        rgba(255,255,255,0.2) 100%);
+                                }
+                            </style>
                         </div>
                     </div>
                 </div>
@@ -3833,8 +3868,10 @@
             
             nowPlaying.style.display = 'none';
             
-            // Reset progress bar
-            document.getElementById('fullSurahProgress').style.width = '0%';
+            // Reset progress slider
+            const slider = document.getElementById('fullSurahProgressBar');
+            slider.value = 0;
+            slider.style.setProperty('--progress-width', '0%');
             document.getElementById('fullSurahCurrentTime').textContent = '0:00';
             document.getElementById('fullSurahDuration').textContent = '0:00';
         }
@@ -3856,11 +3893,24 @@
             // Update time displays
             document.getElementById('fullSurahCurrentTime').textContent = formatTime(currentTime);
             
-            // Update progress bar
+            // Update slider position
             if (duration > 0) {
                 const progress = (currentTime / duration) * 100;
-                document.getElementById('fullSurahProgress').style.width = progress + '%';
+                const slider = document.getElementById('fullSurahProgressBar');
+                slider.value = progress;
+                // Update CSS variable for gradient
+                slider.style.setProperty('--progress-width', progress + '%');
             }
+        }
+        
+        function seekFullSurahSlider(value) {
+            if (!fullSurahAudio || !fullSurahAudio.duration) return;
+            
+            const percentage = value / 100;
+            const newTime = percentage * fullSurahAudio.duration;
+            
+            console.log('🎯 Slider seeking to:', (percentage * 100).toFixed(1) + '%', '→', formatTime(newTime));
+            fullSurahAudio.currentTime = newTime;
         }
         
         function seekFullSurah(event) {
