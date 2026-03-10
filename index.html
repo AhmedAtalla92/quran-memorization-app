@@ -1573,46 +1573,6 @@
                         </button>
                     </div>
                     
-                    <!-- PIN Code Security Section -->
-                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border);">
-                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem;">
-                            🔐 Quick Login PIN / رمز الدخول السريع
-                        </h3>
-                        
-                        <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                            <p style="font-size: 0.9rem; color: var(--text); margin: 0;">
-                                Set a 6-digit PIN to login quickly without email verification.
-                            </p>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="font-size: 0.85rem;">PIN Code (6 digits) / رمز PIN</label>
-                            <div style="display: flex; gap: 0.75rem; align-items: end;">
-                                <input 
-                                    type="password"
-                                    id="pinCodeInput" 
-                                    maxlength="6"
-                                    pattern="[0-9]*"
-                                    inputmode="numeric"
-                                    placeholder="Enter 6-digit PIN"
-                                    style="flex: 1; font-size: 1.2rem; text-align: center; letter-spacing: 0.3rem; font-weight: 600;">
-                                <button onclick="togglePinVisibility()" type="button" style="padding: 0.75rem 1rem; background: var(--text-light);">
-                                    👁️
-                                </button>
-                                <button onclick="savePinCode()" type="button" style="padding: 0.75rem 1.5rem; background: var(--success); font-weight: 600;">
-                                    Save PIN
-                                </button>
-                            </div>
-                            <small id="pinStatus" style="color: var(--text-light); display: block; margin-top: 0.5rem;">
-                                No PIN set
-                            </small>
-                        </div>
-                        
-                        <button id="removePinBtn" onclick="removePinCode()" type="button" style="display: none; background: var(--error); padding: 0.6rem 1.2rem; font-size: 0.9rem; margin-top: 0.5rem;">
-                            Remove PIN
-                        </button>
-                    </div>
-                    
                     <!-- Athan Settings -->
                     <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border);">
                         <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem;">
@@ -1943,8 +1903,10 @@
                                 <option value="Abdul_Basit_Mujawwad_128kbps">Abdul Basit Mujawwad / عبد الباسط مجود</option>
                                 <option value="Husary_128kbps">Husary / الحصري</option>
                                 <option value="Minshawi_Murattal_128kbps">Minshawi Murattal / المنشاوي مرتل</option>
+                                <option value="Minshawi_Mujawwad_128kbps">Minshawi Mujawwad / المنشاوي مجود</option>
                                 <option value="ahmed_ibn_ali_al_ajamy_128kbps">Ahmed Al Ajmy / أحمد العجمي</option>
                                 <option value="Maher_AlMuaiqly_64kbps">Maher Al Mueaqly / ماهر المعيقلي</option>
+                                <option value="Adel_Rayan_Warsh">Adel Rayan (Warsh) / عادل ريان</option>
                                 <option value="Abdurrahmaan_As-Sudais_192kbps">Abdul Rahman Al-Sudais / عبد الرحمن السديس</option>
                                 <option value="Saood_ash-Shuraym_64kbps">Saud Al-Shuraim / سعود الشريم</option>
                             </select>
@@ -1984,6 +1946,17 @@
                         <div style="color: white; font-size: 0.85rem; margin-bottom: 0.3rem; opacity: 0.9;">Now Playing</div>
                         <div id="fullSurahCurrentName" style="color: white; font-size: 1.1rem; font-weight: 700;"></div>
                         <div id="fullSurahCurrentReciter" style="color: white; font-size: 0.9rem; margin-top: 0.3rem; opacity: 0.85;"></div>
+                        
+                        <!-- Progress Bar -->
+                        <div style="margin-top: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span id="fullSurahCurrentTime" style="color: white; font-size: 0.85rem; opacity: 0.9;">0:00</span>
+                                <span id="fullSurahDuration" style="color: white; font-size: 0.85rem; opacity: 0.9;">0:00</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden; cursor: pointer;" id="fullSurahProgressBar" onclick="seekFullSurah(event)">
+                                <div id="fullSurahProgress" style="height: 100%; width: 0%; background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); border-radius: 10px; transition: width 0.1s;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -3651,15 +3624,12 @@
             'Maher_AlMuaiqly_64kbps': 'https://server12.mp3quran.net/maher',
             'Abdurrahmaan_As-Sudais_192kbps': 'https://server11.mp3quran.net/sds',
             
-            // Working reciters on quranicaudio.com (3 reciters)
+            // Working reciters on quranicaudio.com (5 reciters)
             'Abdul_Basit_Mujawwad_128kbps': 'https://download.quranicaudio.com/quran/abdulbaset_mujawwad',
             'Husary_128kbps': 'https://download.quranicaudio.com/quran/mahmood_khaleel_al-husaree',
-            'Saood_ash-Shuraym_64kbps': 'https://download.quranicaudio.com/quran/sa3ood_al-shuraym'
-            
-            // REMOVED (no working URLs available):
-            // - Ghamadi
-            // - Minshawi Mujawwad 
-            // - Adel Rayan (Warsh)
+            'Saood_ash-Shuraym_64kbps': 'https://download.quranicaudio.com/quran/sa3ood_al-shuraym',
+            'Minshawi_Mujawwad_128kbps': 'https://server10.mp3quran.net/minsh/Mujawwad',
+            'Adel_Rayan_Warsh': 'https://server11.mp3quran.net/warsh_ad'
         };
         
         function populateFullSurahSelector() {
@@ -3742,6 +3712,13 @@
             // Create and play audio
             fullSurahAudio = new Audio(audioUrl);
             fullSurahAudio.volume = 0.9;
+            
+            // Add progress tracking
+            fullSurahAudio.addEventListener('timeupdate', updateFullSurahProgress);
+            fullSurahAudio.addEventListener('loadedmetadata', () => {
+                const duration = formatTime(fullSurahAudio.duration);
+                document.getElementById('fullSurahDuration').textContent = duration;
+            });
             
             fullSurahAudio.play().catch(error => {
                 console.error('Error playing full surah:', error);
@@ -3827,6 +3804,47 @@
             stopBtn.style.cursor = 'not-allowed';
             
             nowPlaying.style.display = 'none';
+            
+            // Reset progress bar
+            document.getElementById('fullSurahProgress').style.width = '0%';
+            document.getElementById('fullSurahCurrentTime').textContent = '0:00';
+            document.getElementById('fullSurahDuration').textContent = '0:00';
+        }
+        
+        // Full Surah Progress Bar Functions
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function updateFullSurahProgress() {
+            if (!fullSurahAudio) return;
+            
+            const currentTime = fullSurahAudio.currentTime;
+            const duration = fullSurahAudio.duration;
+            
+            // Update time displays
+            document.getElementById('fullSurahCurrentTime').textContent = formatTime(currentTime);
+            
+            // Update progress bar
+            if (duration > 0) {
+                const progress = (currentTime / duration) * 100;
+                document.getElementById('fullSurahProgress').style.width = progress + '%';
+            }
+        }
+        
+        function seekFullSurah(event) {
+            if (!fullSurahAudio) return;
+            
+            const progressBar = document.getElementById('fullSurahProgressBar');
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const width = rect.width;
+            const percentage = clickX / width;
+            
+            fullSurahAudio.currentTime = percentage * fullSurahAudio.duration;
         }
         
         function updateUILanguage() {
