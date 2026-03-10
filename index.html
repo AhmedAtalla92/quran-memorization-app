@@ -7172,24 +7172,46 @@
                 return;
             }
             
+            console.log('🔐 Starting PIN login...');
+            const startTime = Date.now();
+            
             // Show loading state
             loginBtn.disabled = true;
-            loginBtn.textContent = 'Logging in...';
+            loginBtn.textContent = 'Verifying PIN...';
             loginBtn.style.opacity = '0.7';
             
             try {
+                // Add timeout to detect slow server
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                
+                console.log('📡 Sending PIN verification request...');
+                const fetchStart = Date.now();
+                
                 const response = await fetch('https://quran-memorization-app-1.onrender.com/verify-pin', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, pin })
+                    body: JSON.stringify({ email, pin }),
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
+                console.log(`✅ PIN verified in ${Date.now() - fetchStart}ms`);
                 
                 const result = await response.json();
                 
                 if (result.success) {
+                    loginBtn.textContent = 'Loading your data...';
+                    console.log('📚 Loading user data...');
+                    const loadStart = Date.now();
+                    
                     currentUser = email;
                     localStorage.setItem('quranAppUser', currentUser);
                     await loadUserData();
+                    
+                    console.log(`✅ Data loaded in ${Date.now() - loadStart}ms`);
+                    console.log(`🎉 Total login time: ${Date.now() - startTime}ms`);
+                    
                     document.getElementById('loginForm').style.display = 'none';
                     document.getElementById('accountDashboard').style.display = 'block';
                     document.getElementById('welcomeMessage').innerHTML = `
@@ -7199,12 +7221,18 @@
                     updatePinStatus();
                     showPage('memorize');
                 } else {
+                    console.log('❌ Invalid PIN');
                     alert('Invalid PIN. Please try again.');
                     document.getElementById('pinLogin').value = '';
                 }
             } catch (error) {
-                console.error('PIN login error:', error);
-                alert('Login failed. Please try again.');
+                console.error('❌ PIN login error:', error);
+                console.log(`Total time before error: ${Date.now() - startTime}ms`);
+                if (error.name === 'AbortError') {
+                    alert('Login is taking too long (>30s). The server might be waking up. Please try again in a moment.');
+                } else {
+                    alert('Login failed: ' + error.message);
+                }
             } finally {
                 // Reset button state
                 loginBtn.disabled = false;
