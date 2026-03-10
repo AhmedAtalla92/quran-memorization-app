@@ -1903,7 +1903,9 @@
                                 <option value="Abdul_Basit_Mujawwad_128kbps">Abdul Basit Mujawwad / عبد الباسط مجود</option>
                                 <option value="Husary_128kbps">Husary / الحصري</option>
                                 <option value="Minshawi_Murattal_128kbps">Minshawi Murattal / المنشاوي مرتل</option>
+                                <option value="Minshawi_Mujawwad_128kbps">Minshawi Mujawwad / المنشاوي مجود</option>
                                 <option value="ahmed_ibn_ali_al_ajamy_128kbps">Ahmed Al Ajmy / أحمد العجمي</option>
+                                <option value="Ghamadi_40kbps">Saad Al-Ghamadi / سعد الغامدي</option>
                                 <option value="Maher_AlMuaiqly_64kbps">Maher Al Mueaqly / ماهر المعيقلي</option>
                                 <option value="Abdurrahmaan_As-Sudais_192kbps">Abdul Rahman Al-Sudais / عبد الرحمن السديس</option>
                                 <option value="Saood_ash-Shuraym_64kbps">Saud Al-Shuraim / سعود الشريم</option>
@@ -1951,7 +1953,13 @@
                                 <span id="fullSurahCurrentTime" style="color: white; font-size: 0.85rem; opacity: 0.9;">0:00</span>
                                 <span id="fullSurahDuration" style="color: white; font-size: 0.85rem; opacity: 0.9;">0:00</span>
                             </div>
-                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden; cursor: pointer;" id="fullSurahProgressBar" onclick="seekFullSurah(event)">
+                            <div 
+                                style="width: 100%; height: 10px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden; cursor: pointer; transition: height 0.2s;" 
+                                id="fullSurahProgressBar" 
+                                onclick="seekFullSurah(event)" 
+                                onmouseover="this.style.height='14px'" 
+                                onmouseout="this.style.height='10px'"
+                                title="Click anywhere to jump to that position">
                                 <div id="fullSurahProgress" style="height: 100%; width: 0%; background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); border-radius: 10px; transition: width 0.1s;"></div>
                             </div>
                         </div>
@@ -3614,18 +3622,20 @@
         
         // Full Surah audio URLs (continuous recitation, not by ayah)
         const fullSurahReciters = {
-            // Working reciters on mp3quran.net (6 reciters)
+            // Working reciters on mp3quran.net (7 reciters)
             'ar.alafasy': 'https://server8.mp3quran.net/afs',
             'Abdul_Basit_Murattal_192kbps': 'https://server7.mp3quran.net/basit',
             'Minshawi_Murattal_128kbps': 'https://server10.mp3quran.net/minsh',
             'ahmed_ibn_ali_al_ajamy_128kbps': 'https://server10.mp3quran.net/ajm',
             'Maher_AlMuaiqly_64kbps': 'https://server12.mp3quran.net/maher',
             'Abdurrahmaan_As-Sudais_192kbps': 'https://server11.mp3quran.net/sds',
+            'Ghamadi_40kbps': 'https://server7.mp3quran.net/s_gmd',
             
-            // Working reciters on quranicaudio.com (3 reciters)
+            // Working reciters on quranicaudio.com (4 reciters)
             'Abdul_Basit_Mujawwad_128kbps': 'https://download.quranicaudio.com/quran/abdulbaset_mujawwad',
             'Husary_128kbps': 'https://download.quranicaudio.com/quran/mahmood_khaleel_al-husaree',
-            'Saood_ash-Shuraym_64kbps': 'https://download.quranicaudio.com/quran/sa3ood_al-shuraym'
+            'Saood_ash-Shuraym_64kbps': 'https://download.quranicaudio.com/quran/sa3ood_al-shuraym',
+            'Minshawi_Mujawwad_128kbps': 'https://download.quranicaudio.com/quran/minshawi_mujawwad'
         };
         
         function populateFullSurahSelector() {
@@ -3854,15 +3864,42 @@
         }
         
         function seekFullSurah(event) {
-            if (!fullSurahAudio) return;
+            console.log('🖱️ Progress bar clicked!');
+            
+            if (!fullSurahAudio) {
+                console.log('❌ Cannot seek: No audio object exists');
+                alert('Please play a surah first before seeking');
+                return;
+            }
+            
+            if (!fullSurahAudio.duration || isNaN(fullSurahAudio.duration)) {
+                console.log('❌ Cannot seek: Audio not loaded yet (duration:', fullSurahAudio.duration, ')');
+                alert('Audio is still loading. Please wait a moment.');
+                return;
+            }
             
             const progressBar = document.getElementById('fullSurahProgressBar');
             const rect = progressBar.getBoundingClientRect();
             const clickX = event.clientX - rect.left;
             const width = rect.width;
-            const percentage = clickX / width;
+            const percentage = Math.max(0, Math.min(1, clickX / width)); // Clamp between 0 and 1
+            const newTime = percentage * fullSurahAudio.duration;
             
-            fullSurahAudio.currentTime = percentage * fullSurahAudio.duration;
+            console.log('🎯 Seeking:');
+            console.log('  Click X:', clickX, 'px');
+            console.log('  Bar width:', width, 'px');
+            console.log('  Percentage:', (percentage * 100).toFixed(1) + '%');
+            console.log('  Current time:', formatTime(fullSurahAudio.currentTime));
+            console.log('  New time:', formatTime(newTime));
+            console.log('  Duration:', formatTime(fullSurahAudio.duration));
+            
+            try {
+                fullSurahAudio.currentTime = newTime;
+                console.log('✅ Seek successful! New position:', formatTime(fullSurahAudio.currentTime));
+            } catch (error) {
+                console.error('❌ Seek failed:', error);
+                alert('Failed to seek: ' + error.message);
+            }
         }
         
         function updateUILanguage() {
