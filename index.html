@@ -1903,10 +1903,8 @@
                                 <option value="Abdul_Basit_Mujawwad_128kbps">Abdul Basit Mujawwad / عبد الباسط مجود</option>
                                 <option value="Husary_128kbps">Husary / الحصري</option>
                                 <option value="Minshawi_Murattal_128kbps">Minshawi Murattal / المنشاوي مرتل</option>
-                                <option value="Minshawi_Mujawwad_128kbps">Minshawi Mujawwad / المنشاوي مجود</option>
                                 <option value="ahmed_ibn_ali_al_ajamy_128kbps">Ahmed Al Ajmy / أحمد العجمي</option>
                                 <option value="Maher_AlMuaiqly_64kbps">Maher Al Mueaqly / ماهر المعيقلي</option>
-                                <option value="Adel_Rayan_Warsh">Adel Rayan (Warsh) / عادل ريان</option>
                                 <option value="Abdurrahmaan_As-Sudais_192kbps">Abdul Rahman Al-Sudais / عبد الرحمن السديس</option>
                                 <option value="Saood_ash-Shuraym_64kbps">Saud Al-Shuraim / سعود الشريم</option>
                             </select>
@@ -3624,12 +3622,10 @@
             'Maher_AlMuaiqly_64kbps': 'https://server12.mp3quran.net/maher',
             'Abdurrahmaan_As-Sudais_192kbps': 'https://server11.mp3quran.net/sds',
             
-            // Working reciters on quranicaudio.com (5 reciters)
+            // Working reciters on quranicaudio.com (3 reciters)
             'Abdul_Basit_Mujawwad_128kbps': 'https://download.quranicaudio.com/quran/abdulbaset_mujawwad',
             'Husary_128kbps': 'https://download.quranicaudio.com/quran/mahmood_khaleel_al-husaree',
-            'Saood_ash-Shuraym_64kbps': 'https://download.quranicaudio.com/quran/sa3ood_al-shuraym',
-            'Minshawi_Mujawwad_128kbps': 'https://server10.mp3quran.net/minsh/Mujawwad',
-            'Adel_Rayan_Warsh': 'https://server11.mp3quran.net/warsh_ad'
+            'Saood_ash-Shuraym_64kbps': 'https://download.quranicaudio.com/quran/sa3ood_al-shuraym'
         };
         
         function populateFullSurahSelector() {
@@ -3694,7 +3690,29 @@
                 stopRandomSurah();
             }
             
-            // Stop any current audio
+            // If audio exists and is paused, just resume it
+            if (fullSurahAudio && fullSurahAudio.paused && fullSurahAudio.src) {
+                console.log('Resuming paused audio');
+                fullSurahAudio.play();
+                
+                // Update button states
+                const playBtn = document.getElementById('fullSurahPlayBtn');
+                const pauseBtn = document.getElementById('fullSurahPauseBtn');
+                const stopBtn = document.getElementById('fullSurahStopBtn');
+                
+                playBtn.disabled = true;
+                playBtn.style.opacity = '0.5';
+                pauseBtn.disabled = false;
+                pauseBtn.style.opacity = '1';
+                pauseBtn.style.cursor = 'pointer';
+                stopBtn.disabled = false;
+                stopBtn.style.opacity = '1';
+                stopBtn.style.cursor = 'pointer';
+                
+                return;
+            }
+            
+            // Otherwise, create new audio
             if (fullSurahAudio) {
                 fullSurahAudio.pause();
             }
@@ -7224,7 +7242,7 @@
                     const loadStart = Date.now();
                     
                     currentUser = email;
-                    localStorage.setItem('quranAppUser', currentUser);
+                    localStorage.setItem('quran_user', currentUser);
                     await loadUserData();
                     
                     console.log(`✅ Data loaded in ${Date.now() - loadStart}ms`);
@@ -7236,6 +7254,15 @@
                         <div style="font-size: 1.1rem; font-weight: 600;">Welcome back! 🎉</div>
                         <div style="font-size: 0.9rem; margin-top: 0.25rem; color: var(--text-light);">${currentUser}</div>
                     `;
+                    
+                    // Show analytics button for admin
+                    if (email.toLowerCase() === 'aatalla@aucegypt.edu') {
+                        const analyticsBtn = document.getElementById('analyticsButton');
+                        if (analyticsBtn) {
+                            analyticsBtn.style.display = 'block';
+                        }
+                    }
+                    
                     updatePinStatus();
                     showPage('memorize');
                 } else {
