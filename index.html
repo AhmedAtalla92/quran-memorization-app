@@ -7324,16 +7324,9 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    loginBtn.textContent = 'Loading your data...';
-                    console.log('📚 Loading user data...');
-                    const loadStart = Date.now();
-                    
+                    // IMMEDIATE UI UPDATE - Don't wait for data
                     currentUser = email;
                     localStorage.setItem('quran_user', currentUser);
-                    await loadUserData();
-                    
-                    console.log(`✅ Data loaded in ${Date.now() - loadStart}ms`);
-                    console.log(`🎉 Total login time: ${Date.now() - startTime}ms`);
                     
                     document.getElementById('loginForm').style.display = 'none';
                     document.getElementById('accountDashboard').style.display = 'block';
@@ -7350,8 +7343,24 @@
                         }
                     }
                     
-                    updatePinStatus();
                     showPage('memorize');
+                    
+                    console.log(`✅ UI shown in ${Date.now() - startTime}ms`);
+                    
+                    // Load data in background (non-blocking)
+                    loginBtn.textContent = 'Loading your data...';
+                    console.log('📚 Loading user data in background...');
+                    const loadStart = Date.now();
+                    
+                    loadUserData().then(() => {
+                        console.log(`✅ Data loaded in ${Date.now() - loadStart}ms`);
+                        console.log(`🎉 Total login time: ${Date.now() - startTime}ms`);
+                        updatePinStatus();
+                    }).catch(err => {
+                        console.error('Error loading data:', err);
+                        // UI is already shown, so login still works
+                    });
+                    
                 } else {
                     console.log('❌ Invalid PIN');
                     alert('Invalid PIN. Please try again.');
